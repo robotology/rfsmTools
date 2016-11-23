@@ -81,11 +81,20 @@ function populateChoice ()
           --print("Event: ",e)
 		  end
 	       end, fsm, rfsm.is_trans)
+     
+    local a = {}
     for k, v in pairs(known_events) do
-      choiceSE:Append(k)
+        if string.find(k, "e_done@") == nil then 
+            table.insert(a, k)
+        end    
+    end
+ 
+    table.sort(a)
+    for k, v in pairs(a) do
+      choiceSE:Append(v)
     end
     choiceSE:SetSelection(0)
-  end
+end
 
 function getObjectAs(obj_name, obj_type)
   
@@ -145,7 +154,7 @@ function load()
            showeqButton:Enable(true)]]
            rfsm2uml.rfsm2dot(fsm, filenameTemp.. count .. ".dot")
            --900x1500
-           os.execute("dot".." -Gsize=9,9\\! -Gdpi=100 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
+           os.execute("dot".." -Gsize=9,9\\! -Gdpi=600 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
            if Image:LoadFile(filenameTemp..count..".png",wx.wxBITMAP_TYPE_PNG)==false then
               print("Cannot load image!!")
               exit(0)
@@ -186,20 +195,31 @@ function showeq()
    return q
 end
 
+function updateEventList() 
+    listCtrl_Q:DeleteAllItems()
+    local listIndexQ = 0
+    local strq = showeq()
+    for word in string.gmatch(strq, '([^,]+)') do 
+        local event = word:gsub("%s+", "")
+        local time = os.date("%X")
+        listCtrl_Q:InsertItem(listIndexQ,"",1)
+        listCtrl_Q:SetItem(listIndexQ, 0, time)
+        listCtrl_Q:SetItem(listIndexQ, 1, event)
+        listIndexQ=listIndexQ+1
+    end 
+end
+
 
 function runAndDisplay()
   if loaded then
     listCtrl_Log:InsertItem(listIndexLog,"",1)
     listCtrl_Log:SetItem(listIndexLog, 0, os.date("%X"))
     listCtrl_Log:SetItem(listIndexLog, 1, "Run button pressed")
-    listIndexLog=listIndexLog+1 
-    listCtrl_Q:InsertItem(listIndexQ,"",1)
-    listCtrl_Q:SetItem(listIndexQ, 0, os.date("%X"))
-    listCtrl_Q:SetItem(listIndexQ, 1, showeq())
-    listIndexQ=listIndexQ+1     
+    listIndexLog=listIndexLog+1     
     rfsm.run(fsm)
+    updateEventList()    
     rfsm2uml.rfsm2dot(fsm, filenameTemp.. count .. ".dot")
-    os.execute("dot".." -Gsize=9,9\\! -Gdpi=100 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
+    os.execute("dot".." -Gsize=9,9\\! -Gdpi=600 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
     if Image:LoadFile(filenameTemp..count..".png",wx.wxBITMAP_TYPE_PNG)==false then
       print("Cannot load image!!")
       exit(0)
@@ -229,13 +249,10 @@ function stepAndDisplay()
     listCtrl_Log:SetItem(listIndexLog, 0, os.date("%X"))
     listCtrl_Log:SetItem(listIndexLog, 1, "Step button pressed")
     listIndexLog=listIndexLog+1 
-    listCtrl_Q:InsertItem(listIndexQ,"",1)
-    listCtrl_Q:SetItem(listIndexQ, 0, os.date("%X"))
-    listCtrl_Q:SetItem(listIndexQ, 1,showeq())
-    listIndexQ=listIndexQ+1      
     rfsm.step(fsm)
+    updateEventList()
     rfsm2uml.rfsm2dot(fsm, filenameTemp.. count .. ".dot")
-    os.execute("dot".." -Gsize=9,9\\! -Gdpi=100 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
+    os.execute("dot".." -Gsize=9,9\\! -Gdpi=600 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
     if Image:LoadFile(filenameTemp..count..".png",wx.wxBITMAP_TYPE_PNG)==false then
       print("Cannot load image!!")
       exit(0)
@@ -263,16 +280,15 @@ function sendEvent()
   if loaded then
     textToSend=choiceSE:GetString(choiceSE:GetSelection())
     rfsm.send_events(fsm, textToSend)
-    print("Event sent:".. textToSend)
+    --print("Event sent:".. textToSend)
     
     listCtrl_Log:InsertItem(listIndexLog,"",1)
     listCtrl_Log:SetItem(listIndexLog, 0, os.date("%X"))
     listCtrl_Log:SetItem(listIndexLog, 1, "Event sent: "..textToSend)
     listIndexLog=listIndexLog+1 
-    listCtrl_Q:InsertItem(listIndexQ,"",1)
-    listCtrl_Q:SetItem(listIndexQ, 0, os.date("%X"))
-    listCtrl_Q:SetItem(listIndexQ, 1, showeq())
-    listIndexQ=listIndexQ+1
+
+    -- event queue 
+    updateEventList() 
 
   else
     wx.wxMessageBox(string.format("Please load an rFSM file"),
