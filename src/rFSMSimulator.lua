@@ -36,7 +36,7 @@ package.cpath = (
 
 require("wx")
 require("rfsm")
---require ("rfsm2uml")
+require ("rfsm2uml")
 
 
 count=0
