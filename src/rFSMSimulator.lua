@@ -21,17 +21,22 @@ if islinux then
   end
 end
 
+local clibsdir = "clibs"
+if _VERSION == "Lua 5.1" then clibsdir = "clibs51" end
+if _VERSION == "Lua 5.2" then clibsdir = "clibs52" end
+if _VERSION == "Lua 5.3" then clibsdir = "clibs53" end
+
 package.cpath = (
-  iswindows and 'lib/windows/clibs52/?.dll;' or
-  islinux and ('lib/linux/%s/clibs52/lib?.so;'):format(arch) or
-  --[[isosx]] 'lib/mac/clibs52/lib?.dylib;')
+  iswindows and ('lib/windows/clibs52/?.dll;'):format(clibsdir) or
+  islinux and ('lib/linux/%s/%s/lib?.so;'):format(arch, clibsdir) or
+  --[[isosx]] ('lib/mac/%s/lib?.dylib;'):format(clibsdir))
     .. package.cpath
 --package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;lualibs/?/?/?.lua;lualibs/?/?/init.lua;'
 --              .. package.path
 
 require("wx")
 require("rfsm")
-require ("rfsm2uml")
+--require ("rfsm2uml")
 
 
 count=0
