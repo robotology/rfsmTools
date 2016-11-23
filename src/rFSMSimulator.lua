@@ -154,7 +154,7 @@ function load()
            showeqButton:Enable(true)]]
            rfsm2uml.rfsm2dot(fsm, filenameTemp.. count .. ".dot")
            --900x1500
-           os.execute("dot".." -Gsize=9,9\\! -Gdpi=600 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
+           os.execute("dot".." -Gsize=9,9\\! -Gdpi=300 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
            if Image:LoadFile(filenameTemp..count..".png",wx.wxBITMAP_TYPE_PNG)==false then
               print("Cannot load image!!")
               exit(0)
@@ -219,7 +219,7 @@ function runAndDisplay()
     rfsm.run(fsm)
     updateEventList()    
     rfsm2uml.rfsm2dot(fsm, filenameTemp.. count .. ".dot")
-    os.execute("dot".." -Gsize=9,9\\! -Gdpi=600 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
+    os.execute("dot".." -Gsize=9,9\\! -Gdpi=300 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
     if Image:LoadFile(filenameTemp..count..".png",wx.wxBITMAP_TYPE_PNG)==false then
       print("Cannot load image!!")
       exit(0)
@@ -252,7 +252,7 @@ function stepAndDisplay()
     rfsm.step(fsm)
     updateEventList()
     rfsm2uml.rfsm2dot(fsm, filenameTemp.. count .. ".dot")
-    os.execute("dot".." -Gsize=9,9\\! -Gdpi=600 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
+    os.execute("dot".." -Gsize=9,9\\! -Gdpi=300 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
     if Image:LoadFile(filenameTemp..count..".png",wx.wxBITMAP_TYPE_PNG)==false then
       print("Cannot load image!!")
       exit(0)
