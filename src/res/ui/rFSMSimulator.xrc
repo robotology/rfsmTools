@@ -13,7 +13,7 @@
 				<object class="wxMenuItem" name="m_menuItemOpen">
 					<label>_Open</label>
 					<help></help>
-					<bitmap>../rFSMDisplayerOLD/PlayGreen.png</bitmap>
+					<bitmap>src/res/icons/PlayGreen.png</bitmap>
 				</object>
 				<object class="separator" />
 				<object class="wxMenuItem" name="m_menuItemQuit">
@@ -32,33 +32,33 @@
 				<label>Open</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>../../../../wxlua-svn/wxLua/art/open.xpm</bitmap>
+				<bitmap>src/res/icons/open.xpm</bitmap>
 			</object>
 			<object class="separator" />
 			<object class="tool" name="m_toolRun">
 				<label>Run</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>PlayGreen.png</bitmap>
+				<bitmap>src/res/icons/PlayGreen.png</bitmap>
 			</object>
 			<object class="tool" name="m_toolStep">
 				<label>Step</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>StepGreen.png</bitmap>
+				<bitmap>src/res/icons/StepGreen.png</bitmap>
 			</object>
 			<object class="separator" />
 			<object class="tool" name="m_toolHelp">
 				<label>Help</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>../../../../wxlua-svn/wxLua/art/help.xpm</bitmap>
+				<bitmap>src/res/icons/help.xpm</bitmap>
 			</object>
 			<object class="tool" name="m_toolQuit">
 				<label>tool</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>Quit.jpg</bitmap>
+				<bitmap>src/res/icons/Quit.jpg</bitmap>
 			</object>
 		</object>
 		<object class="wxSplitterWindow" name="m_splitterMain">
