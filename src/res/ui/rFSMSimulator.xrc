@@ -12,8 +12,6 @@
 				<label>_File</label>
 				<object class="wxMenuItem" name="m_menuItemOpen">
 					<label>_Open</label>
-					<help></help>
-					<bitmap>src/res/icons/PlayGreen.png</bitmap>
 				</object>
 				<object class="separator" />
 				<object class="wxMenuItem" name="m_menuItemQuit">
@@ -32,33 +30,33 @@
 				<label>Open</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>src/res/icons/open.xpm</bitmap>
+				<bitmap>../icons/open.xpm</bitmap>
 			</object>
 			<object class="separator" />
 			<object class="tool" name="m_toolRun">
 				<label>Run</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>src/res/icons/PlayGreen.png</bitmap>
+				<bitmap>../icons/PlayGreen.png</bitmap>
 			</object>
 			<object class="tool" name="m_toolStep">
 				<label>Step</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>src/res/icons/StepGreen.png</bitmap>
+				<bitmap>../icons/StepGreen.png</bitmap>
 			</object>
 			<object class="separator" />
 			<object class="tool" name="m_toolHelp">
 				<label>Help</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>src/res/icons/help.xpm</bitmap>
+				<bitmap>../icons/help.xpm</bitmap>
 			</object>
 			<object class="tool" name="m_toolQuit">
 				<label>tool</label>
 				<tooltip></tooltip>
 				<longhelp></longhelp>
-				<bitmap>src/res/icons/Quit.jpg</bitmap>
+				<bitmap>../icons/Quit.jpg</bitmap>
 			</object>
 		</object>
 		<object class="wxSplitterWindow" name="m_splitterMain">

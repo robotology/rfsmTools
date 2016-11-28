@@ -133,12 +133,12 @@
                 <event name="OnSetFocus"></event>
                 <event name="OnSize"></event>
                 <event name="OnUpdateUI"></event>
-                <object class="wxMenu" expanded="0">
+                <object class="wxMenu" expanded="1">
                     <property name="label">&amp;File</property>
                     <property name="name">m_menuFile</property>
                     <property name="permission">protected</property>
                     <object class="wxMenuItem" expanded="0">
-                        <property name="bitmap">Load From File; ../rFSMDisplayerOLD/PlayGreen.png</property>
+                        <property name="bitmap">Load From File; ../icons/open.xpm</property>
                         <property name="checked">0</property>
                         <property name="enabled">1</property>
                         <property name="help"></property>
@@ -173,7 +173,7 @@
                     </object>
                 </object>
             </object>
-            <object class="wxToolBar" expanded="1">
+            <object class="wxToolBar" expanded="0">
                 <property name="BottomDockable">1</property>
                 <property name="LeftDockable">1</property>
                 <property name="RightDockable">1</property>
@@ -253,7 +253,7 @@
                 <event name="OnSize"></event>
                 <event name="OnUpdateUI"></event>
                 <object class="tool" expanded="0">
-                    <property name="bitmap">Load From File; ../../../../wxlua-svn/wxLua/art/open.xpm</property>
+                    <property name="bitmap">Load From File; ../icons/open.xpm</property>
                     <property name="context_menu">0</property>
                     <property name="id">ID_TOOLOPEN</property>
                     <property name="kind">wxITEM_NORMAL</property>
@@ -277,7 +277,7 @@
                     <property name="permission">protected</property>
                 </object>
                 <object class="tool" expanded="0">
-                    <property name="bitmap">Load From File; PlayGreen.png</property>
+                    <property name="bitmap">Load From File; ../icons/PlayGreen.png</property>
                     <property name="context_menu">0</property>
                     <property name="id">ID_TOOLRUN</property>
                     <property name="kind">wxITEM_NORMAL</property>
@@ -298,7 +298,7 @@
                     <event name="OnUpdateUI"></event>
                 </object>
                 <object class="tool" expanded="0">
-                    <property name="bitmap">Load From File; StepGreen.png</property>
+                    <property name="bitmap">Load From File; ../icons/StepGreen.png</property>
                     <property name="context_menu">0</property>
                     <property name="id">ID_TOOLSTEP</property>
                     <property name="kind">wxITEM_NORMAL</property>
@@ -322,7 +322,7 @@
                     <property name="permission">protected</property>
                 </object>
                 <object class="tool" expanded="0">
-                    <property name="bitmap">Load From File; ../../../../wxlua-svn/wxLua/art/help.xpm</property>
+                    <property name="bitmap">Load From File; ../icons/help.xpm</property>
                     <property name="context_menu">0</property>
                     <property name="id">ID_TOOLHELP</property>
                     <property name="kind">wxITEM_NORMAL</property>
@@ -343,7 +343,7 @@
                     <event name="OnUpdateUI"></event>
                 </object>
                 <object class="tool" expanded="0">
-                    <property name="bitmap">Load From File; Quit.jpg</property>
+                    <property name="bitmap">Load From File; ../icons/Quit.jpg</property>
                     <property name="context_menu">0</property>
                     <property name="id">ID_TOOLQUIT</property>
                     <property name="kind">wxITEM_NORMAL</property>
@@ -364,16 +364,16 @@
                     <event name="OnUpdateUI"></event>
                 </object>
             </object>
-            <object class="wxBoxSizer" expanded="1">
+            <object class="wxBoxSizer" expanded="0">
                 <property name="minimum_size">640,480</property>
                 <property name="name">bSizerMain</property>
                 <property name="orient">wxHORIZONTAL</property>
                 <property name="permission">none</property>
-                <object class="sizeritem" expanded="1">
+                <object class="sizeritem" expanded="0">
                     <property name="border">5</property>
                     <property name="flag">wxEXPAND</property>
                     <property name="proportion">1</property>
-                    <object class="wxSplitterWindow" expanded="1">
+                    <object class="wxSplitterWindow" expanded="0">
                         <property name="BottomDockable">1</property>
                         <property name="LeftDockable">1</property>
                         <property name="RightDockable">1</property>
@@ -457,8 +457,8 @@
                         <event name="OnSplitterSashPosChanging"></event>
                         <event name="OnSplitterUnsplit"></event>
                         <event name="OnUpdateUI"></event>
-                        <object class="splitteritem" expanded="1">
-                            <object class="wxPanel" expanded="1">
+                        <object class="splitteritem" expanded="0">
+                            <object class="wxPanel" expanded="0">
                                 <property name="BottomDockable">1</property>
                                 <property name="LeftDockable">1</property>
                                 <property name="RightDockable">1</property>
@@ -534,7 +534,7 @@
                                 <event name="OnUpdateUI"></event>
                             </object>
                         </object>
-                        <object class="splitteritem" expanded="1">
+                        <object class="splitteritem" expanded="0">
                             <object class="wxPanel" expanded="0">
                                 <property name="BottomDockable">1</property>
                                 <property name="LeftDockable">1</property>
@@ -728,11 +728,11 @@
                                                             <event name="OnUpdateUI"></event>
                                                         </object>
                                                     </object>
-                                                    <object class="sizeritem" expanded="1">
+                                                    <object class="sizeritem" expanded="0">
                                                         <property name="border">5</property>
                                                         <property name="flag">wxALIGN_CENTER|wxALL</property>
                                                         <property name="proportion">1</property>
-                                                        <object class="wxChoice" expanded="1">
+                                                        <object class="wxChoice" expanded="0">
                                                             <property name="BottomDockable">1</property>
                                                             <property name="LeftDockable">1</property>
                                                             <property name="RightDockable">1</property>
@@ -1066,7 +1066,7 @@
                     </object>
                 </object>
             </object>
-            <object class="wxStatusBar" expanded="1">
+            <object class="wxStatusBar" expanded="0">
                 <property name="bg">wxSYS_COLOUR_CAPTIONTEXT</property>
                 <property name="context_help"></property>
                 <property name="context_menu">1</property>
