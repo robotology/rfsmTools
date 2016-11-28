@@ -12,6 +12,8 @@
 				<label>_File</label>
 				<object class="wxMenuItem" name="m_menuItemOpen">
 					<label>_Open</label>
+					<help></help>
+					<bitmap>../icons/open.xpm</bitmap>
 				</object>
 				<object class="separator" />
 				<object class="wxMenuItem" name="m_menuItemQuit">
@@ -31,6 +33,12 @@
 				<tooltip></tooltip>
 				<longhelp></longhelp>
 				<bitmap>../icons/open.xpm</bitmap>
+			</object>
+			<object class="tool" name="m_toolReset">
+				<label>tool</label>
+				<tooltip></tooltip>
+				<longhelp></longhelp>
+				<bitmap>../icons/reset.jpg</bitmap>
 			</object>
 			<object class="separator" />
 			<object class="tool" name="m_toolRun">

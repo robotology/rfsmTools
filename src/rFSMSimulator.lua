@@ -123,7 +123,7 @@ function load()
                                 wx.wxGetCwd(), "", "All Files (*)|*|rFSM File (*.lua)|*.lua",
                                 wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST + wx.wxFD_CHANGE_DIR )
     if dlg:ShowModal() == wx.wxID_OK then
-        local filepath = dlg:GetPath()
+        filepath = dlg:GetPath()
         fileName = dlg:GetFilename()
         fsmMod=rfsm.load(filepath)
 --TODO gestire che cosa accade se non si carica
@@ -161,6 +161,7 @@ function load()
            else
               panelView:Update()
               panelView:Refresh()
+              updateEventList()
          --[[else                  
               local dc = wx.wxPaintDC(panelView)
               dc:DrawBitmap(Image,0,0,false);
@@ -172,7 +173,55 @@ function load()
     dlg:Destroy()
 end 
 
-
+function reset()
+--TODO gestire che cosa accade se non si carica
+  if loaded==false then
+    wx.wxMessageBox(string.format("Please load an rFSM file"),
+                            "rFSMSimulator",
+                            wx.wxICON_ERROR + wx.wxOK)
+    listCtrl_Log:InsertItem(listIndexLog,"",0)
+    listCtrl_Log:SetItem(listIndexLog, 0, os.date("%X"))
+    listCtrl_Log:SetItem(listIndexLog, 1, "Missing rfsm...")
+    listIndexLog=listIndexLog+1 
+    return
+  end
+  fsmMod=rfsm.load(filepath)
+  if not rfsm.is_state(fsmMod) then
+      wx.wxMessageBox(string.format("Unable to load %s: Unsupported format?", filepath),
+                      "rFSMSimulator",
+                      wx.wxICON_ERROR + wx.wxOK)
+    loaded=false
+     listCtrl_Log:InsertItem(listIndexLog,"",0)
+     listCtrl_Log:SetItem(listIndexLog, 0, os.date("%X"))
+     listCtrl_Log:SetItem(listIndexLog, 1, "Error in "..fileName.." loading")
+     listIndexLog=listIndexLog+1 
+  else
+     fsm=rfsm.init(fsmMod)
+     mainFrame:SetStatusText("Welcome to rFSMDisplayer. Displaying ".. fileName)
+     loaded=true
+     populateChoice()
+     listCtrl_Log:InsertItem(listIndexLog,"",1)
+     listCtrl_Log:SetItem(listIndexLog, 0, os.date("%X"))
+     listCtrl_Log:SetItem(listIndexLog, 1, "Reset "..fileName.." correctly")
+     listIndexLog=listIndexLog+1 
+     rfsm2uml.rfsm2dot(fsm, filenameTemp.. count .. ".dot")
+     --900x1500
+     os.execute("dot".." -Gsize=9,9\\! -Gdpi=300 -Tpng -o "..filenameTemp..count..".png "..filenameTemp..count..".dot")
+     if Image:LoadFile(filenameTemp..count..".png",wx.wxBITMAP_TYPE_PNG)==false then
+        print("Cannot load image!!")
+        exit(0)
+     else
+        panelView:Update()
+        panelView:Refresh()
+        updateEventList()
+   --[[else                  
+        local dc = wx.wxPaintDC(panelView)
+        dc:DrawBitmap(Image,0,0,false);
+        dc:delete()]]
+   end
+   
+  end
+end 
 function quit()
   local answer=wx.wxMessageBox("Are you sure to exit ?","rFSMSimulator",
                     wx.wxYES_NO+wx.wxNO_DEFAULT+ wx.wxICON_QUESTION,
@@ -462,6 +511,7 @@ function main()
     --toolbar ids
     ID_TOOLBAR  = xmlResource.GetXRCID("m_toolBar")
     ID_TOOLOPEN = xmlResource.GetXRCID("m_toolOpen")
+    ID_TOOLRESET = xmlResource.GetXRCID("m_toolReset")
     ID_TOOLRUN  = xmlResource.GetXRCID("m_toolRun")
     ID_TOOLSTEP = xmlResource.GetXRCID("m_toolStep")
     ID_TOOLHELP = xmlResource.GetXRCID("m_toolHelp")
@@ -495,6 +545,7 @@ function main()
     mainFrame:Connect(ID_TOOLHELP, wx.wxEVT_COMMAND_TOOL_CLICKED,about)
     mainFrame:Connect(ID_TOOLQUIT, wx.wxEVT_COMMAND_TOOL_CLICKED,quit)
     mainFrame:Connect(ID_TOOLOPEN, wx.wxEVT_COMMAND_TOOL_CLICKED,load)
+    mainFrame:Connect(ID_TOOLRESET, wx.wxEVT_COMMAND_TOOL_CLICKED,reset)
     mainFrame:Connect(ID_TOOLRUN, wx.wxEVT_COMMAND_TOOL_CLICKED,runAndDisplay)
     mainFrame:Connect(ID_TOOLSTEP,wx.wxEVT_COMMAND_TOOL_CLICKED,stepAndDisplay)
     mainFrame:Connect(ID_SEND,wx.wxEVT_COMMAND_BUTTON_CLICKED,sendEvent)
