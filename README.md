@@ -23,7 +23,7 @@ $ cd rFSMSimulator
 $ ./rfsmsim.sh
 ```
 
-Contributers
+Contributors
 -------------
 * [*Nicolò Genesio*](https://github.com/Nicogene)
 * [*Ali Paikan*](https://github.com/apaikan)
