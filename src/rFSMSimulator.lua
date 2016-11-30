@@ -70,6 +70,7 @@ listCtrl_Log=wx.wxListCtrl()
 Image=wx.wxBitmap()
 
 function populateChoice ()
+  choiceSE:Clear()
      local known_events = {
       e_init_fsm=true,
    }
