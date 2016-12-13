@@ -89,15 +89,19 @@ public:
     void close();
 
     /**
-     * @brief getAllEvents returns all the available events
-     * @param events a vector of string to store events
-     * @return true on success
+     * @brief getEventsList retrieves all available events in the state machine
+     * @return a list of all available events
      */
-    bool getAllEvents(std::vector<std::string>& events);
+    const std::vector<std::string>& getEventsList();
 
 private:
+    bool getAllEvents();
+    bool registerLuaFunction(const std::string& name, lua_CFunction func);
+private:
     lua_State *L;
-    std::string fileName;    
+    std::string fileName;
+    std::vector<std::string> events;
+
 };
 
 

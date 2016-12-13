@@ -25,8 +25,7 @@ int main(int argc, char** argv) {
         yError()<<"Cannot load ...";
     }
 
-    vector<string> events;
-    rfsm.getAllEvents(events);
+    const vector<string>& events = rfsm.getEventsList();
     yDebug()<<"Available events:";
     for(int i=0;i<events.size(); i++)
         yDebug()<<"\t"<<events[i];

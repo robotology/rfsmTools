@@ -4,10 +4,12 @@
 -- CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 --
 
+
 return rfsm.state {  
     Configure = rfsm.sista{
         entry = function()
             print("Configure")
+            --RFSM.onEntry()
         end,
     },
 

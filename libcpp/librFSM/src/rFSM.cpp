@@ -103,6 +103,10 @@ static int dolibrary (lua_State *L, const char *name) {
   return report(L, lua_pcall(L, 1, 0, 0));
 }
 
+int onEntry(lua_State* L) {
+    yDebug()<<"onEntry";
+    return 0;
+}
 
 
 RFSM::RFSM() : L(NULL) {
@@ -158,10 +162,15 @@ bool RFSM::load(const std::string& filename) {
     if(dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
 
+    // getting all availabe events
+    if(!getAllEvents())
+        yWarning()<<"Cannot retrieve all events";
+
     //doString("function __null_func() return end");
     //doString("fsm.warn = __null_func");
     //doString("fsm.err = __null_func");
 
+    registerLuaFunction("onEntry", onEntry);
     return true;
 }
 
@@ -198,7 +207,7 @@ bool RFSM::sendEvents(unsigned int n, ...) {
     return (dostring(L, command.c_str(), "sendEvents") == LUA_OK);
 }
 
-bool RFSM::getAllEvents(std::vector<std::string>& events) {
+bool RFSM::getAllEvents() {
     events.clear();
     if(dostring(L, "events = get_all_events()", "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
@@ -218,10 +227,29 @@ bool RFSM::getAllEvents(std::vector<std::string>& events) {
     return true;
 }
 
+const std::vector<std::string>& RFSM::getEventsList() {
+    return events;
+}
+
 bool RFSM::doString(const std::string& command) {
     return (dostring(L, command.c_str(), "command") == LUA_OK);
 }
 
 bool RFSM::doFile(const std::string& filename) {
     return (dofile(L, filename.c_str()) == LUA_OK);
+}
+
+bool RFSM::registerLuaFunction(const std::string& name, lua_CFunction func) {
+    static struct luaL_reg luaReg[1];
+    luaReg[1].name = name.c_str();
+    luaReg[1].func = func;
+
+#if LUA_VERSION_NUM > 501
+    lua_newtable(L);
+    luaL_setfuncs (L, luaReg, 0);
+    lua_pushvalue(L, -1);
+    lua_setglobal(L, "RFSM");
+#else
+    luaL_register(L, "RFSM", luaReg);
+#endif
 }
