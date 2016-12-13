@@ -4,7 +4,22 @@
 # 
 project(rFSM)
 
-find_package(Lua51 REQUIRED)
+
+
+
+find_package(Lua)
+if(NOT LUA_FOUND)
+  find_package(Lua50)
+endif()
+if(NOT LUA_FOUND)
+  find_package(Lua51)
+endif()
+if(NOT LUA_FOUND)
+  find_package(Lua52)
+endif()
+if(NOT LUA_FOUND)
+  find_package(Lua53 REQUIRED)
+endif()
 
 set(headers include/rFSM.h
    )

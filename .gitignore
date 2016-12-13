@@ -1,3 +1,39 @@
-# template page
-*.swp
+# Compiled Object files
+*.slo
+*.lo
+*.o
 
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Temp files
+*~
+*.swp
+*.user
+*.autosave
+*Old.*
+
+# Cmake directory & files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+*.cbp
+*.user
+
+# directories
+build*
+graph/build*
+
+
+# Documentation directory
+doc/
+
+# Merge files
+*.orig
