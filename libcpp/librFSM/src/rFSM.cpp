@@ -11,20 +11,22 @@
 using namespace std;
 using namespace yarp::os;
 
+
 #define EVENT_RETREIVE_CHUNK \
-"local function get_all_events()"\
-"    local known_events = { e_init_fsm=true, }"\
-"    rfsm.mapfsm(function(t)"\
-"         local events = t.events or {}"\
-"         for _,e in ipairs(events) do known_events[e] = true end"\
-"          end, fsm, rfsm.is_trans)"\
-"    local a = {}"\
-"    for k, v in pairs(known_events) do"\
-"       if string.find(k, 'e_done@') == nil then table.insert(a, k) end"\
-"    end"\
-"    table.sort(a)"\
-"    for k, v in pairs(a) do print(v) end"\
-"    return a"\
+"function get_all_events()\n"\
+"    local known_events = { e_init_fsm=true, }\n"\
+"    rfsm.mapfsm(function(t)\n"\
+"           local events = t.events or {}\n"\
+"           for _,e in ipairs(events) do\n"\
+"              known_events[e] = true\n"\
+"           end\n"\
+"            end, fsm, rfsm.is_trans)\n"\
+"    local a = {}\n"\
+"    for k, v in pairs(known_events) do\n"\
+"       if string.find(k, 'e_done@') == nil then table.insert(a, k) end\n"\
+"    end\n"\
+"    table.sort(a)\n"\
+"    return a\n"\
 "end"
 
 
@@ -40,25 +42,35 @@ static int report (lua_State *L, int status) {
   return status;
 }
 
-
 static int traceback (lua_State *L) {
-  lua_getfield(L, LUA_GLOBALSINDEX, "debug");
-  if (!lua_istable(L, -1)) {
-    lua_pop(L, 1);
-    return 1;
+#if LUA_VERSION_NUM > 501
+  const char *msg = lua_tostring(L, 1);
+  if (msg)
+    luaL_traceback(L, L, msg, 1);
+  else if (!lua_isnoneornil(L, 1)) {  /* is there an error object? */
+    if (!luaL_callmeta(L, 1, "__tostring"))  /* try its 'tostring' metamethod */
+      lua_pushliteral(L, "(no error message)");
   }
-  lua_getfield(L, -1, "traceback");
-  if (!lua_isfunction(L, -1)) {
-    lua_pop(L, 2);
-    return 1;
-  }
-  lua_pushvalue(L, 1);  /* pass error message */
-  lua_pushinteger(L, 2);  /* skip this function and traceback */
-  lua_call(L, 2, 1);  /* call debug.traceback */
   return 1;
+#else
+    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+    if (!lua_istable(L, -1)) {
+      lua_pop(L, 1);
+      return 1;
+    }
+    lua_getfield(L, -1, "traceback");
+    if (!lua_isfunction(L, -1)) {
+      lua_pop(L, 2);
+      return 1;
+    }
+    lua_pushvalue(L, 1);  /* pass error message */
+    lua_pushinteger(L, 2);  /* skip this function and traceback */
+    lua_call(L, 2, 1);  /* call debug.traceback */
+    return 1;
+#endif
 }
 
-static int docall (lua_State *L, int narg, int clear) {
+static int docall(lua_State *L, int narg, int clear) {
   int status;
   int base = lua_gettop(L) - narg;  /* function index */
   lua_pushcfunction(L, traceback);  /* push traceback function */
@@ -73,7 +85,7 @@ static int docall (lua_State *L, int narg, int clear) {
 }
 
 
-static int dofile (lua_State *L, const char *name) {
+static int dofile(lua_State *L, const char *name) {
   int status = luaL_loadfile(L, name) || docall(L, 0, 1);
   return report(L, status);
 }
@@ -142,6 +154,10 @@ bool RFSM::load(const std::string& filename) {
         return false;
     }
 
+    // registering some utility fuctions in lua
+    if(dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
+        return false;
+
     //doString("function __null_func() return end");
     //doString("fsm.warn = __null_func");
     //doString("fsm.err = __null_func");
@@ -183,8 +199,23 @@ bool RFSM::sendEvents(unsigned int n, ...) {
 }
 
 bool RFSM::getAllEvents(std::vector<std::string>& events) {
-    if(dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
+    events.clear();
+    if(dostring(L, "events = get_all_events()", "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
+    lua_getglobal(L, "events");
+    if(!lua_istable(L, -1)) {
+        yError()<<"got the wrong value from get_all_events()";
+        return false;
+    }
+    lua_pushnil(L);
+    while(lua_next(L, -2) != 0) {
+        if(lua_isstring(L, -1))
+            events.push_back(lua_tostring(L, -1));
+        else
+            yWarning()<<"find a wrong type in the result from get_all_events()";
+       lua_pop(L, 1);
+    }
+    return true;
 }
 
 bool RFSM::doString(const std::string& command) {

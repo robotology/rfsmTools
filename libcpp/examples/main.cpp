@@ -27,8 +27,10 @@ int main(int argc, char** argv) {
 
     vector<string> events;
     rfsm.getAllEvents(events);
+    yDebug()<<"Available events:";
+    for(int i=0;i<events.size(); i++)
+        yDebug()<<"\t"<<events[i];
 
-    rfsm.run();
     rfsm.run();
     rfsm.sendEvent("e_true");
     rfsm.run();
