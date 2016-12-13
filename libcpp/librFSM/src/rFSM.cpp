@@ -240,9 +240,11 @@ bool RFSM::doFile(const std::string& filename) {
 }
 
 bool RFSM::registerLuaFunction(const std::string& name, lua_CFunction func) {
-    static struct luaL_reg luaReg[1];
+    static struct luaL_reg luaReg[2];
     luaReg[1].name = name.c_str();
     luaReg[1].func = func;
+    luaReg[2].name = 0;
+    luaReg[2].func = 0;
 
 #if LUA_VERSION_NUM > 501
     lua_newtable(L);
