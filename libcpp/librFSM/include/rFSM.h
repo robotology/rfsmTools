@@ -20,6 +20,10 @@ namespace rfsm {
     class StateCallback;
 }
 
+#ifndef luaL_reg
+    #define luaL_reg luaL_Reg
+#endif
+
 /**
  * @brief The rfsm::StateCallback class can be used to implement
  *  the rFSM state callbacs in c++
