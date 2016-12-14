@@ -6,27 +6,28 @@
 
 
 return rfsm.state {  
-    Configure = rfsm.sista{
-        entry = function()            
-            RFSM.entryCallback("Configure")
-        end,
+    Configure = rfsm.csta {
+--        Software = rfsm.sista{ },
+--        Hardware = rfsm.sista{ },
+--        rfsm.transition { src='initial', tgt='Software'},
+--        rfsm.transition { src='Software', tgt='Hardware'},
     },
 
     UpdateModule = rfsm.sista{
         entry = function()
-            print("UpdateModule")
+            print("UpdateModule (hello from LUA)")
         end,
     },
 
     Close = rfsm.sista{
         entry = function()
-            print("Close")
+            print("Close (hello from LUA)")
         end,
     },
 
     InterruptModule = rfsm.sista{
         entry = function()
-            print("InterruptModule")
+            print("InterruptModule (hello from LUA)")
         end,
     },
 

@@ -20,11 +20,26 @@ namespace rfsm {
     class StateCallback;
 }
 
+/**
+ * @brief The rfsm::StateCallback class can be used to implement
+ *  the rFSM state callbacs in c++
+ */
 class rfsm::StateCallback {
 public:
     virtual ~StateCallback() {}
+    /**
+     * @brief entry is called on rFSM state.entry
+     */
     virtual void entry() {}
+
+    /**
+     * @brief doo is called on rFSM state.doo
+     */
     virtual void doo() {}
+
+    /**
+     * @brief exit is called on rFSM state.exit
+     */
     virtual void exit() {}
 };
 
@@ -34,10 +49,12 @@ public:
  */
 class rfsm::StateMachine {
 public:
+
     /**
-     * @brief StateMachine
+     * @brief StateMachine load and execute a rFSM state machine written in LUA
+     * @param verbose enable verbosity if it is true.
      */
-    StateMachine();
+    StateMachine(bool verbose=false);
 
     /**
      * @brief ~StateMachine
@@ -100,6 +117,12 @@ public:
     bool doFile(const std::string& filename);
 
     /**
+     * @brief addLuaPackagePath add a new path to lua package.path
+     * @param path to a folder containg lua packages
+     */
+    void addLuaPackagePath(const std::string& path);
+
+    /**
      * @brief closes the state machine if it is already loaded
      */
     void close();
@@ -136,8 +159,10 @@ private:
     lua_State *L;
     std::vector<luaL_reg> luaFuncReg;
     std::string fileName;
+    std::string luaPackagePath;
     std::vector<std::string> events;
     std::map<std::string, rfsm::StateCallback*> callbacks;
+    bool verbose;
 };
 
 
