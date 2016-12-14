@@ -7,9 +7,8 @@
 
 return rfsm.state {  
     Configure = rfsm.sista{
-        entry = function()
-            print("Configure")
-            --RFSM.onEntry()
+        entry = function()            
+            RFSM.entryCallback("Configure")
         end,
     },
 

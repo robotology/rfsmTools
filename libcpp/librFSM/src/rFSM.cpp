@@ -1,4 +1,4 @@
-#include<stdarg.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <yarp/os/LogStream.h>
@@ -9,7 +9,7 @@
 #endif
 
 using namespace std;
-using namespace yarp::os;
+using namespace rfsm;
 
 
 #define EVENT_RETREIVE_CHUNK \
@@ -103,36 +103,32 @@ static int dolibrary (lua_State *L, const char *name) {
   return report(L, lua_pcall(L, 1, 0, 0));
 }
 
-int onEntry(lua_State* L) {
-    yDebug()<<"onEntry";
-    return 0;
-}
 
 
-RFSM::RFSM() : L(NULL) {
+StateMachine::StateMachine() : L(NULL) {
 
 }
 
-RFSM::~RFSM() {
+StateMachine::~StateMachine() {
     close();
 }
 
-void RFSM::close() {
+void StateMachine::close() {
     if(L){
         lua_close(L);
         L = NULL;
     }
 }
 
-const std::string RFSM::getFileName() {
+const std::string StateMachine::getFileName() {
     return fileName;
 }
 
-bool RFSM::load(const std::string& filename) {
+bool StateMachine::load(const std::string& filename) {
 
     close();
 
-    RFSM::fileName = filename;
+    StateMachine::fileName = filename;
     // initiate lua state
     L = luaL_newstate();
     if(L==NULL) {
@@ -141,6 +137,10 @@ bool RFSM::load(const std::string& filename) {
     }
 
     luaL_openlibs(L);
+
+    //lua_getglobal( L, "package" );
+    //lua_getfield( L, -1, "path" ); // get field "path" from table at top of stack (-1)
+    //std::string cur_path = lua_tostring( L, -1 ); // grab path string from top of stack
 
     if (dolibrary(L, "rfsm") != LUA_OK) {
         close();
@@ -159,8 +159,15 @@ bool RFSM::load(const std::string& filename) {
     }
 
     // registering some utility fuctions in lua
+    lua_pushlightuserdata(L, this);
+    lua_setglobal(L, "RFSM_Owner");
+
     if(dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
+
+    registerLuaFunction("entryCallback", StateMachine::entryCallback);
+    registerLuaFunction("dooCallback", StateMachine::dooCallback);
+    registerLuaFunction("exitCallback", StateMachine::exitCallback);
 
     // getting all availabe events
     if(!getAllEvents())
@@ -169,28 +176,26 @@ bool RFSM::load(const std::string& filename) {
     //doString("function __null_func() return end");
     //doString("fsm.warn = __null_func");
     //doString("fsm.err = __null_func");
-
-    registerLuaFunction("onEntry", onEntry);
     return true;
 }
 
 
-bool RFSM::run() {
+bool StateMachine::run() {
     return (dostring(L, "rfsm.run(fsm)", "run") == LUA_OK);
 }
 
-bool RFSM::step(unsigned int n) {
+bool StateMachine::step(unsigned int n) {
     char command[128];
     snprintf(command, 128, "rfsm.step(fsm, %d)", n);
     return (dostring(L, command, "step") == LUA_OK);
 }
 
-bool RFSM::sendEvent(const std::string& event) {
+bool StateMachine::sendEvent(const std::string& event) {
     string command = "rfsm.send_events(fsm, '"+event+"')";
     return (dostring(L, command.c_str(), "sendEvent") == LUA_OK);
 }
 
-bool RFSM::sendEvents(unsigned int n, ...) {
+bool StateMachine::sendEvents(unsigned int n, ...) {
     register unsigned int i;
     va_list ap;
     va_start(ap, n);
@@ -207,7 +212,7 @@ bool RFSM::sendEvents(unsigned int n, ...) {
     return (dostring(L, command.c_str(), "sendEvents") == LUA_OK);
 }
 
-bool RFSM::getAllEvents() {
+bool StateMachine::getAllEvents() {
     events.clear();
     if(dostring(L, "events = get_all_events()", "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
@@ -221,37 +226,140 @@ bool RFSM::getAllEvents() {
         if(lua_isstring(L, -1))
             events.push_back(lua_tostring(L, -1));
         else
-            yWarning()<<"find a wrong type in the result from get_all_events()";
+            yWarning()<<"found a wrong type in the result from get_all_events()";
        lua_pop(L, 1);
     }
     return true;
 }
 
-const std::vector<std::string>& RFSM::getEventsList() {
+const std::vector<std::string>& StateMachine::getEventsList() {
     return events;
 }
 
-bool RFSM::doString(const std::string& command) {
+bool StateMachine::doString(const std::string& command) {
     return (dostring(L, command.c_str(), "command") == LUA_OK);
 }
 
-bool RFSM::doFile(const std::string& filename) {
+bool StateMachine::doFile(const std::string& filename) {
     return (dofile(L, filename.c_str()) == LUA_OK);
 }
 
-bool RFSM::registerLuaFunction(const std::string& name, lua_CFunction func) {
-    static struct luaL_reg luaReg[2];
-    luaReg[1].name = name.c_str();
-    luaReg[1].func = func;
-    luaReg[2].name = 0;
-    luaReg[2].func = 0;
-
+bool StateMachine::registerLuaFunction(const std::string& name, lua_CFunction func) {
+    luaL_reg reg;
+    if(luaFuncReg.size()) {
+        luaFuncReg.back().name = name.c_str();
+        luaFuncReg.back().func = func;
+    }
+    else {
+        reg.name = name.c_str();
+        reg.func = func;
+        luaFuncReg.push_back(reg);
+    }
+    reg.name = 0;
+    reg.func = 0;
+    luaFuncReg.push_back(reg);
 #if LUA_VERSION_NUM > 501
     lua_newtable(L);
-    luaL_setfuncs (L, luaReg, 0);
+    luaL_setfuncs (L, &luaFuncReg[0], 0);
     lua_pushvalue(L, -1);
     lua_setglobal(L, "RFSM");
 #else
-    luaL_register(L, "RFSM", luaReg);
+    luaL_register(L, "RFSM", &luaFuncReg[0]);
 #endif
+}
+
+int StateMachine::entryCallback(lua_State* L) {
+    if (lua_gettop(L) < 1) {
+        yError()<<"StateMachine::entryCallback() expects exactly one argument";
+       return 0;
+    }
+    const char *cst = luaL_checkstring(L, -1);
+    if(cst) {
+        lua_getglobal(L, "RFSM_Owner");
+        if(!lua_islightuserdata(L, -1)) {
+            lua_pop(L, 1);
+            yError()<<"StateMachine::entryCallback() cannot access RFSM_Owner";
+            return 0;
+        }
+        StateMachine* owner = static_cast<StateMachine*>(lua_touserdata(L, -1));
+        lua_pop(L, 1);
+        yAssert(owner!=NULL);
+        owner->callEntryCallback(cst);
+    }
+    else
+        yError()<<"StateMachine::entryCallback() expects a string argument";
+    return 0;
+}
+
+int StateMachine::dooCallback(lua_State* L){
+    if (lua_gettop(L) < 1) {
+        yError()<<"StateMachine::dooCallback() expects exactly one argument";
+       return 0;
+    }
+    const char *cst = luaL_checkstring(L, -1);
+    if(cst) {
+        lua_getglobal(L, "RFSM_Owner");
+        if(!lua_islightuserdata(L, -1)) {
+            lua_pop(L, 1);
+            yError()<<"StateMachine::dooCallback() cannot access RFSM_Owner";
+            return 0;
+        }
+        StateMachine* owner = static_cast<StateMachine*>(lua_touserdata(L, -1));
+        lua_pop(L, 1);
+        yAssert(owner!=NULL);
+        owner->callDooCallback(cst);
+    }
+    else
+        yError()<<"StateMachine::dooCallback() expects a string argument";
+    return 0;
+}
+
+int StateMachine::exitCallback(lua_State* L){
+    if (lua_gettop(L) < 1) {
+        yError()<<"StateMachine::exitCallback() expects exactly one argument";
+       return 0;
+    }
+    const char *cst = luaL_checkstring(L, -1);
+    if(cst) {
+        lua_getglobal(L, "RFSM_Owner");
+        if(!lua_islightuserdata(L, -1)) {
+            lua_pop(L, 1);
+            yError()<<"StateMachine::exitCallback() cannot access RFSM_Owner";
+            return 0;
+        }
+        StateMachine* owner = static_cast<StateMachine*>(lua_touserdata(L, -1));
+        lua_pop(L, 1);
+        yAssert(owner!=NULL);
+        owner->callExitCallback(cst);
+    }
+    else
+        yError()<<"StateMachine::exitCallback() expects a string argument";
+    return 0;
+}
+
+void StateMachine::callEntryCallback(const std::string& state) {
+    std::map<string,StateCallback*>::iterator it;
+    if ((it = callbacks.find(state)) == callbacks.end())
+        return;
+    it->second->entry();
+}
+
+void StateMachine::callDooCallback(const std::string& state) {
+    std::map<string,StateCallback*>::iterator it;
+    if ((it = callbacks.find(state)) == callbacks.end())
+        return;
+    it->second->doo();
+}
+
+void StateMachine::callExitCallback(const std::string& state) {
+    std::map<string,StateCallback*>::iterator it;
+    if ((it = callbacks.find(state)) == callbacks.end())
+        return;
+    it->second->exit();
+}
+
+bool StateMachine::setStateCallback(const std::string state, rfsm::StateCallback& callback) {
+    //TODO: check if state exisits
+    callbacks[state] = &callback;
+    return true;
 }

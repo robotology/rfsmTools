@@ -2,19 +2,23 @@
 
 #include <iostream>
 #include <string>
-#include <yarp/os/Network.h>
 #include <yarp/os/LogStream.h>
-#include <yarp/os/Time.h>
 #include <rFSM.h>
 
 
 using namespace std;
 using namespace yarp::os;
 
+class ConfigureCallback : public rfsm::StateCallback {
+public:
+    virtual void entry() {
+        yInfo()<<"in the entry of ConfigureCallback (hello from c++)";
+    }
+} configureCallback;
+
 
 int main(int argc, char** argv) {
-    yarp::os::Network yarp;
-    RFSM rfsm;
+    rfsm::StateMachine rfsm;
 
     if(argc < 2) {
         yInfo()<<"Usage:"<<argv[0]<<"myfsm.lua";
@@ -22,19 +26,19 @@ int main(int argc, char** argv) {
     }
 
     if(!rfsm.load(argv[1])) {
-        yError()<<"Cannot load ...";
+        yError()<<"Cannot load"<<argv[1];
+        return 0;
     }
 
-    const vector<string>& events = rfsm.getEventsList();
-    yDebug()<<"Available events:";
-    for(int i=0;i<events.size(); i++)
-        yDebug()<<"\t"<<events[i];
+    // seting some callbacks
+    rfsm.setStateCallback("Configure", configureCallback);
+    // ...
 
     rfsm.run();
     rfsm.sendEvent("e_true");
     rfsm.run();
-    //rfsm.setcallback("confgiure").entry = myfunc;
-    //rfsm.setcallback("confgiure").exit = myfunc;
+    rfsm.sendEvent("e_false");
+    rfsm.run();
     return 0;
 }
 

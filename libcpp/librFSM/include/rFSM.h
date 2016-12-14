@@ -12,22 +12,38 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <lua.hpp>
 
-namespace yarp {
-    namespace os {
-        class RFSM;
-    }
+namespace rfsm {
+    class StateMachine;
+    class StateCallback;
 }
+
+class rfsm::StateCallback {
+public:
+    virtual ~StateCallback() {}
+    virtual void entry() {}
+    virtual void doo() {}
+    virtual void exit() {}
+};
 
 
 /**
- * @brief The yarp::os::RFSM class
+ * @brief The rfsm::StateMachine class
  */
-class yarp::os::RFSM {
+class rfsm::StateMachine {
 public:
-    RFSM();
-    virtual ~RFSM();
+    /**
+     * @brief StateMachine
+     */
+    StateMachine();
+
+    /**
+     * @brief ~StateMachine
+     */
+    virtual ~StateMachine();
+
     /**
      * @brief getFileName
      * @return the loaded rFSM state machine's name
@@ -94,14 +110,34 @@ public:
      */
     const std::vector<std::string>& getEventsList();
 
+    /**
+     * @brief setStateCallback set an StateCallback object for a given state
+     * @param state the name of the state (should corespond the state name in rFSM)
+     * @param callback an object of StateCallback class
+     * @return true on success
+     */
+    bool setStateCallback(const std::string state, rfsm::StateCallback& callback);
+
 private:
+    static int entryCallback(lua_State* L);
+    static int dooCallback(lua_State* L);
+    static int exitCallback(lua_State* L);
+
     bool getAllEvents();
     bool registerLuaFunction(const std::string& name, lua_CFunction func);
+    void callEntryCallback(const std::string& state);
+    void callDooCallback(const std::string& state);
+    void callExitCallback(const std::string& state);
+
+    //typedef int (rfsm::StateMachine::* LuaRfsmCallback) (lua_State *L);
+    //bool registerLuaFunction(const std::string& name, LuaRfsmCallback func);
+
 private:
     lua_State *L;
+    std::vector<luaL_reg> luaFuncReg;
     std::string fileName;
     std::vector<std::string> events;
-
+    std::map<std::string, rfsm::StateCallback*> callbacks;
 };
 
 
