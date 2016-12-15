@@ -39,11 +39,13 @@ int main(int argc, char** argv) {
     //rfsm.setStateCallback("UpdateModule", updatemoduleCallback);
     // ...
 
+    yInfo()<<"Current state:"<<rfsm.getCurrentState();
     rfsm.run();
     rfsm.sendEvent("e_true");
     rfsm.run();
     rfsm.sendEvent("e_true");
     rfsm.run();
+    yInfo()<<"Current state:"<<rfsm.getCurrentState();
     return 0;
 }
 

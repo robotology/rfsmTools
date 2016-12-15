@@ -62,6 +62,11 @@ using namespace rfsm;
 "    return found\n"\
 "end"
 
+#define GET_CURRENT_STATE_CHUNK \
+"function get_current_state()\n"\
+"   if fsm._actchild then return fsm._actchild._fqn end\n"\
+"   return '<none>'\n"\
+"end"
 
 
 static int report (lua_State *L, int status) {
@@ -187,6 +192,8 @@ bool StateMachine::load(const std::string& filename) {
     if(dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
     if(dostring(L, SET_STATE_CALLBACKS_CHUNK, "SET_STATE_CALLBACKS_CHUNK") != LUA_OK)
+        return false;
+    if(dostring(L, GET_CURRENT_STATE_CHUNK, "GET_CURRENT_STATE_CHUNK") != LUA_OK)
         return false;
 
     registerLuaFunction("entryCallback", StateMachine::entryCallback);
@@ -405,7 +412,7 @@ void StateMachine::callExitCallback(const std::string& state) {
     it->second->exit();
 }
 
-bool StateMachine::setStateCallback(const std::string state, rfsm::StateCallback& callback) {       
+bool StateMachine::setStateCallback(const string &state, rfsm::StateCallback& callback) {
     lua_getglobal(L, "set_state_callbacks");
     if(!lua_isfunction(L, -1)) {
         yError()<<"StateMachine::setStateCallback() could not find set_state_callbacks()"<<ENDL;
@@ -427,5 +434,34 @@ bool StateMachine::setStateCallback(const std::string state, rfsm::StateCallback
         callbacks[state] = &callback;
     else
         yWarning()<<"State"<<state<<"does not exist"<<ENDL;
+    return result;
+}
+
+const std::string StateMachine::getCurrentState() {
+    lua_getglobal(L, "get_current_state");
+    if(!lua_isfunction(L, -1)) {
+        yError()<<"StateMachine::getCurrentState() could not find get_current_state()"<<ENDL;
+        return "";
+    }
+
+    if(lua_pcall(L, 0, 1, 0) != 0) {
+        yError()<<"StateMachine::getCurrentState()"<<lua_tostring(L, -1)<<ENDL;
+        lua_pop(L, 1);
+        return "";
+    }
+
+    if(lua_type(L, -1) != LUA_TSTRING) {
+        yError()<<"StateMachine::getCurrentState() got wrong result type"<<ENDL;
+        lua_pop(L, 1); // pop the result from Lua stack
+        lua_pop(L, 1);
+        return "";
+    }
+    // converting the results
+    string result = lua_tostring(L, -1);
+    std::size_t pos = result.find("root.");
+    if(pos != std::string::npos)
+        result.erase(pos, 5);
+    lua_pop(L, 1); // pop the result from Lua stack
+    lua_pop(L, 1);
     return result;
 }

@@ -143,7 +143,14 @@ public:
      * @param callback an object of StateCallback class
      * @return true on success
      */
-    bool setStateCallback(const std::string state, rfsm::StateCallback& callback);
+    bool setStateCallback(const std::string& state, rfsm::StateCallback& callback);
+
+    /**
+     * @brief getCurrentState returns the current activated state
+     * @return the name of current active state
+     */
+    const std::string getCurrentState();
+
 
 private:
     static int entryCallback(lua_State* L);
