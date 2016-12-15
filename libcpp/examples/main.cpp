@@ -19,6 +19,12 @@ public:
 } configureCallback;
 
 
+void printStateGraph(const rfsm::StateGraph& graph) {
+    yInfo()<<"States:";
+    for(int i=0; i<graph.states.size(); i++)
+        yInfo()<<"\t"<<graph.states[i].name<<"("<<graph.states[i].type<<")";
+}
+
 int main(int argc, char** argv) {
     if(argc < 2) {
         yInfo()<<"Usage:"<<argv[0]<<"myfsm.lua";
@@ -34,18 +40,32 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    // printing the state graph
+    //printStateGraph(rfsm.getStateGraph());
+
     // setting some callbacks
-    rfsm.setStateCallback("Configure", configureCallback);
-    //rfsm.setStateCallback("UpdateModule", updatemoduleCallback);
+    rfsm.setStateCallback("Configure", configureCallback);    
     // ...
 
-    yInfo()<<"Current state:"<<rfsm.getCurrentState();
+    yDebug()<<"Current state:"<<rfsm.getCurrentState();
     rfsm.run();
+    yDebug()<<"Current state:"<<rfsm.getCurrentState();
+    yDebug()<<"Sending event 'e_true'";
     rfsm.sendEvent("e_true");
     rfsm.run();
-    rfsm.sendEvent("e_true");
+    yDebug()<<"Current state:"<<rfsm.getCurrentState();
+    /**
+     *
+     * FIXME: the follwoing code make segfault!!!!
+     */
+    /*
+    yDebug()<<"Sending event 'e_false'";
+    rfsm.sendEvent("e_false");
     rfsm.run();
-    yInfo()<<"Current state:"<<rfsm.getCurrentState();
+    yDebug()<<"Current state:"<<rfsm.getCurrentState();
+    rfsm.run();
+    yDebug()<<"Current state:"<<rfsm.getCurrentState();
+    */
     return 0;
 }
 

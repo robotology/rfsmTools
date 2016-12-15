@@ -9,8 +9,6 @@
 using namespace std;
 using namespace rfsm;
 
-
-
 StateMachine::StateMachine(bool verbose) : L(NULL) {
     StateMachine::verbose = verbose;
 }
@@ -65,6 +63,8 @@ bool StateMachine::load(const std::string& filename) {
         return false;
     if(Utils::dostring(L, GET_CURRENT_STATE_CHUNK, "GET_CURRENT_STATE_CHUNK") != LUA_OK)
         return false;
+    if(Utils::dostring(L, GET_ALL_STATES_CHUNK, "GET_ALL_STATES_CHUNK") != LUA_OK)
+        return false;
 
     registerLuaFunction("entryCallback", StateMachine::entryCallback);
     registerLuaFunction("dooCallback", StateMachine::dooCallback);
@@ -91,6 +91,9 @@ bool StateMachine::load(const std::string& filename) {
     // getting all availabe events
     if(!getAllEvents())
         yWarning()<<"Cannot retrieve all events"<<ENDL;
+
+    if(!getAllStateGraph())
+        yWarning()<<"Cannot retrieve state graph"<<ENDL;
 
     return true;
 }
@@ -334,4 +337,56 @@ const std::string StateMachine::getCurrentState() {
     lua_pop(L, 1); // pop the result from Lua stack
     lua_pop(L, 1);
     return result;
+}
+
+const rfsm::StateGraph& StateMachine::getStateGraph() {
+    return graph;
+}
+
+
+bool StateMachine::getAllStateGraph() {
+    graph.states.clear();
+    graph.transitions.clear();
+
+    // reterieving all states
+    lua_getglobal(L, "get_all_states");
+    if(!lua_isfunction(L, -1)) {
+        yError()<<"StateMachine::getAllStateGraph() could not find get_current_state()"<<ENDL;
+        return false;
+    }
+
+    if(lua_pcall(L, 0, 1, 0) != 0) {
+        yError()<<"StateMachine::getAllStateGraph()"<<lua_tostring(L, -1)<<ENDL;
+        lua_pop(L, 1);
+        return false;
+    }
+
+    if(!lua_istable(L, -1)) {
+        yError()<<"StateMachine::getAllStateGraph() got wrong result type"<<ENDL;
+        lua_pop(L, 1);
+        lua_pop(L, 1);
+        return false;
+    }
+
+    lua_pushnil(L);
+    while(lua_next(L, -2) != 0) {
+        if(lua_istable(L, -1)) {
+            StateGraph::State state;
+            state.name = Utils::getTableField(L, "sname");
+            std::size_t pos = state.name.find("root.");
+            if(pos != std::string::npos)
+                state.name.erase(pos, 5);
+            state.type = Utils::getTableField(L, "stype");
+            graph.states.push_back(state);
+        }
+        else
+            yWarning()<<"StateMachine::getAllStateGraph() found a wrong type in the result from get_all_states()"<<ENDL;
+       lua_pop(L, 1);
+    }
+    lua_pop(L, 1); // pop the result from Lua stack
+    lua_pop(L, 1);
+
+    // reterieving all transitions
+    //...
+    return true;
 }

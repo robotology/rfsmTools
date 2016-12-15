@@ -18,6 +18,7 @@
 namespace rfsm {
     class StateMachine;
     class StateCallback;
+    class StateGraph;
 }
 
 #ifndef luaL_reg
@@ -45,6 +46,35 @@ public:
      * @brief exit is called on rFSM state.exit
      */
     virtual void exit() {}
+};
+
+
+/**
+ * @brief The StateGraph class represents the rFSM state graph
+ * in term of states and the transitions among them
+ */
+class rfsm::StateGraph {
+public:
+    struct State {
+        std::string name;
+        std::string type;
+    };
+
+    struct Transition {
+        std::string source;
+        std::string target;
+        std::vector<std::string> events;
+    };
+
+public:
+    /**
+     * @brief states is a list of all states
+     */
+    std::vector<State> states;
+    /**
+     * @brief transitions is a list of all transitions
+     */
+    std::vector<Transition> transitions;
 };
 
 
@@ -132,12 +162,6 @@ public:
     void close();
 
     /**
-     * @brief getEventsList retrieves all available events in the state machine
-     * @return a list of all available events
-     */
-    const std::vector<std::string>& getEventsList();
-
-    /**
      * @brief setStateCallback set an StateCallback object for a given state
      * @param state the name of the state (should corespond the state name in rFSM)
      * @param callback an object of StateCallback class
@@ -151,6 +175,13 @@ public:
      */
     const std::string getCurrentState();
 
+    /**
+     * @brief getEventsList retrieves all available events in the state machine
+     * @return a list of all available events
+     */
+    const std::vector<std::string>& getEventsList();
+
+    const rfsm::StateGraph& getStateGraph();
 
 private:
     static int entryCallback(lua_State* L);
@@ -158,6 +189,7 @@ private:
     static int exitCallback(lua_State* L);
 
     bool getAllEvents();
+    bool getAllStateGraph();
     bool registerLuaFunction(const std::string& name, lua_CFunction func);
     void callEntryCallback(const std::string& state);
     void callDooCallback(const std::string& state);
@@ -172,6 +204,7 @@ private:
     std::string fileName;
     std::string luaPackagePath;
     std::vector<std::string> events;
+    rfsm::StateGraph graph;
     std::map<std::string, rfsm::StateCallback*> callbacks;
     bool verbose;
 };

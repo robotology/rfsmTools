@@ -73,3 +73,16 @@ int Utils::dolibrary (lua_State *L, const char *name) {
   lua_pushstring(L, name);
   return report(L, lua_pcall(L, 1, 0, 0));
 }
+
+std::string Utils::getTableField(lua_State *L, const char *key) {
+    std::string result;
+    lua_pushstring(L, key);
+    lua_gettable(L, -2);
+    if (!lua_isstring(L, -1)) {
+        lua_pop(L, 1);
+        return "";
+    }
+    result =  lua_tostring(L, -1);
+    lua_pop(L, 1);  /* remove number */
+    return result;
+}
