@@ -2,143 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
-#include <yarp/os/LogStream.h>
-#include <rFSM.h>
-
-#ifndef LUA_OK
-    #define LUA_OK      0
-#endif
-
-#ifndef yError
-    #include <iostream>
-    #include <assert.h>
-    #define yError()    std::cerr<<"[ERROR]"
-    #define yWarning()      std::cout<<"[WARNING]"
-    #define yInfo()     std::cout<<"[INFO]"
-    #define yAssert(x)  assert(x)
-    #define ENDL        std::endl
-#else
-    #define ENDL        ""
-#endif
+#include <rfsmUtils.h>
+#include <rfsm.h>
 
 
 using namespace std;
 using namespace rfsm;
 
-
-#define EVENT_RETREIVE_CHUNK \
-"function get_all_events()\n"\
-"    local known_events = { e_init_fsm=true, }\n"\
-"    rfsm.mapfsm(function(t)\n"\
-"           local events = t.events or {}\n"\
-"           for _,e in ipairs(events) do\n"\
-"              known_events[e] = true\n"\
-"           end\n"\
-"            end, fsm, rfsm.is_trans)\n"\
-"    local a = {}\n"\
-"    for k, v in pairs(known_events) do\n"\
-"       if string.find(k, 'e_done@') == nil then table.insert(a, k) end\n"\
-"    end\n"\
-"    table.sort(a)\n"\
-"    return a\n"\
-"end"
-
-#define SET_STATE_CALLBACKS_CHUNK \
-"function set_state_callbacks(name)\n"\
-"    local found = false\n"\
-"    local function proc_node(state)\n"\
-"       if state._fqn == ('root.' .. name) then\n"\
-"           state.entry = function() RFSM.entryCallback(name) end\n"\
-"           state.doo = function() RFSM.dooCallback(name) end\n"\
-"           state.exit = function() RFSM.exitCallback(name) end\n"\
-"           found = true\n"\
-"        end\n"\
-"    end\n"\
-"    rfsm.mapfsm(function (s)\n"\
-"          if rfsm.is_root(s) then return end\n"\
-"          if found == true then return end\n"\
-"          proc_node(s)\n"\
-"          end, fsm, rfsm.is_node)\n"\
-"    return found\n"\
-"end"
-
-#define GET_CURRENT_STATE_CHUNK \
-"function get_current_state()\n"\
-"   if fsm._actchild then return fsm._actchild._fqn end\n"\
-"   return '<none>'\n"\
-"end"
-
-
-static int report (lua_State *L, int status) {
-  if (status && !lua_isnil(L, -1)) {
-    const char *msg = lua_tostring(L, -1);
-    if (msg == NULL)
-        msg = "(error object is not a string)";
-    else
-        yError()<<msg<<ENDL;
-    lua_pop(L, 1);
-  }
-  return status;
-}
-
-static int traceback (lua_State *L) {
-#if LUA_VERSION_NUM > 501
-  const char *msg = lua_tostring(L, 1);
-  if (msg)
-    luaL_traceback(L, L, msg, 1);
-  else if (!lua_isnoneornil(L, 1)) {  /* is there an error object? */
-    if (!luaL_callmeta(L, 1, "__tostring"))  /* try its 'tostring' metamethod */
-      lua_pushliteral(L, "(no error message)");
-  }
-  return 1;
-#else
-    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
-    if (!lua_istable(L, -1)) {
-      lua_pop(L, 1);
-      return 1;
-    }
-    lua_getfield(L, -1, "traceback");
-    if (!lua_isfunction(L, -1)) {
-      lua_pop(L, 2);
-      return 1;
-    }
-    lua_pushvalue(L, 1);  /* pass error message */
-    lua_pushinteger(L, 2);  /* skip this function and traceback */
-    lua_call(L, 2, 1);  /* call debug.traceback */
-    return 1;
-#endif
-}
-
-static int docall(lua_State *L, int narg, int clear) {
-  int status;
-  int base = lua_gettop(L) - narg;  /* function index */
-  lua_pushcfunction(L, traceback);  /* push traceback function */
-  lua_insert(L, base);  /* put it under chunk and args */
-  status = lua_pcall(L, narg, (clear ? 0 : LUA_MULTRET), base);
-  lua_remove(L, base);  /* remove traceback function */
-  /* force a complete garbage collection in case of errors */
-  if (status != 0) lua_gc(L, LUA_GCCOLLECT, 0);
-  return status;
-}
-
-
-static int dofile(lua_State *L, const char *name) {
-  int status = luaL_loadfile(L, name) || docall(L, 0, 1);
-  return report(L, status);
-}
-
-
-static int dostring (lua_State *L, const char *s, const char *name) {
-  int status = luaL_loadbuffer(L, s, strlen(s), name) || docall(L, 0, 1);
-  return report(L, status);
-}
-
-
-static int dolibrary (lua_State *L, const char *name) {
-  lua_getglobal(L, "require");
-  lua_pushstring(L, name);
-  return report(L, lua_pcall(L, 1, 0, 0));
-}
 
 
 StateMachine::StateMachine(bool verbose) : L(NULL) {
@@ -177,11 +47,11 @@ bool StateMachine::load(const std::string& filename) {
     // setting user-defined lua package paths
     if(luaPackagePath.size()) {
         string command = "package.path=package.path .. '" + luaPackagePath + "'";
-        if(dostring(L, command.c_str(), "command") == !LUA_OK)
+        if(Utils::dostring(L, command.c_str(), "command") == !LUA_OK)
             yWarning()<<"Could not set lua package path from"<<luaPackagePath<<ENDL;
     }
 
-    if (dolibrary(L, "rfsm") != LUA_OK) {
+    if (Utils::dolibrary(L, "rfsm") != LUA_OK) {
         close();
         return false;
     }
@@ -189,11 +59,11 @@ bool StateMachine::load(const std::string& filename) {
     // registering some utility fuctions in lua
     lua_pushlightuserdata(L, this);
     lua_setglobal(L, "RFSM_Owner");
-    if(dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
+    if(Utils::dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
-    if(dostring(L, SET_STATE_CALLBACKS_CHUNK, "SET_STATE_CALLBACKS_CHUNK") != LUA_OK)
+    if(Utils::dostring(L, SET_STATE_CALLBACKS_CHUNK, "SET_STATE_CALLBACKS_CHUNK") != LUA_OK)
         return false;
-    if(dostring(L, GET_CURRENT_STATE_CHUNK, "GET_CURRENT_STATE_CHUNK") != LUA_OK)
+    if(Utils::dostring(L, GET_CURRENT_STATE_CHUNK, "GET_CURRENT_STATE_CHUNK") != LUA_OK)
         return false;
 
     registerLuaFunction("entryCallback", StateMachine::entryCallback);
@@ -201,7 +71,7 @@ bool StateMachine::load(const std::string& filename) {
     registerLuaFunction("exitCallback", StateMachine::exitCallback);
 
     string cmd = "fsm_model = rfsm.load('"+filename+"')";
-    if(dostring(L, cmd.c_str(), "fsm_model") != LUA_OK) {
+    if(Utils::dostring(L, cmd.c_str(), "fsm_model") != LUA_OK) {
         close();
         return false;
     }
@@ -213,7 +83,7 @@ bool StateMachine::load(const std::string& filename) {
         //doString("fsm_model.err = rfsm_null_func");
     }
 
-    if(dostring(L, "fsm = rfsm.init(fsm_model)", "fsm") != LUA_OK) {
+    if(Utils::dostring(L, "fsm = rfsm.init(fsm_model)", "fsm") != LUA_OK) {
         close();
         return false;
     }
@@ -227,20 +97,20 @@ bool StateMachine::load(const std::string& filename) {
 
 
 bool StateMachine::run() {
-    return (dostring(L, "rfsm.run(fsm)", "run") == LUA_OK);
+    return (Utils::dostring(L, "rfsm.run(fsm)", "run") == LUA_OK);
 }
 
 bool StateMachine::step(unsigned int n) {
     char command[128];
     snprintf(command, 128, "rfsm.step(fsm, %d)", n);
-    return (dostring(L, command, "step") == LUA_OK);
+    return (Utils::dostring(L, command, "step") == LUA_OK);
 }
 
 bool StateMachine::sendEvent(const std::string& event) {
     if(std::find(events.begin(), events.end(), event) == events.end())
         yWarning()<<"Sending the undefined event"<<event<<ENDL;
     string command = "rfsm.send_events(fsm, '"+event+"')";
-    return (dostring(L, command.c_str(), "sendEvent") == LUA_OK);
+    return (Utils::dostring(L, command.c_str(), "sendEvent") == LUA_OK);
 }
 
 bool StateMachine::sendEvents(unsigned int n, ...) {
@@ -259,12 +129,12 @@ bool StateMachine::sendEvents(unsigned int n, ...) {
     }
     va_end(ap);
     command += ")";
-    return (dostring(L, command.c_str(), "sendEvents") == LUA_OK);
+    return (Utils::dostring(L, command.c_str(), "sendEvents") == LUA_OK);
 }
 
 bool StateMachine::getAllEvents() {
     events.clear();
-    if(dostring(L, "events = get_all_events()", "EVENT_RETREIVE_CHUNK") != LUA_OK)
+    if(Utils::dostring(L, "events = get_all_events()", "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
     lua_getglobal(L, "events");
     if(!lua_istable(L, -1)) {
@@ -287,11 +157,11 @@ const std::vector<std::string>& StateMachine::getEventsList() {
 }
 
 bool StateMachine::doString(const std::string& command) {
-    return (dostring(L, command.c_str(), "command") == LUA_OK);
+    return (Utils::dostring(L, command.c_str(), "command") == LUA_OK);
 }
 
 bool StateMachine::doFile(const std::string& filename) {
-    return (dofile(L, filename.c_str()) == LUA_OK);
+    return (Utils::dofile(L, filename.c_str()) == LUA_OK);
 }
 
 void StateMachine::addLuaPackagePath(const std::string& path) {

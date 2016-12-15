@@ -4,16 +4,7 @@ require("rfsm")
 
 RFSM = {}
 
---[[
-function showfqn()
-   local actfqn
-   if fsm._actchild then
-      actfqn = fsm._actchild._fqn .. '(' .. rfsm.get_sta_mode(fsm._actchild) .. ')'
-   else
-      actfqn = "<none>"
-   end
-   print("active: " .. actfqn)
-end ]]--
+
 
 function get_current_state()
    if fsm._actchild then return fsm._actchild._fqn end
@@ -54,23 +45,65 @@ end
 
 
 
---[[
-local function proc_trans(gh, t, parent)
+local function proc_node(node)
+   if rfsm.is_composite(node) then print("composit: "..node._fqn)
+      elseif rfsm.is_leaf(node) then print("single: "..node._fqn)
+   elseif rfsm.is_conn(node) then print("connector: "..node._fqn)
+   else
+      param.err("unknown node type: " .. node:type() .. ", name=" .. node._fqn)
+   end
+end
+
+local function proc_trans(t, parent)
    if t.tgt == 'internal' then
       return true
    else
-      print("new_tr(gh, t.src._fqn, t.tgt._fqn, t.events)")
+      local lable = ""
+      if t.events then lable = table.concat(t.events, ', ') end
+      print(t.src._fqn,"->" ,t.tgt._fqn, "[" .. lable .. "]" ) --t.events
    end
 end
---]]
+
+
+function get_states()
+    local nodes = {}
+    local function proc_node(node)
+       local node_type = ""
+       if rfsm.is_composite(node) then node_type="composit"
+       elseif rfsm.is_leaf(node)  then node_type="single"
+       elseif rfsm.is_conn(node)  then node_type="connector"
+       else node_type="unknown" end
+        table.insert(nodes, {sname=node._fqn, stype=node_type})
+    end   
+   rfsm.mapfsm(function (s)
+		  if rfsm.is_root(s) then return end
+		  proc_node(s)
+	       end, fsm, rfsm.is_node)
+   return nodes
+end
+
+local function fsm2gh(root)
+    --[[
+   rfsm.mapfsm(function (s)
+		  if rfsm.is_root(s) then return end
+		  proc_node(s)
+	       end, root, rfsm.is_node)
+    ]]--
+   rfsm.mapfsm(function (t, p) proc_trans(t, p) end, root, rfsm.is_trans)
+end
 
 fsm_model = rfsm.load("rfmodule_fsm.lua")
 fsm = rfsm.init(fsm_model)
 
+local states = get_states()
+for key,value in pairs(states) do 
+    print(value.sname, value.stype)
+end
+
+
+--[[
 setStateCallbacks("root.Configure")
 setStateCallbacks("root.Configure.Software")
-
---rfsm.mapfsm(function (t, p) proc_trans(gh, t, p) end, root, rfsm.is_trans)
 showfqn()
 rfsm.run(fsm)
 showfqn()
@@ -78,6 +111,6 @@ rfsm.send_events(fsm, 'e_true')
 showfqn()
 rfsm.run(fsm)
 showfqn()
-
+--]]
 
 

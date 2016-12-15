@@ -15,10 +15,12 @@ elseif(NOT LUA_FOUND)
     find_package(Lua50 REQUIRED)
 endif()
 
-set(headers include/rFSM.h
+set(headers include/rfsm.h
+            include/rfsmUtils.h
    )
 
-set(sources src/rFSM.cpp
+set(sources src/rfsm.cpp
+            src/rfsmUtils.cpp
    )
 
 

@@ -1,5 +1,5 @@
 #include <yarp/os/LogStream.h>
-#include <rFSM.h>
+#include <rfsm.h>
 
 using namespace yarp::os;
 
