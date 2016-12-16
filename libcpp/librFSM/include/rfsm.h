@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
- * Copyright (C) 2015 iCub Facility
+ * Copyright (C) 2016 iCub Facility
  * Authors: Ali Paikan
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
@@ -9,6 +9,8 @@
 
 #ifndef RFSM_H
 #define RFSM_H
+
+#include <iostream>
 
 #include <string>
 #include <vector>
@@ -194,9 +196,34 @@ public:
      */
     const rfsm::StateGraph& getStateGraph();
 
+    /**
+     * @brief enablePreStepHook enables the pre-step hook function
+     * of the rFSM. If it is enabled, then onPreStep() callback will be called
+     * before stepping the state machine.
+     * @return true on success
+     */
+    bool enablePreStepHook();
+
+    /**
+     * @brief enablePostStepHook enables the post-step hook function
+     * of the rFSM. If it is enabled, then onPostStep() callback will be called
+     * after stepping the state machine.
+     * @return true on success
+     */
+    bool enablePostStepHook();
+
 public:
-    virtual void onPreStep()  {}
-    virtual void onPostStep() {}
+    /**
+     * @brief if pre-step hook function of rFSM is enabled
+     * this callback is called before stepping the state machine.
+     */
+    virtual void onPreStep();
+
+    /**
+     * @brief if post-step hook function of rFSM is enabled
+     * this callback is called after stepping the state machine.
+     */
+    virtual void onPostStep();
 
 private:
     static int entryCallback(lua_State* L);
@@ -207,7 +234,8 @@ private:
 
     bool getAllEvents();
     bool getAllStateGraph();
-    bool registerLuaFunction(const std::string& name, lua_CFunction func);
+    bool registerAuxiliaryFunctions();
+    bool registerCFunction(const std::string& name, lua_CFunction func);
     void callEntryCallback(const std::string& state);
     void callDooCallback(const std::string& state);
     void callExitCallback(const std::string& state);

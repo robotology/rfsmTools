@@ -84,8 +84,16 @@ function onPreStep()
     print("onPreStep()")
 end
 
+function onPostStep()
+    print("onPostStep()")
+end
+
 fsm_model = rfsm.load("rfmodule_fsm.lua")
 fsm = rfsm.init(fsm_model)
+
+rfsm.pre_step_hook_add(fsm, onPreStep)
+rfsm.post_step_hook_add(fsm, onPostStep)
+rfsm.run(fsm)
 
 local states = get_states()
 for key,value in pairs(states) do 

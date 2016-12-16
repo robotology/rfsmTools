@@ -9,6 +9,8 @@
 using namespace std;
 using namespace rfsm;
 
+#define CHECK_RFSM_LOADED(L) if(!L) { yError()<<"StateMachine has not been initialized. call StateMachine::load()"<<ENDL; return false; }
+
 StateMachine::StateMachine(bool verbose) : L(NULL) {
     StateMachine::verbose = verbose;
 }
@@ -28,10 +30,8 @@ const std::string StateMachine::getFileName() {
     return fileName;
 }
 
-bool StateMachine::load(const std::string& filename) {
-
+bool StateMachine::load(const std::string& filename) {   
     close();
-
     StateMachine::fileName = filename;
     // initiate lua state
     L = luaL_newstate();
@@ -49,6 +49,7 @@ bool StateMachine::load(const std::string& filename) {
             yWarning()<<"Could not set lua package path from"<<luaPackagePath<<ENDL;
     }
 
+    // loading rfsm package
     if (Utils::dolibrary(L, "rfsm") != LUA_OK) {
         close();
         return false;
@@ -57,6 +58,47 @@ bool StateMachine::load(const std::string& filename) {
     // registering some utility fuctions in lua
     lua_pushlightuserdata(L, this);
     lua_setglobal(L, "RFSM_Owner");
+    if(!registerAuxiliaryFunctions())
+        return false;
+
+    // loading rfsm state machine
+    string cmd = "fsm_model = rfsm.load('"+filename+"')";
+    if(Utils::dostring(L, cmd.c_str(), "fsm_model") != LUA_OK) {
+        close();
+        return false;
+    }
+
+    // setting verbosity mode
+    if(!verbose) {
+        //doString("function rfsm_null_func() return end");
+        doString("fsm_model.warn = rfsm_null_func");
+        doString("fsm_model.info = rfsm_null_func");
+        //doString("fsm_model.err = rfsm_null_func");
+    }
+
+    // initializing rfsm state machine
+    if(Utils::dostring(L, "fsm = rfsm.init(fsm_model)", "fsm") != LUA_OK) {
+        close();
+        return false;
+    }
+
+    // getting all availabe events and state graph
+    if(!getAllEvents())
+        yWarning()<<"Cannot retrieve all events"<<ENDL;
+    if(!getAllStateGraph())
+        yWarning()<<"Cannot retrieve state graph"<<ENDL;
+
+    return true;
+}
+
+bool StateMachine::registerAuxiliaryFunctions() {
+    registerCFunction("entryCallback", StateMachine::entryCallback);
+    registerCFunction("dooCallback", StateMachine::dooCallback);
+    registerCFunction("exitCallback", StateMachine::exitCallback);
+    registerCFunction("preStepCallback", StateMachine::preStepCallback);
+    registerCFunction("postStepCallback", StateMachine::postStepCallback);
+    if(Utils::dostring(L, RFSM_NULL_FUNCTION_CHUNK, "RFSM_NULL_FUNCTION_CHANK") != LUA_OK)
+        return false;
     if(Utils::dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
     if(Utils::dostring(L, SET_STATE_CALLBACKS_CHUNK, "SET_STATE_CALLBACKS_CHUNK") != LUA_OK)
@@ -69,50 +111,27 @@ bool StateMachine::load(const std::string& filename) {
         return false;
     if(Utils::dostring(L, GET_EVET_QUEUE_CHUNK, "GET_EVET_QUEUE_CHUNK") != LUA_OK)
         return false;
-    registerLuaFunction("entryCallback", StateMachine::entryCallback);
-    registerLuaFunction("dooCallback", StateMachine::dooCallback);
-    registerLuaFunction("exitCallback", StateMachine::exitCallback);
-
-    string cmd = "fsm_model = rfsm.load('"+filename+"')";
-    if(Utils::dostring(L, cmd.c_str(), "fsm_model") != LUA_OK) {
-        close();
+    if(Utils::dostring(L, PRE_STEP_HOOK_CHUNK, "PRE_STEP_HOOK_CHUNK") != LUA_OK)
         return false;
-    }
-
-    if(!verbose) {
-        doString("function rfsm_null_func() return end");
-        doString("fsm_model.warn = rfsm_null_func");
-        doString("fsm_model.info = rfsm_null_func");
-        //doString("fsm_model.err = rfsm_null_func");
-    }
-
-    if(Utils::dostring(L, "fsm = rfsm.init(fsm_model)", "fsm") != LUA_OK) {
-        close();
+    if(Utils::dostring(L, POST_STEP_HOOK_CHUNK, "POST_STEP_HOOK_CHUNK") != LUA_OK)
         return false;
-    }
-
-    // getting all availabe events
-    if(!getAllEvents())
-        yWarning()<<"Cannot retrieve all events"<<ENDL;
-
-    if(!getAllStateGraph())
-        yWarning()<<"Cannot retrieve state graph"<<ENDL;
-
     return true;
 }
 
-
 bool StateMachine::run() {
+    CHECK_RFSM_LOADED(L);
     return (Utils::dostring(L, "rfsm.run(fsm)", "run") == LUA_OK);
 }
 
 bool StateMachine::step(unsigned int n) {
+    CHECK_RFSM_LOADED(L);
     char command[128];
     snprintf(command, 128, "rfsm.step(fsm, %d)", n);
     return (Utils::dostring(L, command, "step") == LUA_OK);
 }
 
 bool StateMachine::sendEvent(const std::string& event) {
+    CHECK_RFSM_LOADED(L);
     if(std::find(events.begin(), events.end(), event) == events.end())
         yWarning()<<"Sending the undefined event"<<event<<ENDL;
     string command = "rfsm.send_events(fsm, '"+event+"')";
@@ -120,6 +139,7 @@ bool StateMachine::sendEvent(const std::string& event) {
 }
 
 bool StateMachine::sendEvents(unsigned int n, ...) {
+    CHECK_RFSM_LOADED(L);
     register unsigned int i;
     va_list ap;
     va_start(ap, n);
@@ -139,12 +159,13 @@ bool StateMachine::sendEvents(unsigned int n, ...) {
 }
 
 bool StateMachine::getAllEvents() {
+    CHECK_RFSM_LOADED(L);
     events.clear();
-    if(Utils::dostring(L, "events = get_all_events()", "EVENT_RETREIVE_CHUNK") != LUA_OK)
+    if(Utils::dostring(L, "events = rfsm_get_all_events()", "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
     lua_getglobal(L, "events");
     if(!lua_istable(L, -1)) {
-        yError()<<"got the wrong value from get_all_events()"<<ENDL;
+        yError()<<"got the wrong value from rfsm_get_all_events()"<<ENDL;
         return false;
     }
     lua_pushnil(L);
@@ -152,7 +173,7 @@ bool StateMachine::getAllEvents() {
         if(lua_isstring(L, -1))
             events.push_back(lua_tostring(L, -1));
         else
-            yWarning()<<"found a wrong type in the result from get_all_events()"<<ENDL;
+            yWarning()<<"found a wrong type in the result from rfsm_get_all_events()"<<ENDL;
        lua_pop(L, 1);
     }
     return true;
@@ -163,10 +184,11 @@ const std::vector<std::string>& StateMachine::getEventsList() {
 }
 
 bool StateMachine::getEventQueue(std::vector<std::string>& equeue) {
+    CHECK_RFSM_LOADED(L);
     equeue.clear();
-    lua_getglobal(L, "get_event_queue");
+    lua_getglobal(L, "rfsm_get_event_queue");
     if(!lua_isfunction(L, -1)) {
-        yError()<<"StateMachine::getEventQueue() could not find get_event_queue()"<<ENDL;
+        yError()<<"StateMachine::getEventQueue() could not find rfsm_get_event_queue()"<<ENDL;
         return false;
     }
 
@@ -183,26 +205,23 @@ bool StateMachine::getEventQueue(std::vector<std::string>& equeue) {
     }
     lua_pushnil(L);
     while(lua_next(L, -2) != 0) {
-//        if(lua_istable(L, -1)) {
-            if(lua_isstring(L, -1))
-                equeue.push_back(lua_tostring(L, -1));
-            else
-                yWarning()<<"StateMachine::getEventQueue() found a wrong type in the result from get_event_queue()"<<ENDL;
-           lua_pop(L, 1);
-//        }
-//        else
-//            yWarning()<<"StateMachine::getEventQueue() found a wrong type in the result from get_event_queue()"<<ENDL;
-//       lua_pop(L, 1);
+        if(lua_isstring(L, -1))
+            equeue.push_back(lua_tostring(L, -1));
+        else
+            yWarning()<<"StateMachine::getEventQueue() found a wrong type in the result from rfsm_get_event_queue()"<<ENDL;
+        lua_pop(L, 1);
     }
     lua_pop(L, 1); // pop the result from Lua stack
     return true;
 }
 
 bool StateMachine::doString(const std::string& command) {
+    CHECK_RFSM_LOADED(L);
     return (Utils::dostring(L, command.c_str(), "command") == LUA_OK);
 }
 
 bool StateMachine::doFile(const std::string& filename) {
+    CHECK_RFSM_LOADED(L);
     return (Utils::dofile(L, filename.c_str()) == LUA_OK);
 }
 
@@ -210,7 +229,7 @@ void StateMachine::addLuaPackagePath(const std::string& path) {
     luaPackagePath += string(";")+path;
 }
 
-bool StateMachine::registerLuaFunction(const std::string& name, lua_CFunction func) {
+bool StateMachine::registerCFunction(const std::string& name, lua_CFunction func) {
     if(!func)
         return false;
     luaL_reg reg;
@@ -356,9 +375,10 @@ void StateMachine::callExitCallback(const std::string& state) {
 }
 
 bool StateMachine::setStateCallback(const string &state, rfsm::StateCallback& callback) {
-    lua_getglobal(L, "set_state_callbacks");
+    CHECK_RFSM_LOADED(L);
+    lua_getglobal(L, "rfsm_set_state_callbacks");
     if(!lua_isfunction(L, -1)) {
-        yError()<<"StateMachine::setStateCallback() could not find set_state_callbacks()"<<ENDL;
+        yError()<<"StateMachine::setStateCallback() could not find rfsm_set_state_callbacks()"<<ENDL;
         return false;
     }
 
@@ -379,10 +399,15 @@ bool StateMachine::setStateCallback(const string &state, rfsm::StateCallback& ca
     return result;
 }
 
-const std::string StateMachine::getCurrentState() {
-    lua_getglobal(L, "get_current_state");
+const std::string StateMachine::getCurrentState() {    
+    if(!L) {
+        yError()<<"StateMachine has not been initialized. call StateMachine::load()"<<ENDL;
+        return "";
+    }
+
+    lua_getglobal(L, "rfsm_get_current_state");
     if(!lua_isfunction(L, -1)) {
-        yError()<<"StateMachine::getCurrentState() could not find get_current_state()"<<ENDL;
+        yError()<<"StateMachine::getCurrentState() could not find rfsm_get_current_state()"<<ENDL;
         return "";
     }
 
@@ -411,13 +436,14 @@ const rfsm::StateGraph& StateMachine::getStateGraph() {
 
 
 bool StateMachine::getAllStateGraph() {
+    CHECK_RFSM_LOADED(L);
     graph.states.clear();
     graph.transitions.clear();
 
     // reterieving all states
-    lua_getglobal(L, "get_all_states");
+    lua_getglobal(L, "rfsm_get_all_states");
     if(!lua_isfunction(L, -1)) {
-        yError()<<"StateMachine::getAllStateGraph() could not find get_current_state()"<<ENDL;
+        yError()<<"StateMachine::getAllStateGraph() could not find rfsm_get_all_states()"<<ENDL;
         return false;
     }
 
@@ -428,7 +454,7 @@ bool StateMachine::getAllStateGraph() {
     }
 
     if(!lua_istable(L, -1)) {
-        yError()<<"StateMachine::getAllStateGraph() got wrong result type"<<ENDL;
+        yError()<<"StateMachine::getAllStateGraph() got wrong result type from rfsm_get_all_states()"<<ENDL;
         lua_pop(L, 1);
         return false;
     }
@@ -445,15 +471,15 @@ bool StateMachine::getAllStateGraph() {
             graph.states.push_back(state);
         }
         else
-            yWarning()<<"StateMachine::getAllStateGraph() found a wrong type in the result from get_all_states()"<<ENDL;
+            yWarning()<<"StateMachine::getAllStateGraph() found a wrong type in the result from rfsm_get_all_states()"<<ENDL;
        lua_pop(L, 1);
     }
     lua_pop(L, 1); // pop the result from Lua stack
 
     // reterieving all transitions
-    lua_getglobal(L, "get_all_transitions");
+    lua_getglobal(L, "rfsm_get_all_transitions");
     if(!lua_isfunction(L, -1)) {
-        yError()<<"StateMachine::getAllStateGraph() could not find get_all_transitions()"<<ENDL;
+        yError()<<"StateMachine::getAllStateGraph() could not find rfsm_get_all_transitions()"<<ENDL;
         return false;
     }
 
@@ -464,7 +490,7 @@ bool StateMachine::getAllStateGraph() {
     }
 
     if(!lua_istable(L, -1)) {
-        yError()<<"StateMachine::getAllStateGraph() got wrong result type"<<ENDL;
+        yError()<<"StateMachine::getAllStateGraph() got wrong result type from rfsm_get_all_transitions()"<<ENDL;
         lua_pop(L, 1);
         return false;
     }
@@ -488,9 +514,31 @@ bool StateMachine::getAllStateGraph() {
             graph.transitions.push_back(trans);
         }
         else
-            yWarning()<<"StateMachine::getAllStateGraph() found a wrong type in the result from get_all_transitions()"<<ENDL;
+            yWarning()<<"StateMachine::getAllStateGraph() found a wrong type in the result from rfsm_get_all_transitions()"<<ENDL;
        lua_pop(L, 1);
     }
     lua_pop(L, 1); // pop the result from Lua stack
     return true;
+}
+
+bool StateMachine::enablePreStepHook() {
+    CHECK_RFSM_LOADED(L);
+    return (Utils::dostring(L, "rfsm.pre_step_hook_add(fsm, rfsm_pre_step_hook)", "rfsm_pre_step_hook") != LUA_OK);
+}
+
+
+bool StateMachine::enablePostStepHook() {
+    CHECK_RFSM_LOADED(L);
+    return (Utils::dostring(L, "rfsm.post_step_hook_add(fsm, rfsm_post_step_hook)", "rfsm_post_step_hook") != LUA_OK);
+}
+
+
+void StateMachine::onPreStep() {
+    if(verbose)
+        yDebug()<<"onPreStep(): current state:"<<getCurrentState()<<ENDL;
+}
+
+void StateMachine::onPostStep() {
+    if(verbose)
+        yDebug()<<"onPostStep(): current state:"<<getCurrentState()<<ENDL;
 }

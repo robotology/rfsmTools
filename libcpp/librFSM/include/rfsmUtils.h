@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
- * Copyright (C) 2015 iCub Facility
+ * Copyright (C) 2016 iCub Facility
  * Authors: Ali Paikan
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
@@ -35,7 +35,7 @@ namespace rfsm {
 #endif
 
 #define EVENT_RETREIVE_CHUNK \
-"function get_all_events()\n"\
+"function rfsm_get_all_events()\n"\
 "    local known_events = { e_init_fsm=true, }\n"\
 "    rfsm.mapfsm(function(t)\n"\
 "           local events = t.events or {}\n"\
@@ -52,7 +52,7 @@ namespace rfsm {
 "end"
 
 #define SET_STATE_CALLBACKS_CHUNK \
-"function set_state_callbacks(name)\n"\
+"function rfsm_set_state_callbacks(name)\n"\
 "    local found = false\n"\
 "    local function proc_node(state)\n"\
 "       if state._fqn == ('root.' .. name) then\n"\
@@ -71,13 +71,13 @@ namespace rfsm {
 "end"
 
 #define GET_CURRENT_STATE_CHUNK \
-"function get_current_state()\n"\
+"function rfsm_get_current_state()\n"\
 "   if fsm._actchild then return fsm._actchild._fqn end\n"\
 "   return '<none>'\n"\
 "end"
 
 #define GET_ALL_STATES_CHUNK \
-"function get_all_states()\n"\
+"function rfsm_get_all_states()\n"\
 "    local nodes = {}\n"\
 "    local function proc_node(node)\n"\
 "       local node_type = ''\n"\
@@ -95,7 +95,7 @@ namespace rfsm {
 "end"
 
 #define GET_ALL_TRANSITIONS_CHUNK \
-"function get_all_transitions()\n"\
+"function rfsm_get_all_transitions()\n"\
 "    local trans = {}\n"\
 "    local function proc_trans(t, parent)\n"\
 "       if t.tgt == 'internal' then return true\n"\
@@ -110,10 +110,19 @@ namespace rfsm {
 "end"
 
 #define GET_EVET_QUEUE_CHUNK \
-"function get_event_queue()\n"\
+"function rfsm_get_event_queue()\n"\
 "   rfsm.check_events(fsm)\n"\
 "   return fsm._intq\n"\
 "end"\
+
+#define RFSM_NULL_FUNCTION_CHUNK \
+"function rfsm_null_func() return end\n"
+
+#define PRE_STEP_HOOK_CHUNK \
+"function rfsm_pre_step_hook() RFSM.preStepCallback() end\n"
+
+#define POST_STEP_HOOK_CHUNK \
+"function rfsm_post_step_hook() RFSM.postStepCallback() end\n"
 
 
 class rfsm::Utils {

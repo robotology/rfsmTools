@@ -48,7 +48,8 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    rfsm::StateMachine rfsm(false);
+    // enable rfsm verbosity: true
+    rfsm::StateMachine rfsm(true);
     // set the path to the rFSM if it is not set in LUA_PATH environemnt variable
     //rfsm.addLuaPackagePath("/path/to/rFSM/?.lua");
 
@@ -57,39 +58,35 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    // enable pre and post step hooks for debuging
+    //rfsm.enablePreStepHook();
+    //rfsm.enablePostStepHook();
+
     // printing the state graph
-    printStateGraph(rfsm.getStateGraph());
+    //printStateGraph(rfsm.getStateGraph());
 
     // setting some callbacks
     rfsm.setStateCallback("Configure", configureCallback);    
     // ...
 
-    yDebug()<<"Current state:"<<rfsm.getCurrentState();
     rfsm.run();    
-
     yDebug()<<"Sending event 'e_true'";
     rfsm.sendEvent("e_true");
-    rfsm.sendEvent("e_ok");
+
     // printing the current event queue
     //std::vector<std::string> equeue;
     //rfsm.getEventQueue(equeue);
     //printEventQueue(equeue);
 
     rfsm.run();
-    yDebug()<<"Current state:"<<rfsm.getCurrentState();
-
     yDebug()<<"Sending event 'e_true'";
     rfsm.sendEvent("e_true");
 
     rfsm.run();
-    yDebug()<<"Current state:"<<rfsm.getCurrentState();
-
     yDebug()<<"Sending event 'e_interrupt'";
     rfsm.sendEvent("e_interrupt");
-    rfsm.step();
-    yDebug()<<"Current state:"<<rfsm.getCurrentState();
-    rfsm.step();
-    yDebug()<<"Current state:"<<rfsm.getCurrentState();
+    rfsm.run();
+
     return 0;
 }
 
