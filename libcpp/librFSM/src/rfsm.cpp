@@ -301,8 +301,7 @@ bool StateMachine::setStateCallback(const string &state, rfsm::StateCallback& ca
 
     // converting the results
     bool result = (bool) lua_toboolean(L, -1);
-    lua_pop(L, 1); // pop the result from Lua stack
-    lua_pop(L, 1);
+    lua_pop(L, 1); // pop the result from Lua stack    
     if(result)
         callbacks[state] = &callback;
     else
@@ -318,15 +317,13 @@ const std::string StateMachine::getCurrentState() {
     }
 
     if(lua_pcall(L, 0, 1, 0) != 0) {
-        yError()<<"StateMachine::getCurrentState()"<<lua_tostring(L, -1)<<ENDL;
-        lua_pop(L, 1);
+        yError()<<"StateMachine::getCurrentState()"<<lua_tostring(L, -1)<<ENDL;        
         return "";
     }
 
     if(lua_type(L, -1) != LUA_TSTRING) {
         yError()<<"StateMachine::getCurrentState() got wrong result type"<<ENDL;
-        lua_pop(L, 1); // pop the result from Lua stack
-        lua_pop(L, 1);
+        lua_pop(L, 1); // pop the result from Lua stack        
         return "";
     }
     // converting the results
@@ -335,7 +332,6 @@ const std::string StateMachine::getCurrentState() {
     if(pos != std::string::npos)
         result.erase(pos, 5);
     lua_pop(L, 1); // pop the result from Lua stack
-    lua_pop(L, 1);
     return result;
 }
 
@@ -364,7 +360,6 @@ bool StateMachine::getAllStateGraph() {
     if(!lua_istable(L, -1)) {
         yError()<<"StateMachine::getAllStateGraph() got wrong result type"<<ENDL;
         lua_pop(L, 1);
-        lua_pop(L, 1);
         return false;
     }
 
@@ -383,8 +378,7 @@ bool StateMachine::getAllStateGraph() {
             yWarning()<<"StateMachine::getAllStateGraph() found a wrong type in the result from get_all_states()"<<ENDL;
        lua_pop(L, 1);
     }
-    lua_pop(L, 1); // pop the result from Lua stack
-    lua_pop(L, 1);
+    lua_pop(L, 1); // pop the result from Lua stac
 
     // reterieving all transitions
     //...

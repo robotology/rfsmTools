@@ -1,3 +1,4 @@
+#include <iostream>
 #include <yarp/os/LogStream.h>
 #include <rfsm.h>
 
@@ -6,15 +7,15 @@ using namespace yarp::os;
 class ConfigureCallback : public rfsm::StateCallback {
 public:
     virtual void entry() {
-        yInfo()<<"in the entry() of ConfigureCallback (hello from C++)";
+        std::cout<<"entry() of Configure (hello from C++)"<<std::endl;
     }
 
     virtual void doo() {
-        yInfo()<<"in the doo()   of ConfigureCallback (hello from C++)";
+        std::cout<<"doo()   of Configure (hello from C++)"<<std::endl;
     }
 
     virtual void exit() {
-        yInfo()<<"in the exit()  of ConfigureCallback (hello from C++)";
+        std::cout<<"exit()  of Configure (hello from C++)"<<std::endl;
     }
 } configureCallback;
 
@@ -48,24 +49,25 @@ int main(int argc, char** argv) {
     // ...
 
     yDebug()<<"Current state:"<<rfsm.getCurrentState();
+    rfsm.run();    
+
+    yDebug()<<"Sending event 'e_true'";
+    rfsm.sendEvent("e_true");
+
     rfsm.run();
     yDebug()<<"Current state:"<<rfsm.getCurrentState();
+
     yDebug()<<"Sending event 'e_true'";
     rfsm.sendEvent("e_true");
     rfsm.run();
     yDebug()<<"Current state:"<<rfsm.getCurrentState();
-    /**
-     *
-     * FIXME: the follwoing code make segfault!!!!
-     */
-    /*
-    yDebug()<<"Sending event 'e_false'";
-    rfsm.sendEvent("e_false");
-    rfsm.run();
+
+    yDebug()<<"Sending event 'e_interrupt'";
+    rfsm.sendEvent("e_interrupt");
+    rfsm.step();
     yDebug()<<"Current state:"<<rfsm.getCurrentState();
-    rfsm.run();
+    rfsm.step();
     yDebug()<<"Current state:"<<rfsm.getCurrentState();
-    */
     return 0;
 }
 

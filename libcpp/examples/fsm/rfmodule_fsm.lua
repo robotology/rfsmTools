@@ -15,19 +15,19 @@ return rfsm.state {
 
     UpdateModule = rfsm.sista{
         entry = function()
-            print("UpdateModule (hello from LUA)")
+            print("entry() of UpdateModule (hello from Lua)")
         end,
     },
 
     Close = rfsm.sista{
         entry = function()
-            print("Close (hello from LUA)")
+            print("entry() of Close (hello from Lua)")
         end,
     },
 
     InterruptModule = rfsm.sista{
         entry = function()
-            print("InterruptModule (hello from LUA)")
+            print("entry() of InterruptModule (hello from Lua)")
         end,
     },
 
