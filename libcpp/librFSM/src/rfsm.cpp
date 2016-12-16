@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
+#include <sstream>
 #include <rfsmUtils.h>
 #include <rfsm.h>
-
 
 using namespace std;
 using namespace rfsm;
@@ -65,7 +65,10 @@ bool StateMachine::load(const std::string& filename) {
         return false;
     if(Utils::dostring(L, GET_ALL_STATES_CHUNK, "GET_ALL_STATES_CHUNK") != LUA_OK)
         return false;
-
+    if(Utils::dostring(L, GET_ALL_TRANSITIONS_CHUNK, "GET_ALL_TRANSITIONS_CHUNK") != LUA_OK)
+        return false;
+    if(Utils::dostring(L, GET_EVET_QUEUE_CHUNK, "GET_EVET_QUEUE_CHUNK") != LUA_OK)
+        return false;
     registerLuaFunction("entryCallback", StateMachine::entryCallback);
     registerLuaFunction("dooCallback", StateMachine::dooCallback);
     registerLuaFunction("exitCallback", StateMachine::exitCallback);
@@ -159,6 +162,42 @@ const std::vector<std::string>& StateMachine::getEventsList() {
     return events;
 }
 
+bool StateMachine::getEventQueue(std::vector<std::string>& equeue) {
+    equeue.clear();
+    lua_getglobal(L, "get_event_queue");
+    if(!lua_isfunction(L, -1)) {
+        yError()<<"StateMachine::getEventQueue() could not find get_event_queue()"<<ENDL;
+        return false;
+    }
+
+    if(lua_pcall(L, 0, 1, 0) != 0) {
+        yError()<<"StateMachine::getEventQueue()"<<lua_tostring(L, -1)<<ENDL;
+        lua_pop(L, 1);
+        return false;
+    }
+
+    if(!lua_istable(L, -1)) {
+        yError()<<"StateMachine::getEventQueue() got wrong result type"<<ENDL;
+        lua_pop(L, 1);
+        return false;
+    }
+    lua_pushnil(L);
+    while(lua_next(L, -2) != 0) {
+//        if(lua_istable(L, -1)) {
+            if(lua_isstring(L, -1))
+                equeue.push_back(lua_tostring(L, -1));
+            else
+                yWarning()<<"StateMachine::getEventQueue() found a wrong type in the result from get_event_queue()"<<ENDL;
+           lua_pop(L, 1);
+//        }
+//        else
+//            yWarning()<<"StateMachine::getEventQueue() found a wrong type in the result from get_event_queue()"<<ENDL;
+//       lua_pop(L, 1);
+    }
+    lua_pop(L, 1); // pop the result from Lua stack
+    return true;
+}
+
 bool StateMachine::doString(const std::string& command) {
     return (Utils::dostring(L, command.c_str(), "command") == LUA_OK);
 }
@@ -172,6 +211,8 @@ void StateMachine::addLuaPackagePath(const std::string& path) {
 }
 
 bool StateMachine::registerLuaFunction(const std::string& name, lua_CFunction func) {
+    if(!func)
+        return false;
     luaL_reg reg;
     if(luaFuncReg.size()) {
         luaFuncReg.back().name = name.c_str();
@@ -193,6 +234,7 @@ bool StateMachine::registerLuaFunction(const std::string& name, lua_CFunction fu
 #else
     luaL_register(L, "RFSM", &luaFuncReg[0]);
 #endif
+    return true;
 }
 
 int StateMachine::entryCallback(lua_State* L) {
@@ -263,6 +305,34 @@ int StateMachine::exitCallback(lua_State* L){
         yError()<<"StateMachine::exitCallback() expects a string argument"<<ENDL;
     return 0;
 }
+
+int StateMachine::preStepCallback(lua_State* L) {
+    lua_getglobal(L, "RFSM_Owner");
+    if(!lua_islightuserdata(L, -1)) {
+        lua_pop(L, 1);
+        yError()<<"StateMachine::preStepCallback() cannot access RFSM_Owner"<<ENDL;
+        return 0;
+    }
+    StateMachine* owner = static_cast<StateMachine*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+    yAssert(owner!=NULL);
+    owner->onPreStep();
+    return 0;
+}
+
+int StateMachine::postStepCallback(lua_State* L) {
+    lua_getglobal(L, "RFSM_Owner");
+    if(!lua_islightuserdata(L, -1)) {
+        lua_pop(L, 1);
+        yError()<<"StateMachine::preStepCallback() cannot access RFSM_Owner"<<ENDL;
+        return 0;
+    }
+    StateMachine* owner = static_cast<StateMachine*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+    yAssert(owner!=NULL);
+    owner->onPostStep();
+}
+
 
 void StateMachine::callEntryCallback(const std::string& state) {
     std::map<string,StateCallback*>::iterator it;
@@ -378,9 +448,49 @@ bool StateMachine::getAllStateGraph() {
             yWarning()<<"StateMachine::getAllStateGraph() found a wrong type in the result from get_all_states()"<<ENDL;
        lua_pop(L, 1);
     }
-    lua_pop(L, 1); // pop the result from Lua stac
+    lua_pop(L, 1); // pop the result from Lua stack
 
     // reterieving all transitions
-    //...
+    lua_getglobal(L, "get_all_transitions");
+    if(!lua_isfunction(L, -1)) {
+        yError()<<"StateMachine::getAllStateGraph() could not find get_all_transitions()"<<ENDL;
+        return false;
+    }
+
+    if(lua_pcall(L, 0, 1, 0) != 0) {
+        yError()<<"StateMachine::getAllStateGraph()"<<lua_tostring(L, -1)<<ENDL;
+        lua_pop(L, 1);
+        return false;
+    }
+
+    if(!lua_istable(L, -1)) {
+        yError()<<"StateMachine::getAllStateGraph() got wrong result type"<<ENDL;
+        lua_pop(L, 1);
+        return false;
+    }
+
+    lua_pushnil(L);
+    while(lua_next(L, -2) != 0) {
+        if(lua_istable(L, -1)) {
+            StateGraph::Transition trans;
+            trans.source = Utils::getTableField(L, "source");
+            std::size_t pos = trans.source.find("root.");
+            if(pos != std::string::npos)
+                trans.source.erase(pos, 5);
+            trans.target = Utils::getTableField(L, "target");
+            pos = trans.target.find("root.");
+            if(pos != std::string::npos)
+                trans.target.erase(pos, 5);
+            istringstream ss(Utils::getTableField(L, "events"));
+            string s;
+            while (getline(ss, s, ','))
+                trans.events.push_back(s);
+            graph.transitions.push_back(trans);
+        }
+        else
+            yWarning()<<"StateMachine::getAllStateGraph() found a wrong type in the result from get_all_transitions()"<<ENDL;
+       lua_pop(L, 1);
+    }
+    lua_pop(L, 1); // pop the result from Lua stack
     return true;
 }

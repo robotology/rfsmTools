@@ -44,27 +44,6 @@ function setStateCallbacks(name)
 end
 
 
-
-local function proc_node(node)
-   if rfsm.is_composite(node) then print("composit: "..node._fqn)
-      elseif rfsm.is_leaf(node) then print("single: "..node._fqn)
-   elseif rfsm.is_conn(node) then print("connector: "..node._fqn)
-   else
-      param.err("unknown node type: " .. node:type() .. ", name=" .. node._fqn)
-   end
-end
-
-local function proc_trans(t, parent)
-   if t.tgt == 'internal' then
-      return true
-   else
-      local lable = ""
-      if t.events then lable = table.concat(t.events, ', ') end
-      print(t.src._fqn,"->" ,t.tgt._fqn, "[" .. lable .. "]" ) --t.events
-   end
-end
-
-
 function get_states()
     local nodes = {}
     local function proc_node(node)
@@ -82,14 +61,27 @@ function get_states()
    return nodes
 end
 
-local function fsm2gh(root)
-    --[[
-   rfsm.mapfsm(function (s)
-		  if rfsm.is_root(s) then return end
-		  proc_node(s)
-	       end, root, rfsm.is_node)
-    ]]--
-   rfsm.mapfsm(function (t, p) proc_trans(t, p) end, root, rfsm.is_trans)
+function get_transitions()
+    local trans = {}
+    local function proc_trans(t, parent)
+       if t.tgt == 'internal' then return true
+       else
+          local str_events = ""
+          if t.events then str_events = table.concat(t.events, ',') end
+          table.insert(trans, {source=t.src._fqn, target=t.tgt._fqn, events=str_events})
+       end
+    end
+    rfsm.mapfsm(function (t, p) proc_trans(t, p) end, fsm, rfsm.is_trans)
+   return trans
+end
+
+function get_event_queue()
+   rfsm.check_events(fsm)
+   return fsm._intq
+end
+
+function onPreStep()
+    print("onPreStep()")
 end
 
 fsm_model = rfsm.load("rfmodule_fsm.lua")
@@ -100,6 +92,16 @@ for key,value in pairs(states) do
     print(value.sname, value.stype)
 end
 
+local trans = get_transitions()
+for key,value in pairs(trans) do 
+    print(value.source, value.target, value.events)
+end
+
+rfsm.send_events(fsm, 'e_true')
+q = get_event_queue()
+for key,value in pairs(q) do
+    print(value)
+end
 
 --[[
 setStateCallbacks("root.Configure")

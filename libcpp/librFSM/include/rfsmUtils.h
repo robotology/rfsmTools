@@ -94,6 +94,27 @@ namespace rfsm {
 "   return nodes\n"\
 "end"
 
+#define GET_ALL_TRANSITIONS_CHUNK \
+"function get_all_transitions()\n"\
+"    local trans = {}\n"\
+"    local function proc_trans(t, parent)\n"\
+"       if t.tgt == 'internal' then return true\n"\
+"       else\n"\
+"          local str_events = ''\n"\
+"          if t.events then str_events = table.concat(t.events, ',') end\n"\
+"          table.insert(trans, {source=t.src._fqn, target=t.tgt._fqn, events=str_events})\n"\
+"       end\n"\
+"    end\n"\
+"    rfsm.mapfsm(function (t, p) proc_trans(t, p) end, fsm, rfsm.is_trans)\n"\
+"   return trans\n"\
+"end"
+
+#define GET_EVET_QUEUE_CHUNK \
+"function get_event_queue()\n"\
+"   rfsm.check_events(fsm)\n"\
+"   return fsm._intq\n"\
+"end"\
+
 
 class rfsm::Utils {
 public:

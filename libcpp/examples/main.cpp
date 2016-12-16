@@ -21,9 +21,25 @@ public:
 
 
 void printStateGraph(const rfsm::StateGraph& graph) {
+    yInfo()<<"------------------------------------------";
     yInfo()<<"States:";
     for(int i=0; i<graph.states.size(); i++)
         yInfo()<<"\t"<<graph.states[i].name<<"("<<graph.states[i].type<<")";
+    yInfo()<<"Transitions:";
+    for(int i=0; i<graph.transitions.size(); i++) {
+        std::string events;
+        for(int e=0; e<graph.transitions[i].events.size();e++)
+            events = events +  ((events.size()) ?  ", " + graph.transitions[i].events[e] : graph.transitions[i].events[e]);
+        yInfo()<<"\t"<<graph.transitions[i].source<<"->"<<graph.transitions[i].target<<"("<<events<<")";
+    }
+    yInfo()<<"------------------------------------------";
+}
+
+void printEventQueue(std::vector<std::string>& equeue) {
+    std::string events;
+    for(int i=0; i<equeue.size(); i++)
+        events = events +  ((events.size()) ?  ", " + equeue[i] : equeue[i]);
+    yInfo()<<"Event queue:"<<events;
 }
 
 int main(int argc, char** argv) {
@@ -42,7 +58,7 @@ int main(int argc, char** argv) {
     }
 
     // printing the state graph
-    //printStateGraph(rfsm.getStateGraph());
+    printStateGraph(rfsm.getStateGraph());
 
     // setting some callbacks
     rfsm.setStateCallback("Configure", configureCallback);    
@@ -53,12 +69,18 @@ int main(int argc, char** argv) {
 
     yDebug()<<"Sending event 'e_true'";
     rfsm.sendEvent("e_true");
+    rfsm.sendEvent("e_ok");
+    // printing the current event queue
+    //std::vector<std::string> equeue;
+    //rfsm.getEventQueue(equeue);
+    //printEventQueue(equeue);
 
     rfsm.run();
     yDebug()<<"Current state:"<<rfsm.getCurrentState();
 
     yDebug()<<"Sending event 'e_true'";
     rfsm.sendEvent("e_true");
+
     rfsm.run();
     yDebug()<<"Current state:"<<rfsm.getCurrentState();
 

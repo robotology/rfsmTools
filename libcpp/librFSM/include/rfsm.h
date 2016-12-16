@@ -181,12 +181,29 @@ public:
      */
     const std::vector<std::string>& getEventsList();
 
+    /**
+     * @brief getEventQueue gets the current events in the rFSM event queue
+     * @param equeue a vector of string to be filled with the current events
+     * @return true on success
+     */
+    bool getEventQueue(std::vector<std::string>& equeue);
+
+    /**
+     * @brief getStateGraph return the rFSM state graph
+     * @return rFSM state graph
+     */
     const rfsm::StateGraph& getStateGraph();
+
+public:
+    virtual void onPreStep()  {}
+    virtual void onPostStep() {}
 
 private:
     static int entryCallback(lua_State* L);
     static int dooCallback(lua_State* L);
     static int exitCallback(lua_State* L);
+    static int preStepCallback(lua_State* L);
+    static int postStepCallback(lua_State* L);
 
     bool getAllEvents();
     bool getAllStateGraph();
