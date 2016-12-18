@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
 
     rfsm.sendEvent("e_true");
     rfsm.step(1);    
+    std::cout<<rfsm.getCurrentState();
     rfsm.sendEvents(2, "e_true", "e_ok");
     rfsm.run()
     //...    
@@ -29,7 +30,7 @@ int main(int argc, char** argv) {
 
 Dependencies 
 ------------
-* Lua5.1 
+* Lua (5.x)
 * [rFSM](https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html)
 
 
