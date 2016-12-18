@@ -1,5 +1,5 @@
 # librFSM
-A C++ library to load an execute rFSM LUA-based state machines
+A C++ library to load and execute rFSM LUA-based state machines
 
 Example
 -------
