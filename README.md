@@ -1,4 +1,4 @@
-# rFSMSimulator
+# librFSM
 A C++ library to load an execute rFSM LUA-based state machines
 
 Example
