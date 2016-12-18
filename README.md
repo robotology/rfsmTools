@@ -1,29 +1,38 @@
 # rFSMSimulator
-A simple rFSM state machine visualizer and simulator
+A C++ library to load an execute rFSM LUA-based state machines
 
 Dependencies 
 ------------
 * Lua5.1 
 * [rFSM](https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html)
-* wxWidgets
+
 
 Installation on Linux
 ---------------------
 Follwo the installation of rFSM on https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html. 
 
+Install one of the lua developemnt library (e.g., 5.1, 5.2, ...)
+
 ```
-$ sudo apt-get install lua5.1
-$ sudo apt-get install libwxgtk3.0-0 libwxgtk-media3.0-0
+$ sudo apt-get install lua5.X-dev
 ```
 
-Running rFSMSimulator
----------------------
+Compile and build
+-----------------
 ```
-$ cd rFSMSimulator
-$ ./rfsmsim.sh
+$ cd librFSM
+$ mkdir build; cd build
+$ cmake ../; make
+```
+
+Testing
+-------
+```
+$ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
 ```
 
 Contributors
 -------------
-* [*Nicolò Genesio*](https://github.com/Nicogene)
 * [*Ali Paikan*](https://github.com/apaikan)
+* [*Nicolò Genesio*](https://github.com/Nicogene)
+
