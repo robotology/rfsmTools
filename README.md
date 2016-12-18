@@ -18,10 +18,10 @@ int main(int argc, char** argv) {
     // setting some callbacks
     rfsm.setStateCallback("MyState", myStateCallback);    
 
-    rfsm.sendEvent("e_true");
+    rfsm.sendEvent("event1");
     rfsm.step(1);    
     std::cout<<rfsm.getCurrentState();
-    rfsm.sendEvents(2, "e_true", "e_ok");
+    rfsm.sendEvents(2, "event1", "event2");
     rfsm.run()
     //...    
     return 0;
