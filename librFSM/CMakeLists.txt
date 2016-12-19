@@ -15,13 +15,34 @@ elseif(NOT LUA_FOUND)
     find_package(Lua50 REQUIRED)
 endif()
 
-set(headers include/rfsm.h
-            include/rfsmUtils.h
-   )
 
-set(sources src/rfsm.cpp
-            src/rfsmUtils.cpp
-   )
+set(headers include/rfsm.h
+            include/rfsmUtils.h)
+
+# check if we need to embed rfsm lua files
+if(EMBED_RFSM)
+    add_definitions(" -DWITH_EMBEDDED_RFSM")
+    add_executable(embedRes src/embedRes.cpp)
+    add_custom_command(
+      OUTPUT gen_rfsm_res.c
+      COMMAND embedRes gen_rfsm_res ${CMAKE_CURRENT_SOURCE_DIR}/res/rfsm.lua
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/res/rfsm.lua)
+
+    add_custom_command(
+      OUTPUT gen_rfsm_utils_res.c
+      COMMAND embedRes gen_rfsm_utils_res ${CMAKE_CURRENT_SOURCE_DIR}/res/utils.lua
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/res/utils.lua)
+
+    set(resources res/utils.lua res/rfsm.lua)
+    set(sources src/rfsm.cpp
+                src/rfsmUtils.cpp
+                gen_rfsm_res.c
+                gen_rfsm_utils_res.c)
+
+else()
+    set(sources src/rfsm.cpp
+                src/rfsmUtils.cpp)
+endif()
 
 
 source_group("Header Files" FILES ${headers})
@@ -32,7 +53,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ./include
                     ${YARP_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME} ${headers} ${sources})
+add_library(${PROJECT_NAME} ${headers} ${sources} ${resources})
 
 target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARY} ${YARP_LIBRARIES})
 

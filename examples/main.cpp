@@ -51,7 +51,8 @@ int main(int argc, char** argv) {
     // enable rfsm verbosity: true
     rfsm::StateMachine rfsm(true);
     // set the path to the rFSM if it is not set in LUA_PATH environemnt variable
-    //rfsm.addLuaPackagePath("/path/to/rFSM/?.lua");
+    // or EMBED_RFSM is disbaled
+    //rfsm.addLuaPackagePath("/path/to/rfsm/?.lua");
 
     if(!rfsm.load(argv[1])) {
         yError()<<"Cannot load"<<argv[1];

@@ -31,14 +31,17 @@ int main(int argc, char** argv) {
 Dependencies 
 ------------
 * Lua (5.x)
-* [rFSM](https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html)
+* [rFSM](https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html) (optional)
+
+`librFSM' can be built with the built-in rfsm lua library (default is off). Please see [Compile and build](#Compile and build) 
 
 
 Installation on Linux
 ---------------------
-Follwo the installation of rFSM on https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html. 
+* If you do not want to use the built-in rfsm then follwo the installation of 
+rFSM on https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html. 
 
-Install one of the lua developemnt library (e.g., 5.1, 5.2, ...)
+* Install one of the lua developemnt library (e.g., 5.1, 5.2, ...)
 
 ```
 $ sudo apt-get install lua5.X-dev
@@ -51,6 +54,13 @@ $ cd librFSM
 $ mkdir build; cd build
 $ cmake ../; make
 ```
+Notice: if you do not have rfsm installed and configure on your system, you can 
+still use the librFSM with the the rfsm built-in library. To do that: 
+
+```
+$ cmake -DEMBED_RFSM=ON ../; make
+```
+
 
 Testing
 -------

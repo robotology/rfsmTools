@@ -11,6 +11,7 @@ PROJECT(${PROJECTNAME})
 find_package(YARP)
 # automatically build YARP integration if yarp is found
 option (ENABLE_YARP "Enable yarp integration" ${YARP_FOUND})
+option (EMBED_RFSM  "Embed rfsm lua file into the librFSM" FALSE)
 
 # build yarp specific extensions
 if (ENABLE_YARP)

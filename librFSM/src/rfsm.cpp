@@ -11,6 +11,11 @@ using namespace rfsm;
 
 #define CHECK_RFSM_LOADED(L) if(!L) { yError()<<"StateMachine has not been initialized. call StateMachine::load()"<<ENDL; return false; }
 
+#ifdef WITH_EMBEDDED_RFSM
+extern "C" const char gen_rfsm_res[];
+extern "C" const char gen_rfsm_utils_res[];
+#endif
+
 StateMachine::StateMachine(bool verbose) : L(NULL) {
     StateMachine::verbose = verbose;
 }
@@ -50,10 +55,17 @@ bool StateMachine::load(const std::string& filename) {
     }
 
     // loading rfsm package
+#ifdef WITH_EMBEDDED_RFSM
+    if(Utils::dostring(L, gen_rfsm_utils_res, "gen_rfsm_utils_res") != LUA_OK)
+        return false;
+    if(Utils::dostring(L, gen_rfsm_res, "gen_rfsm_res") != LUA_OK)
+        return false;
+#else
     if (Utils::dolibrary(L, "rfsm") != LUA_OK) {
         close();
         return false;
     }
+#endif
 
     // registering some utility fuctions in lua
     lua_pushlightuserdata(L, this);
