@@ -258,10 +258,12 @@ bool StateMachine::registerCFunction(const std::string& name, lua_CFunction func
     reg.func = 0;
     luaFuncReg.push_back(reg);
 #if LUA_VERSION_NUM > 501
-    lua_newtable(L);
+    if(luaFuncReg.size() <= 2)
+        lua_newtable(L);
     luaL_setfuncs (L, &luaFuncReg[0], 0);
     lua_pushvalue(L, -1);
-    lua_setglobal(L, "RFSM");
+    if(luaFuncReg.size() <= 2)
+        lua_setglobal(L, "RFSM");
 #else
     luaL_register(L, "RFSM", &luaFuncReg[0]);
 #endif
