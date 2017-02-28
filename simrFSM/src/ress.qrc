@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>resources/actions-media-play.svg</file>
+        <file>resources/actions-media-seek-forward.svg</file>
+        <file>resources/actions-refresh.svg</file>
+        <file>resources/file-new.svg</file>
+        <file>resources/file-save.svg</file>
+        <file>resources/help-info.svg</file>
+        <file>resources/module.svg</file>
+    </qresource>
+</RCC>

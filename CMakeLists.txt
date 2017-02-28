@@ -12,6 +12,7 @@ find_package(YARP)
 # automatically build YARP integration if yarp is found
 option (ENABLE_YARP "Enable yarp integration" ${YARP_FOUND})
 option (EMBED_RFSM  "Embed rfsm lua file into the librFSM" FALSE)
+option (ENABLE_SIMRFSM  "build rfsm simulator" FALSE)
 
 # build yarp specific extensions
 if (ENABLE_YARP)
@@ -23,4 +24,5 @@ endif()
 
 add_subdirectory(librFSM)
 add_subdirectory(examples)
+add_subdirectory(simrFSM)
 
