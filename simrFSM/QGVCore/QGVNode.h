@@ -46,6 +46,7 @@ public:
     void setIcon(const QImage &icon);
     void setVertex(void* v);
     void* getVertex();
+    void setActive(bool activeMode);
 
     enum { Type = UserType + 2 };
     int type() const
@@ -70,6 +71,7 @@ private:
 
     QGVScene *_scene;
     QGVNodePrivate* _node;
+    bool activeMode;
     void* vertex;
 };
 

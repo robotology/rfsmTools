@@ -26,12 +26,17 @@ License along with this library.
 QGVNode::QGVNode(QGVNodePrivate *node, QGVScene *scene): _node(node), _scene(scene), vertex(NULL)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
+    activeMode = false;
 }
 
 QGVNode::~QGVNode()
 {
     _scene->removeItem(this);
 		delete _node;
+}
+
+void QGVNode::setActive(bool activeMode) {
+    QGVNode::activeMode = activeMode;
 }
 
 QString QGVNode::label() const
@@ -52,6 +57,15 @@ QRectF QGVNode::boundingRect() const
 void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
     painter->save();
+
+    if (activeMode) {
+        _brush.setColor(QGVCore::toColor("#FA8072"));
+        _pen.setColor(QGVCore::toColor("#FF0000"));
+    }
+    else {
+        _brush.setColor(QGVCore::toColor(getAttribute("fillcolor")));
+        _pen.setColor(QGVCore::toColor(getAttribute("color")));
+    }
 
     painter->setPen(_pen);
 

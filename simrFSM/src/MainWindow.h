@@ -14,6 +14,7 @@
 #include <QStringListModel>
 #include <QTreeWidgetItem>
 #include <rfsm.h>
+#include <map>
 
 /*
 class NodeWidgetItem : public QTreeWidgetItem {
@@ -48,9 +49,26 @@ public:
     yarp::graph::Vertex* vertex;
 };
 */
+
 namespace Ui {
 class MainWindow;
 }
+
+
+class MainWindow;
+
+class MyStateMachine : public rfsm::StateMachine {
+public:
+    MyStateMachine(MainWindow* mainWnd);
+    virtual ~MyStateMachine();
+
+public:
+    virtual void onPreStep();
+    virtual void onPostStep();
+private:
+    MainWindow* mainWindow;
+};
+
 
 class MainWindow : public QMainWindow
 {
@@ -62,6 +80,9 @@ public:
 
 private:
     void initScene();
+    void updateEventQueue();
+    void drawStateMachine();
+
 //    void onNodeContextMenuProccess(QGVNode *node, YarpvizVertex* vertex);
 //    void onNodeContextMenuPort(QGVNode *node, YarpvizVertex* vertex);
 //    void updateNodeWidgetItems();
@@ -75,13 +96,18 @@ private slots:
     void onLayoutLine();
     void onLayoutCurved();
     void onExportScene();
+    void onLoadrFSM();
+    void onRunrFSM();
+    void onSteprFSM();
+    void onSendEvent();
+
+public:
+    Ui::MainWindow *ui;
+    std::map<std::string, QGVNode*> sceneMap;
+    QGVScene *scene;
 
 private:
-    rfsm::StateMachine rfsm;
-    Ui::MainWindow *ui;
-    QGVScene *scene;
-    QStringList messages;
-    QStringListModel stringModel;
+    MyStateMachine rfsm;
     std::string layoutStyle;
     bool layoutSubgraph;
     QTreeWidgetItem *moduleParentItem;
