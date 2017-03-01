@@ -8,13 +8,12 @@ SET(PROJECTNAME rfsmTest)
 PROJECT(${PROJECTNAME})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${YARP_INCLUDE_DIRS}
                     ${LUA_INCLUDE_DIR}
                     ../librFSM/include)
 
 add_executable(${PROJECTNAME} main.cpp )
 
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} rFSM)
+target_link_libraries(${PROJECTNAME} rFSM)
 
 install(TARGETS ${PROJECTNAME} RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
 

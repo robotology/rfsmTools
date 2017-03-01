@@ -1,8 +1,6 @@
 #include <iostream>
-#include <yarp/os/LogStream.h>
-#include <rfsm.h>
 
-using namespace yarp::os;
+#include <rfsm.h>
 
 class ConfigureCallback : public rfsm::StateCallback {
 public:
@@ -21,30 +19,30 @@ public:
 
 
 void printStateGraph(const rfsm::StateGraph& graph) {
-    yInfo()<<"------------------------------------------";
-    yInfo()<<"States:";
+    std::cout<<"------------------------------------------"<<std::endl;
+    std::cout<<"States:";
     for(int i=0; i<graph.states.size(); i++)
-        yInfo()<<"\t"<<graph.states[i].name<<"("<<graph.states[i].type<<")";
-    yInfo()<<"Transitions:";
+        std::cout<<"\t"<<graph.states[i].name<<"("<<graph.states[i].type<<")"<<std::endl;
+    std::cout<<"Transitions:"<<std::endl;
     for(int i=0; i<graph.transitions.size(); i++) {
         std::string events;
         for(int e=0; e<graph.transitions[i].events.size();e++)
             events = events +  ((events.size()) ?  ", " + graph.transitions[i].events[e] : graph.transitions[i].events[e]);
-        yInfo()<<"\t"<<graph.transitions[i].source<<"->"<<graph.transitions[i].target<<"("<<events<<")";
+        std::cout<<"\t"<<graph.transitions[i].source<<"->"<<graph.transitions[i].target<<"("<<events<<")"<<std::endl;
     }
-    yInfo()<<"------------------------------------------";
+    std::cout<<"------------------------------------------"<<std::endl;
 }
 
 void printEventQueue(std::vector<std::string>& equeue) {
     std::string events;
     for(int i=0; i<equeue.size(); i++)
         events = events +  ((events.size()) ?  ", " + equeue[i] : equeue[i]);
-    yInfo()<<"Event queue:"<<events;
+    std::cout<<"Event queue:"<<events<<std::endl;
 }
 
 int main(int argc, char** argv) {
     if(argc < 2) {
-        yInfo()<<"Usage:"<<argv[0]<<"myfsm.lua";
+        std::cout<<"Usage:"<<argv[0]<<"myfsm.lua"<<std::endl;
         return 0;
     }
 
@@ -55,7 +53,7 @@ int main(int argc, char** argv) {
     //rfsm.addLuaPackagePath("/path/to/rfsm/?.lua");
 
     if(!rfsm.load(argv[1])) {
-        yError()<<"Cannot load"<<argv[1];
+        std::cerr<<"Cannot load"<<argv[1]<<std::endl;
         return 0;
     }
 
@@ -71,7 +69,7 @@ int main(int argc, char** argv) {
     // ...
 
     rfsm.run();    
-    yDebug()<<"Sending event 'e_true'";
+    std::cout<<"Sending event 'e_true'"<<std::endl;
     rfsm.sendEvent("e_true");
 
     // printing the current event queue
@@ -80,11 +78,11 @@ int main(int argc, char** argv) {
     //printEventQueue(equeue);
 
     rfsm.run();
-    yDebug()<<"Sending event 'e_true'";
+    std::cout<<"Sending event 'e_true'"<<std::endl;
     rfsm.sendEvent("e_true");
 
     rfsm.run();
-    yDebug()<<"Sending event 'e_interrupt'";
+    std::cout<<"Sending event 'e_interrupt'"<<std::endl;
     rfsm.sendEvent("e_interrupt");
     rfsm.run();
 

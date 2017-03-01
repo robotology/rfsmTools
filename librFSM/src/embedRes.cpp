@@ -22,7 +22,11 @@ int main(int argc, char** argv)
   FILE* in = open_or_exit(argv[2], "r");
 
   char symfile[256];
+#ifdef WIN32
+  _snprintf(symfile, sizeof(symfile), "%s.c", sym);
+#else
   snprintf(symfile, sizeof(symfile), "%s.c", sym);
+#endif
 
   FILE* out = open_or_exit(symfile,"w");
   fprintf(out, "#include <stdlib.h>\n");

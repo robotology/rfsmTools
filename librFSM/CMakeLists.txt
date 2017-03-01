@@ -44,18 +44,31 @@ else()
                 src/rfsmUtils.cpp)
 endif()
 
-
 source_group("Header Files" FILES ${headers})
 source_group("Source Files" FILES ${sources})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+
+if(ENABLE_YARP)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+						${LUA_INCLUDE_DIR}
+						./include
+						${YARP_INCLUDE_DIRS})
+else()
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${LUA_INCLUDE_DIR}
-                    ./include
-                    ${YARP_INCLUDE_DIRS})
+                    ./include)
+endif()
+
+
 
 add_library(${PROJECT_NAME} ${headers} ${sources} ${resources})
 
-target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARY} ${YARP_LIBRARIES})
+if(ENABLE_YARP)
+	target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARY} ${YARP_LIBRARIES})
+else()
+	target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARY})
+endif()
+
 
 # Add install target
 #yarp_install(TARGETS ${PROJECT_NAME}

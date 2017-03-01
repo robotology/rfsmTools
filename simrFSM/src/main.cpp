@@ -7,12 +7,9 @@
 
 #include "MainWindow.h"
 #include <QApplication>
-#include <yarp/os/Network.h>
 
 int main(int argc, char *argv[])
 {
-    yarp::os::Network yarp;
-
     QApplication a(argc, argv);
     MainWindow w;
     w.show();

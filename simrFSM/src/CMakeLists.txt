@@ -7,10 +7,17 @@
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-include_directories(../QGVCore
-                    ../../librFSM/include
-                    ${LUA_INCLUDE_DIR}
-                    ${YARP_INCLUDE_DIRS})
+if(ENABLE_YARP)
+	include_directories(../QGVCore
+						../../librFSM/include
+						${LUA_INCLUDE_DIR}
+						${YARP_INCLUDE_DIRS})
+else()
+	include_directories(../QGVCore
+						../../librFSM/include
+						${LUA_INCLUDE_DIR})
+endif()
+
 
 set(yarpviz_qt_SRCS main.cpp MainWindow.cpp QGraphicsViewEc.cpp)
 
@@ -42,7 +49,12 @@ add_executable(${PROJECTNAME} WIN32 ${yarpviz_qt_SRCS}
 
 
 #find_package(Qt5PrintSupport REQUIRED)
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} qgvcore Qt5::Widgets Qt5::Gui rFSM)
+if(ENABLE_YARP)
+	target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} qgvcore Qt5::Widgets Qt5::Gui rFSM)
+else()
+	target_link_libraries(${PROJECTNAME} qgvcore Qt5::Widgets Qt5::Gui rFSM)
+endif()
+
 #qtyarp_use_modules(${PROJECTNAME} Widgets Gui)
 #qtyarp_use_modules(${PROJECTNAME} Widgets Gui PrintSupport)
 

@@ -138,7 +138,12 @@ bool StateMachine::run() {
 bool StateMachine::step(unsigned int n) {
     CHECK_RFSM_LOADED(L);
     char command[128];
-    snprintf(command, 128, "rfsm.step(fsm, %d)", n);
+
+#ifdef WIN32
+    _snprintf(command, 128, "rfsm.step(fsm, %d)", n);
+#else
+	snprintf(command, 128, "rfsm.step(fsm, %d)", n);
+#endif
     return (Utils::dostring(L, command, "step") == LUA_OK);
 }
 

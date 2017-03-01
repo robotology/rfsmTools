@@ -12,7 +12,7 @@
 
 #include <lua.hpp>
 
-#include <yarp/os/LogStream.h>
+//#include <yarp/os/LogStream.h>
 
 namespace rfsm {
     class Utils;
@@ -26,8 +26,9 @@ namespace rfsm {
     #include <iostream>
     #include <assert.h>
     #define yError()    std::cerr<<"[ERROR]"
-    #define yWarning()      std::cout<<"[WARNING]"
+    #define yWarning()  std::cout<<"[WARNING]"
     #define yInfo()     std::cout<<"[INFO]"
+	#define yDebug()    std::cout<<"[DEBUG]"
     #define yAssert(x)  assert(x)
     #define ENDL        std::endl
 #else

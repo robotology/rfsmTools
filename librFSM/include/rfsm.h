@@ -10,9 +10,11 @@
 #ifndef RFSM_H
 #define RFSM_H
 
+
 #include <string>
 #include <vector>
 #include <map>
+
 #include <lua.hpp>
 
 namespace rfsm {
