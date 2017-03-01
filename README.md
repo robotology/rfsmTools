@@ -1,5 +1,7 @@
-# librFSM
-A C++ library to load and execute rFSM LUA-based state machines
+# librFSM and simrFSM
+
+A C++ library to load and execute rFSM LUA-based state machines and a graphical tools to run/simulate the state machine.
+
 
 Example
 -------
