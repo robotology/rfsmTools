@@ -59,8 +59,8 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     painter->save();
 
     if (activeMode) {
-        _brush.setColor(QGVCore::toColor("#FA8072"));
-        _pen.setColor(QGVCore::toColor("#FF0000"));
+        _brush.setColor(QGVCore::toColor("#a5cf80"));
+        _pen.setColor(QGVCore::toColor("#a5cf80"));
     }
     else {
         _brush.setColor(QGVCore::toColor(getAttribute("fillcolor")));
@@ -83,6 +83,10 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     painter->setPen(QGVCore::toColor(getAttribute("labelfontcolor")));
 
     const QRectF rect = boundingRect().adjusted(2,2,-2,-2); //Margin
+    QFont font;
+    font.setPixelSize(12);
+    painter->setFont(font);
+
     if(_icon.isNull())
     {
         painter->drawText(rect, Qt::AlignCenter , QGVNode::label());

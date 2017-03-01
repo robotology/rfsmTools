@@ -72,9 +72,15 @@ namespace rfsm {
 
 #define GET_CURRENT_STATE_CHUNK \
 "function rfsm_get_current_state()\n"\
-"   if fsm._actchild then return fsm._actchild._fqn end\n"\
-"   return '<none>'\n"\
+"    function get_active_state(node)\n"\
+"      if node._actchild._actchild == nil then return node._actchild._fqn end\n"\
+"      return get_active_state(node._actchild)\n"\
+"    end\n"\
+"    if not fsm._actchild then return '<none>' end\n"\
+"    return get_active_state(fsm)\n"\
 "end"
+
+
 
 #define GET_ALL_STATES_CHUNK \
 "function rfsm_get_all_states()\n"\

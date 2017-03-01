@@ -78,10 +78,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    QGVNode* getNode(const std::string& name);
+    QGVSubGraph* getSubGraph(const std::string& name);
+
 private:
     void initScene();
     void updateEventQueue();
     void drawStateMachine();
+    QGVSubGraph * getParent(const std::string& name );
 
 //    void onNodeContextMenuProccess(QGVNode *node, YarpvizVertex* vertex);
 //    void onNodeContextMenuPort(QGVNode *node, YarpvizVertex* vertex);
@@ -101,9 +105,10 @@ private slots:
     void onSteprFSM();
     void onSendEvent();
 
-public:
+public:    
     Ui::MainWindow *ui;
-    std::map<std::string, QGVNode*> sceneMap;
+    std::map<std::string, QGVNode*> sceneNodeMap;
+    std::map<std::string, QGVSubGraph*> sceneSubGraphMap;
     QGVScene *scene;
 
 private:

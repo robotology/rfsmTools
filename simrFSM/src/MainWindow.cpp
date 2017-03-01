@@ -8,6 +8,7 @@
 //#include <valgrind/callgrind.h>
 
 #include <fstream>
+#include <iostream>
 
 #include "MainWindow.h"
 #include "moc_MainWindow.cpp"
@@ -31,6 +32,16 @@
 using namespace std;
 //using namespace yarp::os;
 
+class DefaultCallback : public rfsm::StateCallback {
+public:
+    virtual void entry() {}
+
+    virtual void doo() {}
+
+    virtual void exit() {}
+} defaultCallback;
+
+
 
 MyStateMachine::MyStateMachine(MainWindow* mainWnd)
     : rfsm::StateMachine(true) {
@@ -50,8 +61,12 @@ void MyStateMachine::onPreStep() {
     message.append(msg.c_str());
     item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, message);
     if(getCurrentState() != "<none>") {
-        mainWindow->sceneMap[getCurrentState()]->setActive(false);
-        mainWindow->sceneMap[getCurrentState()]->update();
+        QGVNode* node = mainWindow->getNode(getCurrentState());
+        if(node == NULL)
+            node = mainWindow->getNode(getCurrentState()+".initial");
+        Q_ASSERT(node != NULL);
+        node->setActive(false);
+        node->update();
     }
 }
 
@@ -66,8 +81,12 @@ void MyStateMachine::onPostStep() {
     message.append(msg.c_str());
     item = new QTreeWidgetItem( mainWindow->ui->nodesTreeWidgetLog, message);
     if(getCurrentState() != "<none>") {
-        mainWindow->sceneMap[getCurrentState()]->setActive(true);
-        mainWindow->sceneMap[getCurrentState()]->update();
+        QGVNode* node = mainWindow->getNode(getCurrentState());
+        if(node == NULL)
+            node = mainWindow->getNode(getCurrentState()+".initial");
+        Q_ASSERT(node != NULL);
+        node->setActive(true);
+        node->update();
     }
 }
 
@@ -97,20 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionCurved, SIGNAL(triggered()),this,SLOT(onLayoutCurved()));
     connect(ui->actionPolyline, SIGNAL(triggered()),this,SLOT(onLayoutPolyline()));
     connect(ui->actionLine, SIGNAL(triggered()),this,SLOT(onLayoutLine()));
-
-    /*
-    connect(ui->actionSubgraph, SIGNAL(triggered()),this,SLOT(onLayoutSubgraph()));
-    connect(ui->actionHidePorts, SIGNAL(triggered()),this,SLOT(onHidePorts()));
-    connect(ui->nodesTreeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this,
-            SLOT(onNodesTreeItemClicked(QTreeWidgetItem *, int)));
-    connect(ui->actionMessageBox, SIGNAL(triggered()),this,SLOT(onWindowMessageBox()));
-    connect(ui->actionItemswindow, SIGNAL(triggered()),this,SLOT(onWindowItem()));
     connect(ui->actionExport_scene, SIGNAL(triggered()),this,SLOT(onExportScene()));
-    connect(ui->actionExport_connections_list, SIGNAL(triggered()),this,SLOT(onExportConList()));
-    connect(ui->actionConfigure_connections_QOS, SIGNAL(triggered()),this,SLOT(onConfigureConsQos()));
-    connect(ui->actionUpdateConnectionQosStatus, SIGNAL(triggered()),this,SLOT(onUpdateQosStatus()));
-    connect(ui->actionProfilePortsRate, SIGNAL(triggered()),this,SLOT(onProfilePortsRate()));
-    */
 
     layoutStyle = "polyline";
     ui->actionOrthogonal->setChecked(true);
@@ -121,6 +127,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
     ui->actionDocumentaion->setEnabled(false);
+    ui->actionDryrun->setChecked(true);
 
 //    moduleParentItem = new QTreeWidgetItem( ui->nodesTreeWidget,  QStringList("Modules"));
 //    portParentItem = new QTreeWidgetItem( ui->nodesTreeWidget,  QStringList("Ports"));
@@ -148,16 +155,46 @@ void MainWindow::initScene() {
 }
 
 
+QGVSubGraph * MainWindow::getParent(const std::string& name) {
+     std::map<std::string,QGVSubGraph*>::iterator it;
+     for(it = sceneSubGraphMap.begin(); it!=sceneSubGraphMap.end(); it++ ) {
+         std::string sgname = (*it).first;
+         if(name.find(sgname+".") != std::string::npos)
+             return sceneSubGraphMap[sgname];
+     }
+     return NULL;
+}
+
+
+QGVNode* MainWindow::getNode(const std::string& name) {
+    std::map<std::string,QGVNode*>::iterator it;
+    it = sceneNodeMap.find(name);
+    if(it != sceneNodeMap.end())
+        return (*it).second;
+    return NULL;
+}
+
+QGVSubGraph* MainWindow::getSubGraph(const std::string& name) {
+    std::map<std::string,QGVSubGraph*>::iterator it;
+    it = sceneSubGraphMap.find(name);
+    if(it != sceneSubGraphMap.end())
+        return (*it).second;
+    return NULL;
+}
+
+
 void MainWindow::drawStateMachine() {
     initScene();
-    sceneMap.clear();
+    sceneNodeMap.clear();
+    sceneSubGraphMap.clear();
 
     scene->setGraphAttribute("splines", layoutStyle.c_str()); //curved, polyline, line. ortho
+    scene->setGraphAttribute("remincross", "true");
     scene->setGraphAttribute("rankdir", "TD");
     scene->setGraphAttribute("bgcolor", "#2e3e56");
     //scene->setGraphAttribute("concentrate", "true"); //Error !
-    scene->setGraphAttribute("nodesep", "0.4");
-    scene->setGraphAttribute("ranksep", "0.5");
+    scene->setGraphAttribute("nodesep", "0.7");
+    scene->setGraphAttribute("ranksep", "0.7");
     //scene->setNodeAttribute("shape", "box");
     scene->setNodeAttribute("style", "filled");
     scene->setNodeAttribute("fillcolor", "gray");
@@ -165,35 +202,71 @@ void MainWindow::drawStateMachine() {
     scene->setEdgeAttribute("minlen", "2.0");
     //scene->setEdgeAttribute("dir", "both");
 
-
-    // adding states
+    // adding composit states
     const rfsm::StateGraph& graph = rfsm.getStateGraph();
     for(int i=0; i<graph.states.size(); i++) {
-        QGVNode *node = scene->addNode(graph.states[i].name.c_str());
-        if(graph.states[i].name == "initial") {
-            node->setAttribute("shape", "ellipse");
-            node->setAttribute("label", "");
+        if(graph.states[i].type == "composit") {
+            QGVSubGraph *sgraph = scene->addSubGraph(graph.states[i].name.c_str());
+            sgraph->setAttribute("shape", "box");
+            sgraph->setAttribute("label", graph.states[i].name.c_str());
+            sgraph->setAttribute("fillcolor", "#edad56");
+            sgraph->setAttribute("color", "#edad56");
+            sceneSubGraphMap[graph.states[i].name] = sgraph;
         }
-        else {
-            node->setAttribute("shape", "box");
-            node->setAttribute("label", graph.states[i].name.c_str());
+    }
+
+
+    // adding single states
+    //const rfsm::StateGraph& graph = rfsm.getStateGraph();
+    for(int i=0; i<graph.states.size(); i++) {
+        QGVNode *node;
+        if(graph.states[i].type != "composit") {
+            QGVSubGraph* sgraph =  getParent(graph.states[i].name);
+            if(sgraph != NULL)
+                node = sgraph->addNode(graph.states[i].name.c_str());
+            else
+                node = scene->addNode(graph.states[i].name.c_str());
+
+            if(graph.states[i].type == "connector") {
+                node->setAttribute("shape", "circle");
+                node->setAttribute("height", "0.1");
+                node->setAttribute("fixedsize", "true");
+                node->setAttribute("label", "");
+            }
+            else {
+                node->setAttribute("shape", "box");
+                node->setAttribute("label", graph.states[i].name.c_str());
+            }
+            // use this for error : #FA8072
+            node->setAttribute("fillcolor", "#edad56");
+            node->setAttribute("color", "#edad56");
+            sceneNodeMap[graph.states[i].name] = node;
         }
-        node->setAttribute("fillcolor", "#a5cf80");
-        node->setAttribute("color", "#a5cf80");
-        sceneMap[graph.states[i].name] = node;
     }
 
     // adding transitions
     for(int i=0; i<graph.transitions.size(); i++) {
         std::string events;
-        for(int e=0; e<graph.transitions[i].events.size();e++)
-            events = events +  ((events.size()) ?  ", " + graph.transitions[i].events[e] : graph.transitions[i].events[e]);
+        for(int e=0; e<graph.transitions[i].events.size();e++) {
+            std::string ev = graph.transitions[i].events[e];
+            if (ev.find("e_done@") != string::npos)
+                ev = "e_done";
+            events = events +  ((events.size()) ?  ", " + ev : ev);
+        }
 
-        QGVEdge* gve = scene->addEdge(sceneMap[graph.transitions[i].source],
-                                      sceneMap[graph.transitions[i].target], events.c_str());
+        //std::cout<<"\t"<<graph.transitions[i].source<<" -> "<<graph.transitions[i].target<<"("<<events<<")"<<std::endl;
+
+        QGVNode* from = getNode(graph.transitions[i].source);
+        if(from == NULL) {
+            from = getNode(graph.transitions[i].source+".initial");
+        }
+        QGVNode* to = getNode(graph.transitions[i].target);
+        Q_ASSERT(from != NULL);
+        Q_ASSERT(to != NULL);
+        QGVEdge* gve = scene->addEdge(from, to, events.c_str());
         gve->setAttribute("color", "white");
         //gve->setAttribute("style", "dashed");
-    }
+    }    
 
     //node->setIcon(QImage(":/icons/resources/Gnome-System-Run-64.png"));
 
@@ -214,17 +287,37 @@ void MainWindow::onLoadrFSM() {
                                                     filters, &defaultFilter);
     if(filename.size() == 0)
         return;
+
+    QDir path = QFileInfo(filename).absoluteDir();
+    cout<<"current dir"<<path.absolutePath().toStdString();
+    rfsm.addLuaPackagePath((path.absolutePath()+"/?.lua").toStdString());
+    QDir::setCurrent(path.absolutePath());
+
     if(!rfsm.load(filename.toStdString())) {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename.toStdString()).c_str()));
         return;
     }
+
+    if(ui->actionDryrun->isChecked()) {
+        //rfsm.setStateCallback("Configure", defaultCallback);
+        const rfsm::StateGraph& graph = rfsm.getStateGraph();
+        for(int i=0; i<graph.states.size(); i++) {
+            //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
+            if(graph.states[i].type != "connector")
+                rfsm.setStateCallback(graph.states[i].name, defaultCallback);
+        }
+    }
+
+
     rfsm.enablePreStepHook();
     rfsm.enablePostStepHook();
 
     QStringList ql;
     const std::vector<std::string>& events = rfsm.getEventsList();
-    for (int i=0; i<events.size(); i++)
-        ql.push_back(events[i].c_str());
+    for (int i=0; i<events.size(); i++) {
+        if(events[i] != "e_init_fsm")
+            ql.push_back(events[i].c_str());
+    }
     ql.sort();
     ui->comboBoxEvents->addItems(ql);
     updateEventQueue();

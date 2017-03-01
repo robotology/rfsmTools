@@ -88,6 +88,9 @@ void QGVEdge::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     }
     else
     */
+    QFont font;
+    font.setPixelSize(12);
+    painter->setFont(font);
     painter->drawText(_label_rect, Qt::AlignCenter, _label);
 
     painter->setBrush(QBrush(_pen.color(), Qt::SolidPattern));

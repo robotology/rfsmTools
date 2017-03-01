@@ -298,6 +298,8 @@
     <addaction name="actionStep"/>
     <addaction name="actionRun"/>
     <addaction name="actionReset"/>
+    <addaction name="separator"/>
+    <addaction name="actionDryrun"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -435,6 +437,14 @@
    </property>
    <property name="text">
     <string>Rese&amp;t</string>
+   </property>
+  </action>
+  <action name="actionDryrun">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Dry run</string>
    </property>
   </action>
  </widget>
