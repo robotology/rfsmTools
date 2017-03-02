@@ -68,6 +68,8 @@ void StateMachine::close() {
         lua_close(mPriv->L);
         mPriv->L = NULL;
     }
+    mPriv->luaFuncReg.clear();
+    mPriv->callbacks.clear();
 }
 
 const std::string StateMachine::getFileName() {
