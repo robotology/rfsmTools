@@ -1,4 +1,6 @@
 
+set(CMAKE_AUTOMOC ON)
+
 # all files which may be mocced
 set(qgvlib_qt_HDRS
   private/QGVCore.cpp
@@ -41,4 +43,4 @@ target_link_libraries(qgvcore
                       ${GRAPHVIZ_CDT_LIBRARY}
                       Qt5::Widgets
                       Qt5::Gui)
-#qtyarp_use_modules(qgvcore Widgets Gui)
+

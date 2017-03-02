@@ -48,31 +48,10 @@ source_group("Header Files" FILES ${headers})
 source_group("Source Files" FILES ${sources})
 
 
-if(ENABLE_YARP)
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-						${LUA_INCLUDE_DIR}
-						./include
-						${YARP_INCLUDE_DIRS})
-else()
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${LUA_INCLUDE_DIR}
-                    ./include)
-endif()
-
-
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                ${LUA_INCLUDE_DIR}
+                ./include)
 
 add_library(rFSM ${headers} ${sources} ${resources})
-
-if(ENABLE_YARP)
-	target_link_libraries(rFSM ${LUA_LIBRARY} ${YARP_LIBRARIES})
-else()
-	target_link_libraries(rFSM ${LUA_LIBRARY})
-endif()
-
-
-# Add install target
-#yarp_install(TARGETS ${PROJECT_NAME}
-#             COMPONENT Runtime
-#             LIBRARY DESTINATION  ${CMAKE_INSTALL_LIBDIR}
-#             ARCHIVE DESTINATION  ${CMAKE_INSTALL_LIBDIR})
+target_link_libraries(rFSM ${LUA_LIBRARY})
              
