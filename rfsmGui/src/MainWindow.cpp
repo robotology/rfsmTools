@@ -5,8 +5,6 @@
  *
  */
 
-//#include <valgrind/callgrind.h>
-
 #include <fstream>
 #include <iostream>
 
@@ -20,17 +18,11 @@
 #include <QTime>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QtPrintSupport/QPrinter>
-
-/*
-#include <yarp/os/Random.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/LogStream.h>
-*/
 
 
 using namespace std;
-//using namespace yarp::os;
 
 class DefaultCallback : public rfsm::StateCallback {
 public:
@@ -46,24 +38,36 @@ public:
 MyStateMachine::MyStateMachine(MainWindow* mainWnd)
     : rfsm::StateMachine(true) {
     mainWindow = mainWnd;
+    runPeriod = 500;
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(execute()));
 }
 
-MyStateMachine::~MyStateMachine() { }
+MyStateMachine::~MyStateMachine() {
+    delete timer;
+}
+
+
+void MyStateMachine::execute() {
+    mainWindow->updateEventQueue();
+    run();
+}
+
+void MyStateMachine::start() {
+    timer->start(runPeriod);
+}
+
+void MyStateMachine::stop() {
+    timer->stop();
+}
 
 
 void MyStateMachine::onPreStep() {
-    string msg = "onPreStep(): current state:" + getCurrentState();
-    QTime qt = QTime::currentTime();
-    QTreeWidgetItem* item;
-    QStringList message;
-    message.clear();
-    message.append(qt.toString());
-    message.append(msg.c_str());
-    item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, message);
-    if(getCurrentState() != "<none>") {
-        QGVNode* node = mainWindow->getNode(getCurrentState());
+    stateName = getCurrentState();
+    if(stateName != "<none>") {
+        QGVNode* node = mainWindow->getNode(stateName);
         if(node == NULL)
-            node = mainWindow->getNode(getCurrentState()+".initial");
+            node = mainWindow->getNode(stateName+".initial");
         Q_ASSERT(node != NULL);
         node->setActive(false);
         node->update();
@@ -72,14 +76,17 @@ void MyStateMachine::onPreStep() {
 
 
 void MyStateMachine::onPostStep() {
-    string msg = "onPostStep(): current state:" + getCurrentState();
-    QTime qt = QTime::currentTime();
-    QTreeWidgetItem* item;
-    QStringList message;
-    message.clear();
-    message.append(qt.toString());
-    message.append(msg.c_str());
-    item = new QTreeWidgetItem( mainWindow->ui->nodesTreeWidgetLog, message);
+    if(stateName != getCurrentState()) {
+        string msg = "Transited from <"+ stateName + "> to <"+ getCurrentState() + ">";
+        QTime qt = QTime::currentTime();
+        QTreeWidgetItem* item;
+        QStringList message;
+        message.clear();
+        message.append(qt.toString());
+        message.append(msg.c_str());
+        item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, message);
+    }
+
     if(getCurrentState() != "<none>") {
         QGVNode* node = mainWindow->getNode(getCurrentState());
         if(node == NULL)
@@ -97,20 +104,25 @@ void MyStateMachine::onPostStep() {
 /************************************************/
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow), scene(NULL), rfsm(this)
+    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED)
 {
     ui->setupUi(this);
-//    stringModel.setStringList(messages);
-//    ui->messageView->setModel(&stringModel);
-//    ui->messageView->setVisible(false);
 
     // initialize the scene
     initScene();
 
+    connect(ui->actionQuit, SIGNAL(triggered()),this,SLOT(onQuit()));
     connect(ui->action_LoadrFSM, SIGNAL(triggered()),this,SLOT(onLoadrFSM()));
-    connect(ui->actionRun, SIGNAL(triggered()),this,SLOT(onRunrFSM()));
-    connect(ui->actionStep, SIGNAL(triggered()),this,SLOT(onSteprFSM()));
     connect(ui->pushButtonSendEvent, SIGNAL(clicked()),this, SLOT(onSendEvent()));
+    connect(ui->actionChangeRunPeriod, SIGNAL(triggered()),this,SLOT(onChangeRunPeriod()));
+
+    connect(ui->actionDebugStart, SIGNAL(triggered()),this,SLOT(onDebugStartrFSM()));
+    connect(ui->actionDebugStep, SIGNAL(triggered()),this,SLOT(onDebugSteprFSM()));
+    connect(ui->actionDebugReset, SIGNAL(triggered()),this,SLOT(onDebugResetrFSM()));
+
+    connect(ui->actionRunStart, SIGNAL(triggered()),this,SLOT(onRunStartrFSM()));
+    connect(ui->actionRunStop, SIGNAL(triggered()),this,SLOT(onRunStoprFSM()));
+    connect(ui->actionRunPause, SIGNAL(triggered()),this,SLOT(onRunPauserFSM()));
 
     connect(ui->actionOrthogonal, SIGNAL(triggered()),this,SLOT(onLayoutOrthogonal()));
     connect(ui->actionCurved, SIGNAL(triggered()),this,SLOT(onLayoutCurved()));
@@ -123,17 +135,13 @@ MainWindow::MainWindow(QWidget *parent) :
     layoutSubgraph = true;
     ui->actionSubgraph->setChecked(true);
 
-
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
     ui->actionDocumentaion->setEnabled(false);
     ui->actionDryrun->setChecked(true);
+    ui->actionExport_scene->setEnabled(false);
 
-//    moduleParentItem = new QTreeWidgetItem( ui->nodesTreeWidget,  QStringList("Modules"));
-//    portParentItem = new QTreeWidgetItem( ui->nodesTreeWidget,  QStringList("Ports"));
-//    moduleParentItem->setIcon(0, QIcon(":icons/resources/module.svg"));
-//    portParentItem->setIcon(0, QIcon(":icons/resources/port.svg"));
-
+    switchMachineMode(UNLOADED);
 }
 
 MainWindow::~MainWindow()
@@ -279,35 +287,15 @@ void MainWindow::drawStateMachine() {
     //scene->addEdge(snode1, ssgraph->addNode("PC0155"), "S10");
 }
 
-void MainWindow::onLoadrFSM() {
-    QString filters("rFSM LUA files (*.lua);;All files (*.*)");
-    QString defaultFilter("rFSM state machine (*.lua)");
-    QString filename = QFileDialog::getOpenFileName(0, "Load rFSM state machine",
-                                                    QDir::homePath(),
-                                                    filters, &defaultFilter);
-    if(filename.size() == 0)
-        return;
-
-    QDir path = QFileInfo(filename).absoluteDir();
-    cout<<"current dir"<<path.absolutePath().toStdString();
+bool MainWindow::loadrFSM(const std::string filename) {
+    QDir path = QFileInfo(filename.c_str()).absoluteDir();
     rfsm.addLuaPackagePath((path.absolutePath()+"/?.lua").toStdString());
     QDir::setCurrent(path.absolutePath());
 
-    if(!rfsm.load(filename.toStdString())) {
-        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename.toStdString()).c_str()));
-        return;
+    if(!rfsm.load(filename)) {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename).c_str()));
+        return false;
     }
-
-    if(ui->actionDryrun->isChecked()) {
-        //rfsm.setStateCallback("Configure", defaultCallback);
-        const rfsm::StateGraph& graph = rfsm.getStateGraph();
-        for(int i=0; i<graph.states.size(); i++) {
-            //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
-            if(graph.states[i].type != "connector")
-                rfsm.setStateCallback(graph.states[i].name, defaultCallback);
-        }
-    }
-
 
     rfsm.enablePreStepHook();
     rfsm.enablePostStepHook();
@@ -319,26 +307,118 @@ void MainWindow::onLoadrFSM() {
             ql.push_back(events[i].c_str());
     }
     ql.sort();
+    ui->comboBoxEvents->clear();
     ui->comboBoxEvents->addItems(ql);
     updateEventQueue();
     drawStateMachine();
+    switchMachineMode(IDLE);    
+    return true;
 }
 
-void MainWindow::onRunrFSM() {
+void MainWindow::onLoadrFSM() {
+    QString filters("rFSM LUA files (*.lua);;All files (*.*)");
+    QString defaultFilter("rFSM state machine (*.lua)");
+    QString filename = QFileDialog::getOpenFileName(0, "Load rFSM state machine",
+                                                    QDir::homePath(),
+                                                    filters, &defaultFilter);
+    if(filename.size() == 0)
+        return;
+    loadrFSM(filename.toStdString());
+}
+
+void MainWindow::onDebugStartrFSM() {
+    if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {
+        //rfsm.setStateCallback("Configure", defaultCallback);
+        const rfsm::StateGraph& graph = rfsm.getStateGraph();
+        for(int i=0; i<graph.states.size(); i++) {
+            //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
+            if(graph.states[i].type != "connector")
+                rfsm.setStateCallback(graph.states[i].name, defaultCallback);
+        }
+    }
+    switchMachineMode(DEBUG);
     rfsm.run();
     updateEventQueue();
 }
 
-void MainWindow::onSteprFSM() {
+void MainWindow::onDebugSteprFSM() {
+    if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {
+        //rfsm.setStateCallback("Configure", defaultCallback);
+        const rfsm::StateGraph& graph = rfsm.getStateGraph();
+        for(int i=0; i<graph.states.size(); i++) {
+            //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
+            if(graph.states[i].type != "connector")
+                rfsm.setStateCallback(graph.states[i].name, defaultCallback);
+        }
+    }
+    switchMachineMode(DEBUG);
     rfsm.step();
     updateEventQueue();
 }
+
+void MainWindow::onDebugResetrFSM() {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Reset", "Reseting the state machine.\n Are you sure?",
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+        return;
+    switchMachineMode(IDLE);
+    initScene();
+    std::string filename = rfsm.getFileName();
+    rfsm.close();
+    loadrFSM(filename);
+}
+
+void MainWindow::onRunStartrFSM() {
+    rfsm.stop();
+    initScene();
+    std::string filename = rfsm.getFileName();
+    rfsm.close();
+    if( loadrFSM(filename) ) {
+        switchMachineMode(RUN);
+        rfsm.start();
+    }
+}
+
+void MainWindow::onRunStoprFSM() {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Stop", "Stopping the state machine.\n Are you sure?",
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+        return;
+
+    switchMachineMode(IDLE);
+    rfsm.stop();
+    initScene();
+    std::string filename = rfsm.getFileName();
+    rfsm.close();
+    loadrFSM(filename);
+}
+
+void MainWindow::onRunPauserFSM() {
+    switchMachineMode(PAUSE);
+    rfsm.stop();
+}
+
 
 void MainWindow::onSendEvent() {
     rfsm.sendEvent(ui->comboBoxEvents->currentText().toStdString());
     updateEventQueue();
 }
 
+
+void MainWindow::onChangeRunPeriod() {
+    bool ok;
+    QInputDialog* inputDialog = new QInputDialog();
+    inputDialog->setOptions(QInputDialog::NoButtons);
+
+    int period =  inputDialog->getInt(NULL ,"Change RFSM run period",
+                                          "Period (ms):", rfsm.runPeriod, 0, 2147483647, 100, &ok);
+
+     if (ok && (period > 0)) {
+        rfsm.runPeriod = period;
+     }
+}
 
 void MainWindow::updateEventQueue() {
     std::vector<std::string> equeue;
@@ -401,6 +481,18 @@ void MainWindow::onLayoutCurved() {
     drawStateMachine();
 }
 
+void MainWindow::onQuit() {
+    if(machineMode != IDLE && machineMode != UNLOADED) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Quit", "State machine is running.\n Do you want to stop it and exit?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+    }
+    rfsm.stop();
+    rfsm.close();
+    MainWindow::close();
+}
 
 void MainWindow::onExportScene() {
     QString filters("Image files (*.png);;All files (*.*)");
@@ -418,4 +510,69 @@ void MainWindow::onExportScene() {
     scene->render(&painter);
     if(!image.save(filename))
         return;
+}
+
+
+void MainWindow::switchMachineMode(MachineMode mode) {
+    machineMode = mode;
+    switch (machineMode) {
+    case UNLOADED:
+        // debug
+        ui->actionDebugStart->setEnabled(false);
+        ui->actionDebugReset->setEnabled(false);
+        ui->actionDebugStep->setEnabled(false);
+        //run
+        ui->actionRunStart->setEnabled(false);
+        ui->actionRunStop->setEnabled(false);
+        ui->actionRunPause->setEnabled(false);
+        ui->actionChangeRunPeriod->setEnabled(true);
+        break;
+    case IDLE:
+        ui->actionExport_scene->setEnabled(true);
+        // debug
+        ui->actionDebugStart->setEnabled(true);
+        ui->actionDebugReset->setEnabled(false);
+        ui->actionDebugStep->setEnabled(true);
+        //run
+        ui->actionRunStart->setEnabled(true);
+        ui->actionRunStop->setEnabled(false);
+        ui->actionRunPause->setEnabled(false);
+        ui->actionChangeRunPeriod->setEnabled(true);
+        break;
+    case DEBUG:
+        // debug
+        ui->actionDebugStart->setEnabled(true);
+        ui->actionDebugReset->setEnabled(true);
+        ui->actionDebugStep->setEnabled(true);
+        //run
+        ui->actionRunStart->setEnabled(false);
+        ui->actionRunStop->setEnabled(false);
+        ui->actionRunPause->setEnabled(false);
+        ui->actionChangeRunPeriod->setEnabled(false);
+        break;
+    case RUN:
+        // debug
+        ui->actionDebugStart->setEnabled(false);
+        ui->actionDebugReset->setEnabled(false);
+        ui->actionDebugStep->setEnabled(false);
+        //run
+        ui->actionRunStart->setEnabled(false);
+        ui->actionRunStop->setEnabled(true);
+        ui->actionRunPause->setEnabled(true);
+        ui->actionChangeRunPeriod->setEnabled(false);
+        break;
+    case PAUSE:
+        // debug
+        ui->actionDebugStart->setEnabled(false);
+        ui->actionDebugReset->setEnabled(false);
+        ui->actionDebugStep->setEnabled(false);
+        //run
+        ui->actionRunStart->setEnabled(true);
+        ui->actionRunStop->setEnabled(true);
+        ui->actionRunPause->setEnabled(false);
+        ui->actionChangeRunPeriod->setEnabled(false);
+        break;
+    default:
+        break;
+    }
 }

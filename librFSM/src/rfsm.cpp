@@ -100,7 +100,7 @@ bool StateMachine::load(const std::string& filename) {
     if(Utils::dostring(mPriv->L, gen_rfsm_res, "gen_rfsm_res") != LUA_OK)
         return false;
 #else
-    if (Utils::dolibrary(L, "rfsm") != LUA_OK) {
+    if (Utils::dolibrary(mPriv->L, "rfsm") != LUA_OK) {
         close();
         return false;
     }

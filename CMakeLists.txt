@@ -24,5 +24,5 @@ endif()
 
 add_subdirectory(librFSM)
 add_subdirectory(examples)
-add_subdirectory(simrFSM)
+add_subdirectory(rfsmGui)
 

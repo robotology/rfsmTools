@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91+devel r"
-   sodipodi:docname="actions-media-play.svg"
+   sodipodi:docname="actions-media-play_B.svg"
    inkscape:export-filename="/home/alecive/Scrivania/firefoxTest1.png"
    inkscape:export-xdpi="100"
    inkscape:export-ydpi="100"
@@ -174,16 +174,6 @@
          style="stop-color:#ffffff;stop-opacity:0.2"
          offset="1" />
     </linearGradient>
-    <linearGradient
-       y2="23.999998"
-       x2="510.99997"
-       y1="515"
-       x1="510.99997"
-       gradientTransform="translate(0,-4)"
-       gradientUnits="userSpaceOnUse"
-       id="linearGradient3876"
-       xlink:href="#outerBackgroundGradient"
-       inkscape:collect="always" />
     <linearGradient
        id="outerBackgroundGradient">
       <stop
@@ -532,7 +522,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -600,7 +590,7 @@
        ry="99.0625" />
   </g>
   <path
-     style="color:#bebebe;display:inline;overflow:visible;visibility:visible;fill:url(#linearGradient3876);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0;marker:none;enable-background:accumulate"
+     style="color:#bebebe;display:inline;overflow:visible;visibility:visible;fill:#6fa91f;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;enable-background:accumulate;opacity:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      d="M 118.34375,20 C 63.867087,20 20,63.867084 20,118.34375 l 0,23.0625 0,252.25 C 20,448.13291 63.867087,492 118.34375,492 l 275.3125,0 C 448.13292,492 492,448.13291 492,393.65625 l 0,-252.25 0,-23.0625 C 492,63.867084 448.13292,20 393.65625,20 l -275.3125,0 z"
      id="rect5505"
      inkscape:connector-curvature="0" />

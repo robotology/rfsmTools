@@ -8,12 +8,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if(ENABLE_YARP)
-	include_directories(../QGVCore
-						../../librFSM/include
-						${YARP_INCLUDE_DIRS})
+        include_directories(../QGVCore
+                            ../../librFSM/include
+                            ${YARP_INCLUDE_DIRS})
 else()
-	include_directories(../QGVCore
-						../../librFSM/include)
+        include_directories(../QGVCore
+                            ../../librFSM/include)
 endif()
 
 
@@ -53,19 +53,11 @@ else()
 	target_link_libraries(${PROJECTNAME} qgvcore Qt5::Widgets Qt5::Gui rFSM)
 endif()
 
-#qtyarp_use_modules(${PROJECTNAME} Widgets Gui)
-#qtyarp_use_modules(${PROJECTNAME} Widgets Gui PrintSupport)
 
-#qtyarp_deprecate_with_cmake_version(2.8.11)
 #if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
 if(WIN32)
     target_link_libraries(${PROJECTNAME} qgvcore Qt5::WinMain rFSM)
 endif()
 #install(TARGETS ${PROJECTNAME} COMPONENT utilities DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-#yarp_osx_duplicate_and_add_bundle(TARGET_ORIG ${PROJECTNAME}
-#                                TARGET_DEST ${PROJECTNAME}.app
-#                                APP_ICON Resources/AppIcon.icns
-#                                INSTALL_COMPONENT utilities
-#                                INSTALL_DESTINATION "${CMAKE_INSTALL_BINDIR}")
 

@@ -5,28 +5,26 @@
 # the current directory.
 
 cmake_minimum_required(VERSION 2.8.9)
-set(PROJECTNAME simrFSM)
+set(PROJECTNAME rfsmGui)
 project(${PROJECTNAME})
 
 
 # Find YARP.  Point the YARP_DIR environment variable at your build.
-find_package(YARP REQUIRED)
-
-# Find YARP.  Point the YARP_DIR environment variable at your build.
-find_package(YARP REQUIRED)
+find_package(YARP)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
-list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 
-# include some helper functions
-include(GNUInstallDirs)
-include(YarpInstallationHelpers)
-include(YarpUseQt5)
+if(YARP_FOUND)
+    list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
+    # include some helper functions
+    include(GNUInstallDirs)
+    include(YarpInstallationHelpers)
+    include(YarpUseQt5)
+endif()
 
 if(ENABLE_SIMRFSM)
 
     find_package(Graphviz)
     find_package(Qt5Widgets)
-    #find_package(Qt5Declarative)
 
     #########################################################################
     # Control where libraries and executables are placed during the build

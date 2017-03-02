@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>rFSM Simulator</string>
+   <string>rFSM Graphical Tool</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="ress.qrc">
+    <normaloff>:/icons/resources/rfsmGui.svg</normaloff>:/icons/resources/rfsmGui.svg</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -295,14 +299,25 @@
     <property name="title">
      <string>Debug</string>
     </property>
-    <addaction name="actionStep"/>
-    <addaction name="actionRun"/>
-    <addaction name="actionReset"/>
+    <addaction name="actionDebugStart"/>
+    <addaction name="actionDebugStep"/>
+    <addaction name="actionDebugReset"/>
     <addaction name="separator"/>
     <addaction name="actionDryrun"/>
    </widget>
+   <widget class="QMenu" name="menuRun">
+    <property name="title">
+     <string>Run</string>
+    </property>
+    <addaction name="actionRunStart"/>
+    <addaction name="actionRunPause"/>
+    <addaction name="actionRunStop"/>
+    <addaction name="separator"/>
+    <addaction name="actionChangeRunPeriod"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuRun"/>
    <addaction name="menuDebug"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -314,10 +329,14 @@
     <bool>false</bool>
    </attribute>
    <addaction name="action_LoadrFSM"/>
-   <addaction name="actionReset"/>
    <addaction name="separator"/>
-   <addaction name="actionRun"/>
-   <addaction name="actionStep"/>
+   <addaction name="actionRunStart"/>
+   <addaction name="actionRunPause"/>
+   <addaction name="actionRunStop"/>
+   <addaction name="separator"/>
+   <addaction name="actionDebugStart"/>
+   <addaction name="actionDebugStep"/>
+   <addaction name="actionDebugReset"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_LoadrFSM">
@@ -412,25 +431,25 @@
     <string>Line</string>
    </property>
   </action>
-  <action name="actionStep">
+  <action name="actionDebugStep">
    <property name="icon">
     <iconset resource="ress.qrc">
-     <normaloff>:/icons/resources/actions-media-seek-forward.svg</normaloff>:/icons/resources/actions-media-seek-forward.svg</iconset>
+     <normaloff>:/icons/resources/step.svg</normaloff>:/icons/resources/step.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Step</string>
    </property>
   </action>
-  <action name="actionRun">
+  <action name="actionDebugStart">
    <property name="icon">
     <iconset resource="ress.qrc">
-     <normaloff>:/icons/resources/actions-media-play.svg</normaloff>:/icons/resources/actions-media-play.svg</iconset>
+     <normaloff>:/icons/resources/debug.svg</normaloff>:/icons/resources/debug.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Run</string>
    </property>
   </action>
-  <action name="actionReset">
+  <action name="actionDebugReset">
    <property name="icon">
     <iconset resource="ress.qrc">
      <normaloff>:/icons/resources/actions-refresh.svg</normaloff>:/icons/resources/actions-refresh.svg</iconset>
@@ -447,6 +466,38 @@
     <string>&amp;Dry run</string>
    </property>
   </action>
+  <action name="actionRunStart">
+   <property name="icon">
+    <iconset resource="ress.qrc">
+     <normaloff>:/icons/resources/run.svg</normaloff>:/icons/resources/run.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Start</string>
+   </property>
+  </action>
+  <action name="actionRunPause">
+   <property name="icon">
+    <iconset resource="ress.qrc">
+     <normaloff>:/icons/resources/pause.svg</normaloff>:/icons/resources/pause.svg</iconset>
+   </property>
+   <property name="text">
+    <string>P&amp;ause</string>
+   </property>
+  </action>
+  <action name="actionRunStop">
+   <property name="icon">
+    <iconset resource="ress.qrc">
+     <normaloff>:/icons/resources/stop.svg</normaloff>:/icons/resources/stop.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionChangeRunPeriod">
+   <property name="text">
+    <string>Change run period...</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -459,22 +510,5 @@
  <resources>
   <include location="ress.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>actionQuit</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>408</x>
-     <y>283</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

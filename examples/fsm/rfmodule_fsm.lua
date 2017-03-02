@@ -19,11 +19,11 @@ return rfsm.state {
         end,
 
         doo  = function()
-            print("entry() of UpdateModule (hello from Lua)")
+            print("doo() of UpdateModule (hello from Lua)")
         end,
 
         exit = function()
-            print("entry() of UpdateModule (hello from Lua)")
+            print("exit() of UpdateModule (hello from Lua)")
         end,
     },
 
