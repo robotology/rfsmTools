@@ -1,39 +1,16 @@
-# librFSM and simrFSM
+# rFSM Tools
 
-A C++ library to load and execute rFSM LUA-based state machines and a graphical tools to run/simulate the state machine.
+The reository contains a C++ library to load and execute rFSM LUA-based state machines and a graphical tools to run/simulate the state machine.
 
 
-Example
--------
-```c++
-class MyStateCallback : public rfsm::StateCallback {
-public:
-    virtual void entry() {
-        std::cout<<"entry() of MyState (hello from C++)"<<std::endl;
-    }
-} myStateCallback;
+![scenario2](/doc/rfsmGui.png)
 
-int main(int argc, char** argv) {
-    rfsm::StateMachine rfsm;   
-    rfsm.load("my-statemachine.lua")
-
-    // setting some callbacks
-    rfsm.setStateCallback("MyState", myStateCallback);    
-
-    rfsm.sendEvent("event1");
-    rfsm.step(1);    
-    std::cout<<rfsm.getCurrentState();
-    rfsm.sendEvents(2, "event1", "event2");
-    rfsm.run()
-    //...    
-    return 0;
-}
-```
 
 Dependencies 
 ------------
 * Lua (5.x)
 * [rFSM](https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html) (optional)
+* Graphviz development library for `rfsmGui` 
 
 `librFSM` can be built with the built-in rfsm lua library (default is off). Please see [Compile and build](#Compile and build) 
 
@@ -69,6 +46,34 @@ Testing
 ```
 $ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
 ```
+
+Example of using rfsm from C++
+------------------------------
+```c++
+class MyStateCallback : public rfsm::StateCallback {
+public:
+    virtual void entry() {
+        std::cout<<"entry() of MyState (hello from C++)"<<std::endl;
+    }
+} myStateCallback;
+
+int main(int argc, char** argv) {
+    rfsm::StateMachine rfsm;   
+    rfsm.load("my-statemachine.lua")
+
+    // setting some callbacks
+    rfsm.setStateCallback("MyState", myStateCallback);    
+
+    rfsm.sendEvent("event1");
+    rfsm.step(1);    
+    std::cout<<rfsm.getCurrentState();
+    rfsm.sendEvents(2, "event1", "event2");
+    rfsm.run()
+    //...    
+    return 0;
+}
+```
+
 
 Contributors
 -------------
