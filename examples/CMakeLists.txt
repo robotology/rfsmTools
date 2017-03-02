@@ -8,7 +8,6 @@ SET(PROJECTNAME rfsmTest)
 PROJECT(${PROJECTNAME})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${LUA_INCLUDE_DIR}
                     ../librFSM/include)
 
 add_executable(${PROJECTNAME} main.cpp )

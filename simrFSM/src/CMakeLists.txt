@@ -10,12 +10,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if(ENABLE_YARP)
 	include_directories(../QGVCore
 						../../librFSM/include
-						${LUA_INCLUDE_DIR}
 						${YARP_INCLUDE_DIRS})
 else()
 	include_directories(../QGVCore
-						../../librFSM/include
-						${LUA_INCLUDE_DIR})
+						../../librFSM/include)
 endif()
 
 

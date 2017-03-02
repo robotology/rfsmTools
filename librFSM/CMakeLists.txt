@@ -2,7 +2,7 @@
 # Author: Ali Paikan
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
-project(rFSM)
+project(librFSM)
 
 find_package(Lua)
 if(NOT LUA_FOUND)
@@ -61,12 +61,12 @@ endif()
 
 
 
-add_library(${PROJECT_NAME} ${headers} ${sources} ${resources})
+add_library(rFSM ${headers} ${sources} ${resources})
 
 if(ENABLE_YARP)
-	target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARY} ${YARP_LIBRARIES})
+	target_link_libraries(rFSM ${LUA_LIBRARY} ${YARP_LIBRARIES})
 else()
-	target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARY})
+	target_link_libraries(rFSM ${LUA_LIBRARY})
 endif()
 
 

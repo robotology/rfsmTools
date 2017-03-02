@@ -5,7 +5,7 @@
 --
 
 
-return rfsm.state {  
+return rfsm.state {
     Configure = rfsm.csta {
 --        Software = rfsm.sista{ },
 --        Hardware = rfsm.sista{ },
@@ -15,6 +15,14 @@ return rfsm.state {
 
     UpdateModule = rfsm.sista{
         entry = function()
+            print("entry() of UpdateModule (hello from Lua)")
+        end,
+
+        doo  = function()
+            print("entry() of UpdateModule (hello from Lua)")
+        end,
+
+        exit = function()
             print("entry() of UpdateModule (hello from Lua)")
         end,
     },
