@@ -31,9 +31,5 @@ cmake_install.cmake
 build*
 graph/build*
 
-
-# Documentation directory
-doc/
-
 # Merge files
 *.orig
