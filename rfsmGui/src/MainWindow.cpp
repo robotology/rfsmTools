@@ -409,6 +409,11 @@ void MainWindow::onDebugResetrFSM() {
 }
 
 void MainWindow::onRunStartrFSM() {
+    if(machineMode == PAUSE) {
+        rfsm.start();
+        switchMachineMode(RUN);
+        return;
+    }
     rfsm.stop();
     initScene();
     std::string filename = rfsm.getFileName();
