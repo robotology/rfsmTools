@@ -78,19 +78,19 @@ QGVNode *QGVScene::addNode(const QString &label)
 
 QGVEdge *QGVScene::addEdge(QGVNode *source, QGVNode *target, const QString &label)
 {
-		Agedge_t* edge = agedge(_graph->graph(), source->_node->node(), target->_node->node(), NULL, TRUE);
-    if(edge == NULL)
-    {
+    Agedge_t* edge = agedge(_graph->graph(), source->_node->node(), target->_node->node(), NULL, TRUE);
+    if(edge == NULL) {
         qWarning()<<"Invalid egde :"<<label;
         return 0;
     }
 
-		QGVEdge *item = new QGVEdge(new QGVEdgePrivate(edge), this);
+    QGVEdge *item = new QGVEdge(new QGVEdgePrivate(edge), this);
     item->setLabel(label);
     addItem(item);
     _edges.append(item);
     return item;
 }
+
 
 QGVSubGraph *QGVScene::addSubGraph(const QString &name, bool cluster)
 {
@@ -150,7 +150,7 @@ void QGVScene::loadLayout(const QString &text)
 
 void QGVScene::applyLayout()
 {
-        if(gvLayout(_context->context(), _graph->graph(), "dot") != 0)
+    if(gvLayout(_context->context(), _graph->graph(), "dot") != 0)
     {
         /*
          * Si plantage ici :
@@ -176,7 +176,7 @@ void QGVScene::applyLayout()
         sgraph->updateLayout();
 
     //Graph label
-		textlabel_t *xlabel = GD_label(_graph->graph());
+    textlabel_t *xlabel = GD_label(_graph->graph());
     if(xlabel)
     {
         QGraphicsTextItem *item = addText(xlabel->text);

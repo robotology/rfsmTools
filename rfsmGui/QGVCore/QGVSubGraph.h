@@ -46,6 +46,7 @@ public:
     void setAttribute(const QString &name, const QString &value);
     QString getAttribute(const QString &name) const;
     void updateLayout();
+    void setActive(bool activeMode);
 
     enum { Type = UserType + 4 };
     int type() const
@@ -58,6 +59,7 @@ private:
     friend class QGVScene;
 		QGVSubGraph(QGVGraphPrivate* subGraph, QGVScene *scene);
 
+    bool activeMode;
     double _height, _width;
     QPen _pen;
     QBrush _brush;
@@ -66,7 +68,7 @@ private:
     QRectF _label_rect;
 
     QGVScene *_scene;
-		QGVGraphPrivate *_sgraph;
+    QGVGraphPrivate *_sgraph;
     QList<QGVNode*> _nodes;
 };
 

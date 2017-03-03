@@ -46,6 +46,7 @@ public:
 
     QGVNode* addNode(const QString& label);
     QGVEdge* addEdge(QGVNode* source, QGVNode* target, const QString& label=QString());
+
     QGVSubGraph* addSubGraph(const QString& name, bool cluster=true);
 
     void setRootNode(QGVNode *node);

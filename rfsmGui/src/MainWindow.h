@@ -68,15 +68,16 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     QGVNode* getNode(const std::string& name);
+    QGVSubGraph * getParent(const std::string& name );
     QGVSubGraph* getSubGraph(const std::string& name);
     void updateEventQueue();
 
 private:
     void initScene();    
-    void drawStateMachine();
-    QGVSubGraph * getParent(const std::string& name );
+    void drawStateMachine();    
     void switchMachineMode(MachineMode mode);
     bool loadrFSM(const std::string filename);
+    std::string getPureStateName(const std::string& name);
 
 //    void onNodeContextMenuProccess(QGVNode *node, YarpvizVertex* vertex);
 //    void onNodeContextMenuPort(QGVNode *node, YarpvizVertex* vertex);
@@ -101,6 +102,7 @@ private slots:
     void onSendEvent();
     void onChangeRunPeriod();
     void onQuit();
+    void onAbout();
 
 public:    
     Ui::MainWindow *ui;

@@ -7,10 +7,17 @@
 
 return rfsm.state {
     Configure = rfsm.csta {
---        Software = rfsm.sista{ },
---        Hardware = rfsm.sista{ },
---        rfsm.transition { src='initial', tgt='Software'},
---        rfsm.transition { src='Software', tgt='Hardware'},
+        Software = rfsm.csta{
+			Initialize = rfsm.sista{},
+			Run = rfsm.sista{ },
+
+			rfsm.transition { src='initial', tgt='Initialize'},
+			rfsm.transition { src='Initialize', tgt='Run'},
+		},
+
+        Hardware = rfsm.sista{ },
+        rfsm.transition { src='initial', tgt='Software'},
+        rfsm.transition { src='Software', tgt='Hardware', events={'e_software_done'} },
     },
 
     UpdateModule = rfsm.sista{
@@ -27,6 +34,14 @@ return rfsm.state {
         end,
     },
 
+	Phase = rfsm.csta{
+		Phase1 = rfsm.sista{ },
+		Phase2 = rfsm.sista{ },
+		rfsm.transition { src='initial', tgt='Phase1'},
+		rfsm.transition { src='Phase1', tgt='Phase2'},
+	},
+
+--[[
     Close = rfsm.sista{
         entry = function()
             print("entry() of Close (hello from Lua)")
@@ -48,5 +63,10 @@ return rfsm.state {
     rfsm.transition { src='UpdateModule', tgt='Close', events={ 'e_false' } },
     rfsm.transition { src='UpdateModule', tgt='InterruptModule', events={ 'e_stopModule','e_interrupt' } },
     rfsm.transition { src='InterruptModule', tgt='Close' },
+	--]]
+
+	rfsm.transition { src='initial', tgt='Configure' },
+    rfsm.transition { src='Configure', tgt='UpdateModule', events={ 'e_true' } },
+	rfsm.transition { src='Configure', tgt='Phase', events={ 'e_phase' } },
 }
 

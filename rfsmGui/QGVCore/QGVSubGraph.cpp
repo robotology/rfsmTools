@@ -26,6 +26,7 @@ License along with this library.
 
 QGVSubGraph::QGVSubGraph(QGVGraphPrivate *subGraph, QGVScene *scene): _sgraph(subGraph), _scene(scene)
 {
+    activeMode = false;
     //setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
@@ -87,10 +88,18 @@ void QGVSubGraph::paint(QPainter * painter, const QStyleOptionGraphicsItem * opt
 {
     painter->save();
 
+    if (activeMode)
+        _brush.setColor(QGVCore::toColor("#506c95"));
+    else
+        _brush.setColor(QGVCore::toColor(getAttribute("fillcolor")));
+
     painter->setPen(_pen);
     painter->setBrush(_brush);
 
-    painter->drawRect(boundingRect());
+    //painter->drawRect(boundingRect());
+    QPainterPath path;
+    path.addRoundedRect(boundingRect(), 10, 10);
+    painter->drawPath(path);
     painter->drawText(_label_rect, Qt::AlignCenter, _label);
     painter->restore();
 }
@@ -102,7 +111,7 @@ void QGVSubGraph::setAttribute(const QString &name, const QString &value)
 
 QString QGVSubGraph::getAttribute(const QString &name) const
 {
-		char* value = agget(_sgraph->graph(), name.toLocal8Bit().data());
+    char* value = agget(_sgraph->graph(), name.toLocal8Bit().data());
     if(value)
         return value;
     return QString();
@@ -135,4 +144,8 @@ void QGVSubGraph::updateLayout()
         _label_rect.setSize(QSize(xlabel->dimen.x+30, xlabel->dimen.y+10));
         _label_rect.moveCenter(QGVCore::toPoint(xlabel->pos, QGVCore::graphHeight(_scene->_graph->graph())) - pos());
     }
+}
+
+void QGVSubGraph::setActive(bool activeMode) {
+    QGVSubGraph::activeMode = activeMode;
 }

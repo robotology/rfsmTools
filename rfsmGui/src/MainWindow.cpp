@@ -65,6 +65,18 @@ void MyStateMachine::stop() {
 void MyStateMachine::onPreStep() {
     stateName = getCurrentState();
     if(stateName != "<none>") {
+        QStringList pieces = QString(getCurrentState().c_str()).split( "." );
+        //std::cout<<"onPostStep(): geting parent of "<<getCurrentState()<<std::endl;
+        std::string subName;
+        for(int i=0; i<pieces.size(); i++) {
+            subName = subName + pieces[i].toStdString();
+            QGVSubGraph* sgraph = mainWindow->getParent(subName);
+            if(sgraph != NULL) {
+                sgraph->setActive(false);
+                sgraph->update();
+            }
+            subName += ".";
+        }
         QGVNode* node = mainWindow->getNode(stateName);
         if(node == NULL)
             node = mainWindow->getNode(stateName+".initial");
@@ -75,7 +87,7 @@ void MyStateMachine::onPreStep() {
 }
 
 
-void MyStateMachine::onPostStep() {
+void MyStateMachine::onPostStep() {    
     if(stateName != getCurrentState()) {
         string msg = "Transited from <"+ stateName + "> to <"+ getCurrentState() + ">";
         QTime qt = QTime::currentTime();
@@ -88,6 +100,18 @@ void MyStateMachine::onPostStep() {
     }
 
     if(getCurrentState() != "<none>") {
+        QStringList pieces = QString(getCurrentState().c_str()).split( "." );
+        //std::cout<<"onPostStep(): geting parent of "<<getCurrentState()<<std::endl;
+        std::string subName;
+        for(int i=0; i<pieces.size(); i++) {
+            subName = subName + pieces[i].toStdString();
+            QGVSubGraph* sgraph = mainWindow->getParent(subName);
+            if(sgraph != NULL) {
+                sgraph->setActive(true);
+                sgraph->update();
+            }
+            subName += ".";
+        }
         QGVNode* node = mainWindow->getNode(getCurrentState());
         if(node == NULL)
             node = mainWindow->getNode(getCurrentState()+".initial");
@@ -112,6 +136,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initScene();
 
     connect(ui->actionQuit, SIGNAL(triggered()),this,SLOT(onQuit()));
+    connect(ui->actionAbout, SIGNAL(triggered()),this,SLOT(onAbout()));
     connect(ui->action_LoadrFSM, SIGNAL(triggered()),this,SLOT(onLoadrFSM()));
     connect(ui->pushButtonSendEvent, SIGNAL(clicked()),this, SLOT(onSendEvent()));
     connect(ui->actionChangeRunPeriod, SIGNAL(triggered()),this,SLOT(onChangeRunPeriod()));
@@ -163,14 +188,19 @@ void MainWindow::initScene() {
 }
 
 
+std::string MainWindow::getPureStateName(const std::string& name) {
+    QStringList pieces = QString(name.c_str()).split(".");
+    return pieces[pieces.size()-1].toStdString();
+}
+
 QGVSubGraph * MainWindow::getParent(const std::string& name) {
-     std::map<std::string,QGVSubGraph*>::iterator it;
-     for(it = sceneSubGraphMap.begin(); it!=sceneSubGraphMap.end(); it++ ) {
-         std::string sgname = (*it).first;
-         if(name.find(sgname+".") != std::string::npos)
-             return sceneSubGraphMap[sgname];
-     }
-     return NULL;
+    QStringList pieces = QString(name.c_str()).split(".");
+    std::string lastNodeName = pieces[pieces.size()-1].toStdString();
+    if(pieces.size() <2) // no parent
+        return NULL;
+    std::string parentName = name.substr(0, name.find(lastNodeName)-1);
+    //std::cout<<"getParent of "<<lastNodeName <<" out of "<<name << " is "<<parentName<<std::endl;
+    return sceneSubGraphMap[parentName];
 }
 
 
@@ -202,7 +232,7 @@ void MainWindow::drawStateMachine() {
     scene->setGraphAttribute("bgcolor", "#2e3e56");
     //scene->setGraphAttribute("concentrate", "true"); //Error !
     scene->setGraphAttribute("nodesep", "0.7");
-    scene->setGraphAttribute("ranksep", "0.7");
+    scene->setGraphAttribute("ranksep", "0.4");
     //scene->setNodeAttribute("shape", "box");
     scene->setNodeAttribute("style", "filled");
     scene->setNodeAttribute("fillcolor", "gray");
@@ -212,12 +242,19 @@ void MainWindow::drawStateMachine() {
 
     // adding composit states
     const rfsm::StateGraph& graph = rfsm.getStateGraph();
-    for(int i=0; i<graph.states.size(); i++) {
+    for(size_t i=0; i<graph.states.size(); i++) {
         if(graph.states[i].type == "composit") {
-            QGVSubGraph *sgraph = scene->addSubGraph(graph.states[i].name.c_str());
+            //std::cout<<graph.states[i].name<<std::endl;
+            QGVSubGraph *sgraph;
+            QGVSubGraph *sgraphParent = getParent(graph.states[i].name);
+            if(sgraphParent != NULL)
+                sgraph = sgraphParent->addSubGraph(graph.states[i].name.c_str());
+            else
+                sgraph = scene->addSubGraph(graph.states[i].name.c_str());
             sgraph->setAttribute("shape", "box");
-            sgraph->setAttribute("label", graph.states[i].name.c_str());
-            sgraph->setAttribute("fillcolor", "#edad56");
+            sgraph->setAttribute("label", getPureStateName(graph.states[i].name).c_str());
+            sgraph->setAttribute("fillcolor", "#2e3e56");
+            sgraph->setAttribute("style", "filled");
             sgraph->setAttribute("color", "#edad56");
             sceneSubGraphMap[graph.states[i].name] = sgraph;
         }
@@ -225,11 +262,10 @@ void MainWindow::drawStateMachine() {
 
 
     // adding single states
-    //const rfsm::StateGraph& graph = rfsm.getStateGraph();
-    for(int i=0; i<graph.states.size(); i++) {
+    for(size_t i=0; i<graph.states.size(); i++) {
         QGVNode *node;
         if(graph.states[i].type != "composit") {
-            QGVSubGraph* sgraph =  getParent(graph.states[i].name);
+            QGVSubGraph* sgraph = getParent(graph.states[i].name);
             if(sgraph != NULL)
                 node = sgraph->addNode(graph.states[i].name.c_str());
             else
@@ -242,8 +278,8 @@ void MainWindow::drawStateMachine() {
                 node->setAttribute("label", "");
             }
             else {
-                node->setAttribute("shape", "box");
-                node->setAttribute("label", graph.states[i].name.c_str());
+                node->setAttribute("shape", "box");                
+                node->setAttribute("label", getPureStateName(graph.states[i].name).c_str());
             }
             // use this for error : #FA8072
             node->setAttribute("fillcolor", "#edad56");
@@ -253,9 +289,9 @@ void MainWindow::drawStateMachine() {
     }
 
     // adding transitions
-    for(int i=0; i<graph.transitions.size(); i++) {
+    for(size_t i=0; i<graph.transitions.size(); i++) {
         std::string events;
-        for(int e=0; e<graph.transitions[i].events.size();e++) {
+        for(size_t e=0; e<graph.transitions[i].events.size();e++) {
             std::string ev = graph.transitions[i].events[e];
             if (ev.find("e_done@") != string::npos)
                 ev = "e_done";
@@ -302,7 +338,7 @@ bool MainWindow::loadrFSM(const std::string filename) {
 
     QStringList ql;
     const std::vector<std::string>& events = rfsm.getEventsList();
-    for (int i=0; i<events.size(); i++) {
+    for (size_t i=0; i<events.size(); i++) {
         if(events[i] != "e_init_fsm")
             ql.push_back(events[i].c_str());
     }
@@ -312,11 +348,12 @@ bool MainWindow::loadrFSM(const std::string filename) {
     updateEventQueue();
     drawStateMachine();
     switchMachineMode(IDLE);    
+    ui->statusBar->showMessage(("Loaded " + filename).c_str());
     return true;
 }
 
 void MainWindow::onLoadrFSM() {
-    QString filters("rFSM LUA files (*.lua);;All files (*.*)");
+    QString filters("rFSM state machine (*.lua);;All files (*.*)");
     QString defaultFilter("rFSM state machine (*.lua)");
     QString filename = QFileDialog::getOpenFileName(0, "Load rFSM state machine",
                                                     QDir::homePath(),
@@ -330,7 +367,7 @@ void MainWindow::onDebugStartrFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {
         //rfsm.setStateCallback("Configure", defaultCallback);
         const rfsm::StateGraph& graph = rfsm.getStateGraph();
-        for(int i=0; i<graph.states.size(); i++) {
+        for(size_t i=0; i<graph.states.size(); i++) {
             //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
             if(graph.states[i].type != "connector")
                 rfsm.setStateCallback(graph.states[i].name, defaultCallback);
@@ -339,13 +376,14 @@ void MainWindow::onDebugStartrFSM() {
     switchMachineMode(DEBUG);
     rfsm.run();
     updateEventQueue();
+    ui->statusBar->showMessage(("Debugging " +  std::string(((ui->actionDryrun->isChecked()) ? "(Dry Run) ..." : "..."))).c_str());
 }
 
 void MainWindow::onDebugSteprFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {
         //rfsm.setStateCallback("Configure", defaultCallback);
         const rfsm::StateGraph& graph = rfsm.getStateGraph();
-        for(int i=0; i<graph.states.size(); i++) {
+        for(size_t i=0; i<graph.states.size(); i++) {
             //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
             if(graph.states[i].type != "connector")
                 rfsm.setStateCallback(graph.states[i].name, defaultCallback);
@@ -354,6 +392,7 @@ void MainWindow::onDebugSteprFSM() {
     switchMachineMode(DEBUG);
     rfsm.step();
     updateEventQueue();
+    ui->statusBar->showMessage(("Debugging " +  std::string(((ui->actionDryrun->isChecked()) ? "(Dry Run) ..." : "..."))).c_str());
 }
 
 void MainWindow::onDebugResetrFSM() {
@@ -378,6 +417,7 @@ void MainWindow::onRunStartrFSM() {
         switchMachineMode(RUN);
         rfsm.start();
     }
+    ui->statusBar->showMessage("Running...");
 }
 
 void MainWindow::onRunStoprFSM() {
@@ -398,6 +438,7 @@ void MainWindow::onRunStoprFSM() {
 void MainWindow::onRunPauserFSM() {
     switchMachineMode(PAUSE);
     rfsm.stop();
+    ui->statusBar->showMessage("Paused!");
 }
 
 
@@ -425,7 +466,7 @@ void MainWindow::updateEventQueue() {
     rfsm.getEventQueue(equeue);
     ui->nodesTreeWidgetEvent->clear();
     QTime qt = QTime::currentTime();
-    for(int i=0; i<equeue.size(); i++) {
+    for(size_t i=0; i<equeue.size(); i++) {
         QTreeWidgetItem* item;
         QStringList event;
         event.clear();
@@ -492,6 +533,11 @@ void MainWindow::onQuit() {
     rfsm.stop();
     rfsm.close();
     MainWindow::close();
+}
+
+void MainWindow::onAbout() {
+    QMessageBox::about(this, "rFSM Gui (version 1.0.0)",
+                       "A graphical tool for running and debuging rFSM state machines\n\nAuthors:\n\t-Ali Paikan <ali.paikan@iit.it>\n\t-Nicolò Genesio <nicolo.genesio@iit.it>");
 }
 
 void MainWindow::onExportScene() {
