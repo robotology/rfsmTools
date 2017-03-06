@@ -11,6 +11,8 @@ PROJECT(${PROJECTNAME})
 option (EMBED_RFSM  "Embed rfsm lua file into the librFSM" TRUE)
 option (ENABLE_SIMRFSM  "build rfsm simulator" TRUE)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+
 add_subdirectory(librFSM)
 add_subdirectory(examples)
 add_subdirectory(rfsmGui)

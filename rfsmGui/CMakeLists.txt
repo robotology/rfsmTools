@@ -4,7 +4,6 @@ project(${PROJECTNAME})
 
 
 if(ENABLE_SIMRFSM)
-    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
     include(GNUInstallDirs)
 
     find_package(Graphviz)
