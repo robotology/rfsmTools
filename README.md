@@ -43,7 +43,7 @@ Installation on Windows
 * Install [graphviz for windows](http://www.graphviz.org/pub/graphviz/stable/windows/graphviz-2.38.msi) and set/update the corresponding enviornment variables (`GRAPHVIZ_ROOT` and `PATH`): 
 ```
  C:\> setx.exe GRAPHVIZ_ROOT <path to the graphviz installed directory>
- C:\> setx.exe PATH "%PATH%;%GRAPHVIZ_ROOT%\bin"
+ C:\> setx.exe PATH "%PATH%;<path to the graphviz installed directory>\bin"
 ```
 
 * The compilation is straightforward and uses the CMake build system. Get [Cmake for windows](https://cmake.org/download/) if you have not yet installed. Then simply run the Cmake and, set the project (rfsmTools) root folder and the desired build folder. Configure and generate project solution for your favorite IDE (e.g. Visual Studio 11). Then open the solution from your IDE and build the project.   
