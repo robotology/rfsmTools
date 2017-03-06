@@ -118,6 +118,8 @@ void MyStateMachine::onPostStep() {
         Q_ASSERT(node != NULL);
         node->setActive(true);
         node->update();
+        if(stateName != getCurrentState())
+            mainWindow->ui->graphicsView->centerOn(node);
     }
 }
 
@@ -126,8 +128,8 @@ void MyStateMachine::onPostStep() {
 /************************************************/
 /* MainWindow                                   */
 /************************************************/
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
+    parser(prsr), QMainWindow(parent),
     ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED)
 {
     ui->setupUi(this);
@@ -155,11 +157,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionLine, SIGNAL(triggered()),this,SLOT(onLayoutLine()));
     connect(ui->actionExport_scene, SIGNAL(triggered()),this,SLOT(onExportScene()));
 
-    layoutStyle = "polyline";
-    ui->actionOrthogonal->setChecked(true);
-    layoutSubgraph = true;
-    ui->actionSubgraph->setChecked(true);
-
+    layoutStyle = "spline";
+    ui->actionCurved->setChecked(true);
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
     ui->actionDocumentaion->setEnabled(false);
@@ -167,6 +166,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionExport_scene->setEnabled(false);
 
     switchMachineMode(UNLOADED);
+    if(parser->value("rfsm").size()) {
+       bool ok = loadrFSM(parser->value("rfsm").toStdString());
+       if (ok && parser->isSet("run")) {
+           QTimer::singleShot(10, this, SLOT(onRunStartrFSM()));
+       }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -226,13 +231,14 @@ void MainWindow::drawStateMachine() {
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
 
-    scene->setGraphAttribute("splines", layoutStyle.c_str()); //curved, polyline, line. ortho
+    scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
     scene->setGraphAttribute("remincross", "true");
     scene->setGraphAttribute("rankdir", "TD");
     scene->setGraphAttribute("bgcolor", "#2e3e56");
     //scene->setGraphAttribute("concentrate", "true"); //Error !
     scene->setGraphAttribute("nodesep", "0.7");
     scene->setGraphAttribute("ranksep", "0.4");
+    //scene->setGraphAttribute("sep", "0.4");
     //scene->setNodeAttribute("shape", "box");
     scene->setNodeAttribute("style", "filled");
     scene->setNodeAttribute("fillcolor", "gray");
@@ -257,6 +263,17 @@ void MainWindow::drawStateMachine() {
             sgraph->setAttribute("style", "filled");
             sgraph->setAttribute("color", "#edad56");
             sceneSubGraphMap[graph.states[i].name] = sgraph;
+            // adding end node
+            std::string endNodeName = graph.states[i].name + ".end";
+            QGVNode * node = sgraph->addNode(endNodeName.c_str());
+            node->setAttribute("shape", "circle");
+            node->setAttribute("height", "0.1");
+            node->setAttribute("fixedsize", "true");
+            node->setAttribute("label", "");
+            node->setAttribute("fillcolor", "#edad56");
+            node->setAttribute("color", "#edad56");
+            node->setAttribute("node_type", "end");
+            sceneNodeMap[endNodeName] = node;
         }
     }
 
@@ -299,34 +316,32 @@ void MainWindow::drawStateMachine() {
         }
 
         //std::cout<<"\t"<<graph.transitions[i].source<<" -> "<<graph.transitions[i].target<<"("<<events<<")"<<std::endl;
-
         QGVNode* from = getNode(graph.transitions[i].source);
         if(from == NULL) {
-            from = getNode(graph.transitions[i].source+".initial");
+            from = getNode(graph.transitions[i].source+".end");
         }
         QGVNode* to = getNode(graph.transitions[i].target);
         Q_ASSERT(from != NULL);
         Q_ASSERT(to != NULL);
         QGVEdge* gve = scene->addEdge(from, to, events.c_str());
         gve->setAttribute("color", "white");
+        //gve->setAttribute("ltail", graph.transitions[i].source.c_str());
+        //gve->setAttribute("lhead", graph.transitions[i].target.c_str());
         //gve->setAttribute("style", "dashed");
     }    
 
     //node->setIcon(QImage(":/icons/resources/Gnome-System-Run-64.png"));
-
     //Layout scene
     scene->applyLayout();
     //Fit in view
     ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
-    //QGVSubGraph *ssgraph = sgraph->addSubGraph("SUB2");
-    //ssgraph->setAttribute("label", "DESK");
-    //scene->addEdge(snode1, ssgraph->addNode("PC0155"), "S10");
 }
 
 bool MainWindow::loadrFSM(const std::string filename) {
     QDir path = QFileInfo(filename.c_str()).absoluteDir();
     rfsm.addLuaPackagePath((path.absolutePath()+"/?.lua").toStdString());
     QDir::setCurrent(path.absolutePath());
+    std::cout<<"current: "<<path.absolutePath().toStdString()<<std::endl;
 
     if(!rfsm.load(filename)) {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename).c_str()));
@@ -523,7 +538,7 @@ void MainWindow::onLayoutCurved() {
     ui->actionOrthogonal->setChecked(false);
     ui->actionPolyline->setChecked(false);
     ui->actionLine->setChecked(false);
-    layoutStyle = "curved";
+    layoutStyle = "spline";
     drawStateMachine();
 }
 

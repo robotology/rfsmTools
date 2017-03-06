@@ -9,6 +9,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QCommandLineParser>
 #include <QGVScene.h>
 #include <QStringList>
 #include <QStringListModel>
@@ -65,7 +66,7 @@ private:
     };
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QCommandLineParser* prsr, QWidget *parent = 0);
     ~MainWindow();
     QGVNode* getNode(const std::string& name);
     QGVSubGraph * getParent(const std::string& name );
@@ -111,10 +112,10 @@ public:
     QGVScene *scene;
 
 private:
+    QCommandLineParser* parser;
     MyStateMachine rfsm;
     MachineMode machineMode;    
-    std::string layoutStyle;
-    bool layoutSubgraph;
+    std::string layoutStyle;    
     QTreeWidgetItem *moduleParentItem;
     QTreeWidgetItem *portParentItem;
 };

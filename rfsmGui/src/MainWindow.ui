@@ -254,7 +254,7 @@
      <x>0</x>
      <y>0</y>
      <width>839</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -342,7 +342,7 @@
   <action name="action_LoadrFSM">
    <property name="icon">
     <iconset resource="ress.qrc">
-     <normaloff>:/icons/resources/file-new.svg</normaloff>:/icons/resources/file-new.svg</iconset>
+     <normaloff>:/icons/resources/file-open.svg</normaloff>:/icons/resources/file-open.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Load rFSM...</string>
@@ -404,14 +404,6 @@
    </property>
    <property name="text">
     <string>Curved</string>
-   </property>
-  </action>
-  <action name="actionSubgraph">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Subgraph</string>
    </property>
   </action>
   <action name="actionExport_scene">

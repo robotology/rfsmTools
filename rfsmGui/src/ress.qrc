@@ -11,5 +11,6 @@
         <file>resources/stop.svg</file>
         <file>resources/step.svg</file>
         <file>resources/rfsmGui.svg</file>
+        <file>resources/file-open.svg</file>
     </qresource>
 </RCC>

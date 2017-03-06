@@ -86,6 +86,12 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     else
         painter->drawPath(_path);
 
+    if(getAttribute("node_type") == "end") {
+         QRectF rect = boundingRect();
+         painter->setBrush(QBrush());
+         painter->drawEllipse(rect.center(), rect.width()+1, rect.height()+1);
+    }
+
     painter->setPen(QGVCore::toColor(getAttribute("labelfontcolor")));
     const QRectF rect = boundingRect().adjusted(2,2,-2,-2); //Margin
     QFont font;
