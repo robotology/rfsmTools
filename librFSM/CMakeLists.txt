@@ -54,4 +54,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 
 add_library(rFSM ${headers} ${sources} ${resources})
 target_link_libraries(rFSM ${LUA_LIBRARY})
-             
+
+# Add bindings
+add_subdirectory(bindings)
