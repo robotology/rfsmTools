@@ -12,7 +12,7 @@ Dependencies
 * [Graphviz](http://www.graphviz.org/) development library for *rfsmGui*
 * [rFSM](https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html) (optional)
 
-*librFSM* can be built with the built-in rfsm lua library (default is off). Please see [Compile and build](#Compile and build) 
+*librFSM* can be built with the built-in rfsm lua library (default is ON).
 
 
 Installation on Linux
