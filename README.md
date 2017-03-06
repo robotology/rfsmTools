@@ -1,6 +1,6 @@
 # rFSM Tools
 
-The reository contains a C++ library (*librFSM*) to load and execute rFSM LUA-based state machines and a graphical tools (*rfsmGui*) to run/simulate the state machine.
+This repository contains a C++ library (*librFSM*) to load and execute rFSM LUA-based state machines and a graphical tools (*rfsmGui*) to run/simulate the state machine.
 
 
 ![scenario2](/doc/rfsmGui.png)
@@ -52,7 +52,7 @@ Installation on Windows
  C:\> setx.exe PATH "%PATH%;<path to the graphviz installed directory>\bin"
 ```
 
-* The compilation is straightforward and uses the CMake build system. Get [Cmake for windows](https://cmake.org/download/) if you have not yet installed. Then simply run the Cmake and, set the project (rfsmTools) root folder and the desired build folder. Configure and generate project solution for your favorite IDE (e.g. Visual Studio 11). Then open the solution from your IDE and build the project.   
+* The compilation is straightforward and uses the CMake build system. Get [CMake for windows](https://cmake.org/download/) if you have not yet installed. Then simply run the Cmake and, set the project (rfsmTools) root folder and the desired build folder. Configure and generate project solution for your favorite IDE (e.g. Visual Studio 11). Then open the solution from your IDE and build the project.   
 
 
 Testing the Library
@@ -66,9 +66,9 @@ Testing the rfsmGui
 -------------------
 Launch the `rfsmGui`. Open the example rFSM state machine from `rfsmTools/examples/fsm/rfmodule_fsm.lua`. 
 
-* **Running**: To execut the state machine, just press the `Start` from the `Run` menu. you can interfere the execution of the state machine by `Pausing` it or sending arbitrary events from Gui. 
+* **Running**: To execute the state machine, just press the `Start` from the `Run` menu. you can interfere the execution of the state machine by `Pausing` it or sending arbitrary events from Gui. 
 
-* **Debuging**: In the debug mode, you can step the state machine, send arbitrary events and etc. Debuggin state machine using GUI also offer the `dry-run` mode. When an state machine executed in dry-run mode, non of the `entry`, `doo` or `exit` callbacks of a state is called! To debug the state machine, just press the `Step` or `Run` from the 'Debug' menu. Stepping the state machine, consumes an event from the event queue and perform the corresponding transition. Running it, will continue stepping until there is not any event left in the event queue. 
+* **Debuging**: In the debug mode, you can step the state machine, send arbitrary events and etc. Debugging state machine using GUI also offer the `dry-run` mode. When an state machine executed in dry-run mode, none of the `entry`, `doo` or `exit` callbacks of a state are called! To debug the state machine, just press the `Step` or `Run` from the 'Debug' menu. Stepping the state machine, consumes an event from the event queue and performs the corresponding transition. Running it, will continue stepping until there is no event left in the event queue. 
 
 
 Example of using rfsm from C++
