@@ -102,5 +102,6 @@ int main(int argc, char** argv) {
 Contributors
 -------------
 * [*Ali Paikan*](https://github.com/apaikan)
+* [*Silvio Traversaro*](https://github.com/traversaro)
 * [*Nicolò Genesio*](https://github.com/Nicogene)
 
