@@ -19,9 +19,11 @@
 #include "QGVSubGraph.h"
 #include <QTime>
 #include <QMessageBox>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QtPrintSupport/QPrinter>
+#include "newrfsmdialog.h"
 #include <QMutexLocker>
 
 #ifdef USE_YARP
@@ -146,6 +148,8 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(ui->actionQuit, SIGNAL(triggered()),this,SLOT(onQuit()));
     connect(ui->actionAbout, SIGNAL(triggered()),this,SLOT(onAbout()));
     connect(ui->action_LoadrFSM, SIGNAL(triggered()),this,SLOT(onLoadrFSM()));
+    connect(ui->action_New_rFSM, SIGNAL(triggered()),this,SLOT(onNewrFSM()));
+    connect(ui->action_Save_project, SIGNAL(triggered()),this,SLOT(onSaverFSM()));
     connect(ui->pushButtonSendEvent, SIGNAL(clicked()),this, SLOT(onSendEvent()));
     connect(ui->actionChangeRunPeriod, SIGNAL(triggered()),this,SLOT(onChangeRunPeriod()));
 
@@ -177,6 +181,10 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(sourceWindow, SIGNAL(sourceCodeSaved()), SLOT(onSourceCodeSaved()));
 
     layoutStyle = "spline";
+    fileNameSave="";
+    authors="";
+    description="";
+    version="";
     ui->actionCurved->setChecked(true);
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
@@ -438,6 +446,29 @@ void MainWindow::onLoadrFSM() {
     loadrFSM(filename.toStdString());
 }
 
+void MainWindow::onNewrFSM() {
+    NewRFSMDialog dialog;
+    if(!dialog.exec())
+        return;
+    fileNameSave = dialog.getFileName();
+    authors = dialog.getAuthors();
+    description = dialog.getDescription();
+    version = dialog.getVersion();
+    ui->action_Save_project->setEnabled(true);
+    switchMachineMode(UNLOADED);
+    ui->action_LoadrFSM->setEnabled(false);
+    ui->statusBar->showMessage(("Building "+fileNameSave.toStdString()+" | author: "+authors.toStdString()
+                               +" | version "+version.toStdString()).c_str());
+
+
+}
+
+void MainWindow::onSaverFSM(){
+    switchMachineMode(IDLE);
+    ui->action_Save_project->setEnabled(false);
+    ui->statusBar->showMessage((fileNameSave.toStdString()+" saved successfully").c_str());
+}
+
 void MainWindow::onDebugStartrFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {        
         const rfsm::StateGraph& graph = rfsm.getStateGraph();
@@ -495,7 +526,7 @@ void MainWindow::onRunStartrFSM() {
         initScene();
         std::string filename = rfsm.getFileName();
         rfsm.close();
-        if( loadrFSM(filename) ) {            
+        if( loadrFSM(filename) ) {
             rfsm.start();
             switchMachineMode(RUN);
         }

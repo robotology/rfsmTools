@@ -118,6 +118,8 @@ private slots:
     void onLayoutCurved();
     void onExportScene();
     void onLoadrFSM();
+    void onNewrFSM();
+    void onSaverFSM();
     void onDebugStartrFSM();
     void onDebugSteprFSM();
     void onDebugResetrFSM();
@@ -153,9 +155,13 @@ private:
     MyStateMachine rfsm;    
     std::string layoutStyle;    
     QTreeWidgetItem *moduleParentItem;
-    QTreeWidgetItem *portParentItem;        
+    QTreeWidgetItem *portParentItem;
     QFileSystemWatcher* watcher;
     QSettings settings;
+    QString fileNameSave;
+    QString authors;
+    QString description;
+    QString version;
 };
 
 #endif // MAINWINDOW_H

@@ -15,6 +15,7 @@ include_directories(../QGVCore
 set(rfsmgui_qt_SRCS main.cpp
                     MainWindow.cpp
                     QGraphicsViewEc.cpp
+		    newrfsmdialog.cpp
                     sourceEditor/SourceEditorWindow.cpp
                     sourceEditor/highlighter.cpp
                     sourceEditor/codeeditor.cpp)
@@ -22,6 +23,7 @@ set(rfsmgui_qt_SRCS main.cpp
 set(rfsmgui_qt_HDRS MainWindow.h
                     QGraphicsViewEc.h
                     QGraphicsViewEc.h
+                    newrfsmdialog.h
                     sourceEditor/SourceEditorWindow.h
                     sourceEditor/highlighter.h
                     sourceEditor/codeeditor.h)
@@ -29,6 +31,7 @@ set(rfsmgui_qt_HDRS MainWindow.h
 set(rfsmgui_qt_QRC_FILES ress.qrc)
 
 set(rfsmgui_qt_UI_FILES MainWindow.ui
+                        newrfsmdialog.ui
                         sourceEditor/SourceEditorWindow.ui)
 
 

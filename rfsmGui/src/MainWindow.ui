@@ -262,6 +262,7 @@
      <string>File</string>
     </property>
     <addaction name="separator"/>
+    <addaction name="action_New_rFSM"/>
     <addaction name="action_LoadrFSM"/>
     <addaction name="action_Save_project"/>
     <addaction name="separator"/>
@@ -329,6 +330,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_New_rFSM"/>
    <addaction name="action_LoadrFSM"/>
    <addaction name="actionSourceCode"/>
    <addaction name="separator"/>
@@ -514,6 +516,15 @@
    </property>
    <property name="text">
     <string>&amp;Source code...</string>
+   </property>
+  </action>
+  <action name="action_New_rFSM">
+   <property name="icon">
+    <iconset resource="ress.qrc">
+     <normaloff>:/icons/resources/file-new.svg</normaloff>:/icons/resources/file-new.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New rFSM...</string>
    </property>
   </action>
  </widget>
