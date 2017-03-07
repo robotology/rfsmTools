@@ -459,13 +459,21 @@ void MainWindow::onNewrFSM() {
     ui->action_LoadrFSM->setEnabled(false);
     ui->statusBar->showMessage(("Building "+fileNameSave.toStdString()+" | author: "+authors.toStdString()
                                +" | version "+version.toStdString()).c_str());
-
-
+    //cleaning everithing for buinding a new state machine.
+    rfsm.stop();
+    initScene();
+    sceneNodeMap.clear();
+    sceneSubGraphMap.clear();
+    ui->comboBoxEvents->clear();
+    ui->nodesTreeWidgetEvent->clear();
+    ui->nodesTreeWidgetLog->clear();
+    rfsm.close();
 }
 
 void MainWindow::onSaverFSM(){
     switchMachineMode(IDLE);
     ui->action_Save_project->setEnabled(false);
+    ui->action_LoadrFSM->setEnabled(true);
     ui->statusBar->showMessage((fileNameSave.toStdString()+" saved successfully").c_str());
 }
 
@@ -923,6 +931,8 @@ void MainWindow::switchMachineMode(MachineMode mode) {
     machineMode = mode;
     switch (machineMode) {
     case UNLOADED:
+        ui->action_LoadrFSM->setEnabled(true);
+        ui->action_New_rFSM->setEnabled(true);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -935,6 +945,8 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionSourceCode->setEnabled(false);
         break;
     case IDLE:
+        ui->action_LoadrFSM->setEnabled(true);
+        ui->action_New_rFSM->setEnabled(true);
         ui->actionExport_scene->setEnabled(true);
         // debug
         ui->actionDebugStart->setEnabled(true);
@@ -948,6 +960,9 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionSourceCode->setEnabled(true);
         break;
     case DEBUG:
+        ui->action_Save_project->setEnabled(false);
+        ui->action_LoadrFSM->setEnabled(false);
+        ui->action_New_rFSM->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(true);
@@ -960,6 +975,9 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionSourceCode->setEnabled(false);
         break;
     case RUN:
+        ui->action_Save_project->setEnabled(false);
+        ui->action_LoadrFSM->setEnabled(false);
+        ui->action_New_rFSM->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -972,6 +990,9 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionSourceCode->setEnabled(false);
         break;
     case PAUSE:
+        ui->action_Save_project->setEnabled(false);
+        ui->action_LoadrFSM->setEnabled(false);
+        ui->action_New_rFSM->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
