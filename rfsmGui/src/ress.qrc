@@ -12,6 +12,11 @@
         <file>resources/step.svg</file>
         <file>resources/rfsmGui.svg</file>
         <file>resources/file-open.svg</file>
+        <file>resources/state.svg</file>
+        <file>resources/cstate.svg</file>
+        <file>resources/transition.svg</file>
+        <file>resources/initial.svg</file>
+        <file>resources/connector.svg</file>
         <file>resources/source-edit.svg</file>
     </qresource>
 </RCC>

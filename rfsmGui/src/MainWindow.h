@@ -79,6 +79,7 @@ public:
     enum MachineMode {
         UNLOADED,
         IDLE,
+        BUILDER,
         RUN,
         PAUSE,
         ASK_PAUSE,

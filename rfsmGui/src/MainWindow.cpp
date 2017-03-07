@@ -448,15 +448,21 @@ void MainWindow::onLoadrFSM() {
 
 void MainWindow::onNewrFSM() {
     NewRFSMDialog dialog;
+    if(machineMode!=UNLOADED)
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "New rFSM", "Closing this state machine.\n Are you sure?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+    }
     if(!dialog.exec())
         return;
     fileNameSave = dialog.getFileName();
     authors = dialog.getAuthors();
     description = dialog.getDescription();
     version = dialog.getVersion();
-    ui->action_Save_project->setEnabled(true);
-    switchMachineMode(UNLOADED);
-    ui->action_LoadrFSM->setEnabled(false);
+    switchMachineMode(BUILDER);
     ui->statusBar->showMessage(("Building "+fileNameSave.toStdString()+" | author: "+authors.toStdString()
                                +" | version "+version.toStdString()).c_str());
     //cleaning everithing for buinding a new state machine.
@@ -475,6 +481,7 @@ void MainWindow::onSaverFSM(){
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
     ui->statusBar->showMessage((fileNameSave.toStdString()+" saved successfully").c_str());
+    //remember to set the stato to UNLOADED if the saving fails
 }
 
 void MainWindow::onDebugStartrFSM() {
@@ -933,6 +940,11 @@ void MainWindow::switchMachineMode(MachineMode mode) {
     case UNLOADED:
         ui->action_LoadrFSM->setEnabled(true);
         ui->action_New_rFSM->setEnabled(true);
+        ui->action_Single_State->setEnabled(false);
+        ui->action_Composite_State->setEnabled(false);
+        ui->action_Initial_Transition->setEnabled(false);
+        ui->action_Connector->setEnabled(false);
+        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -948,6 +960,11 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(true);
         ui->action_New_rFSM->setEnabled(true);
         ui->actionExport_scene->setEnabled(true);
+        ui->action_Single_State->setEnabled(false);
+        ui->action_Composite_State->setEnabled(false);
+        ui->action_Initial_Transition->setEnabled(false);
+        ui->action_Connector->setEnabled(false);
+        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(false);
@@ -959,10 +976,34 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionChangeRunPeriod->setEnabled(true);
         ui->actionSourceCode->setEnabled(true);
         break;
+    case BUILDER:
+        ui->action_LoadrFSM->setEnabled(false);
+        ui->action_New_rFSM->setEnabled(false);
+        ui->action_Save_project->setEnabled(true);
+        ui->action_Single_State->setEnabled(true);
+        ui->action_Composite_State->setEnabled(true);
+        ui->action_Initial_Transition->setEnabled(true);
+        ui->action_Connector->setEnabled(true);
+        ui->action_Transition->setEnabled(true);
+        // debug
+        ui->actionDebugStart->setEnabled(false);
+        ui->actionDebugReset->setEnabled(false);
+        ui->actionDebugStep->setEnabled(false);
+        //run
+        ui->actionRunStart->setEnabled(false);
+        ui->actionRunStop->setEnabled(false);
+        ui->actionRunPause->setEnabled(false);
+        ui->actionChangeRunPeriod->setEnabled(true);
+        break;
     case DEBUG:
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
+        ui->action_Single_State->setEnabled(false);
+        ui->action_Composite_State->setEnabled(false);
+        ui->action_Initial_Transition->setEnabled(false);
+        ui->action_Connector->setEnabled(false);
+        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(true);
@@ -978,6 +1019,11 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
+        ui->action_Single_State->setEnabled(false);
+        ui->action_Composite_State->setEnabled(false);
+        ui->action_Initial_Transition->setEnabled(false);
+        ui->action_Connector->setEnabled(false);
+        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -993,6 +1039,11 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
+        ui->action_Single_State->setEnabled(false);
+        ui->action_Composite_State->setEnabled(false);
+        ui->action_Initial_Transition->setEnabled(false);
+        ui->action_Connector->setEnabled(false);
+        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
