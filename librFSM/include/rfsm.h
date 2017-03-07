@@ -58,12 +58,18 @@ public:
     struct State {
         std::string name;
         std::string type;
+        bool operator==(const State& s) const {
+            return (s.name == name) && (s.type == type);
+        }
     };
 
     struct Transition {
         std::string source;
         std::string target;
         std::vector<std::string> events;
+        bool operator==(const Transition& s) const {
+            return (s.source == source) && (s.target == target) && (s.events == events);
+        }
     };
 
 public:
