@@ -19,6 +19,11 @@ endif()
 set(headers include/rfsm.h
             include/rfsmUtils.h)
 
+#########################################################################
+# Control where libraries and executables are placed during the build
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+
 # check if we need to embed rfsm lua files
 if(EMBED_RFSM)
     add_definitions(" -DWITH_EMBEDDED_RFSM")
@@ -52,8 +57,14 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                 ${LUA_INCLUDE_DIR}
                 ./include)
 
-add_library(rFSM ${headers} ${sources} ${resources})
+if(WIN32)
+    add_library(rFSM ${headers} ${sources} ${resources})
+else()
+    add_library(rFSM SHARED ${headers} ${sources} ${resources})
+endif()
+
 target_link_libraries(rFSM ${LUA_LIBRARY})
 
 # Add bindings
 add_subdirectory(bindings)
+
