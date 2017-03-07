@@ -80,7 +80,14 @@ if(WIN32)
           DEFINE_SYMBOL "DLL_EXPORT_SYM=__declspec(dllexport)")
 endif()
 
-# Install the generated front-end to ${CMAKE_INSTALL_PREFIX}/matlab_tb
+# Copy the generated bindings to ${CMAKE_BINARY_DIR}/mex
+file(COPY ${CMAKE_SWIG_OUTDIR}/+rfsm DESTINATION ${CMAKE_BINARY_DIR}/mex)
+file(COPY ${CMAKE_SWIG_OUTDIR}/SwigGet.m DESTINATION ${CMAKE_BINARY_DIR}/mex)
+file(COPY ${CMAKE_SWIG_OUTDIR}/SwigRef.m DESTINATION ${CMAKE_BINARY_DIR}/mex)
+file(COPY ${CMAKE_SWIG_OUTDIR}/SwigMem.m DESTINATION ${CMAKE_BINARY_DIR}/mex)
+set_target_properties(${mexname} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/mex)
+
+# Install the generated front-end to ${CMAKE_INSTALL_PREFIX}/mex
 install(DIRECTORY ${CMAKE_SWIG_OUTDIR}/+rfsm DESTINATION ${CMAKE_INSTALL_PREFIX}/mex)
 install(FILES ${CMAKE_SWIG_OUTDIR}/SwigGet.m DESTINATION ${CMAKE_INSTALL_PREFIX}/mex)
 install(FILES ${CMAKE_SWIG_OUTDIR}/SwigRef.m DESTINATION ${CMAKE_INSTALL_PREFIX}/mex)

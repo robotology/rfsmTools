@@ -23,19 +23,20 @@ endif()
 
 set(target_name rfsm_python)
 
-set_source_files_properties(../rfsm.i PROPERTIES CPLUSPLUS ON)
-swig_add_module(${target_name} python ../rfsm.i)
-set_target_properties(_${target_name} PROPERTIES OUTPUT_NAME "_rfsm")
-set_target_properties(_${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/python)
-swig_link_libraries(${target_name} rFSM)
-
-
 # installation path is determined reliably on most platforms using distutils
 execute_process(COMMAND ${PYTHON_EXECUTABLE}
         -c "from distutils import sysconfig; print(sysconfig.get_python_lib(1,0,prefix=''))"
         OUTPUT_VARIABLE PYTHON_INSTDIR)
 string(STRIP ${PYTHON_INSTDIR} PYTHON_INSTDIR)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/iDynTree.py DESTINATION ${PYTHON_INSTDIR} )
+
+set(CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/${PYTHON_INSTDIR})
+set_source_files_properties(../rfsm.i PROPERTIES CPLUSPLUS ON)
+swig_add_module(${target_name} python ../rfsm.i)
+set_target_properties(_${target_name} PROPERTIES OUTPUT_NAME "_rfsm")
+set_target_properties(_${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_INSTDIR})
+swig_link_libraries(${target_name} rFSM)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rfsm.py DESTINATION ${PYTHON_INSTDIR} )
 install(TARGETS _${target_name} DESTINATION ${PYTHON_INSTDIR} )
 
 if(WIN32)
