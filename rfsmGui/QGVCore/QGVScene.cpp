@@ -29,6 +29,7 @@ License along with this library.
 #include <QGVGvcPrivate.h>
 #include <QGVEdgePrivate.h>
 #include <QGVNodePrivate.h>
+#include <QMessageBox>
 
 QGVScene::QGVScene(const QString &name, QObject *parent) : QGraphicsScene(parent)
 {
@@ -211,7 +212,6 @@ void QGVScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *contextMenuEvent
         else
             emit graphContextMenuEvent();
     }
-    //QGraphicsScene::contextMenuEvent(contextMenuEvent);
 }
 
 void QGVScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
@@ -226,9 +226,17 @@ void QGVScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         else if(item->type() == QGVSubGraph::Type)
             emit subGraphDoubleClick(qgraphicsitem_cast<QGVSubGraph*>(item));
     }
+
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
 }
 
+void QGVScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
+    if(mouseEvent->button() == Qt::LeftButton) {
+        emit sceneClicked(mouseEvent->scenePos());
+    }
+
+    QGraphicsScene::mousePressEvent(mouseEvent);
+}
 
 /*
 #include <QVarLengthArray>

@@ -224,6 +224,26 @@ void MainWindow::initScene() {
     connect(scene, SIGNAL(nodeContextMenu(QGVNode*)), SLOT(nodeContextMenu(QGVNode*)));
     connect(scene, SIGNAL(nodeDoubleClick(QGVNode*)), SLOT(nodeDoubleClick(QGVNode*)));
     connect(scene, SIGNAL(edgeContextMenu(QGVEdge*)), SLOT(edgeContextMenu(QGVEdge*)));
+    connect(scene, SIGNAL(sceneClicked(QPointF)), SLOT(onSceneClicked(QPointF)));
+
+    sceneNodeMap.clear();
+    sceneSubGraphMap.clear();
+
+    scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
+    scene->setGraphAttribute("remincross", "true");
+    scene->setGraphAttribute("rankdir", "TD");
+    scene->setGraphAttribute("bgcolor", "#2e3e56");
+    //scene->setGraphAttribute("concentrate", "true"); //Error !
+    scene->setGraphAttribute("nodesep", "0.7");
+    scene->setGraphAttribute("ranksep", "0.4");
+    //scene->setGraphAttribute("sep", "0.4");
+    //scene->setNodeAttribute("shape", "box");
+    scene->setNodeAttribute("style", "filled");
+    scene->setNodeAttribute("fillcolor", "gray");
+    scene->setNodeAttribute("height", "1.0");
+    scene->setEdgeAttribute("minlen", "2.0");
+    //scene->setEdgeAttribute("dir", "both");
+
 }
 
 
@@ -260,7 +280,7 @@ QGVSubGraph* MainWindow::getSubGraph(const std::string& name) {
 }
 
 
-void MainWindow::drawStateMachine() {
+void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
     initScene();
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
@@ -426,7 +446,7 @@ bool MainWindow::loadrFSM(const std::string fname) {
     std::vector<std::string> equeue;
     rfsm.getEventQueue(equeue);
     onUpdateEventQueue(equeue);
-
+    graph = rfsm.getStateGraph();
     // drawing state machine
     drawStateMachine();
     switchMachineMode(IDLE);    
@@ -474,6 +494,7 @@ void MainWindow::onNewrFSM() {
     ui->nodesTreeWidgetEvent->clear();
     ui->nodesTreeWidgetLog->clear();
     rfsm.close();
+    graph=rfsm.getStateGraph();
 }
 
 void MainWindow::onSaverFSM(){
@@ -486,7 +507,7 @@ void MainWindow::onSaverFSM(){
 
 void MainWindow::onDebugStartrFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {        
-        const rfsm::StateGraph& graph = rfsm.getStateGraph();
+        const rfsm::StateGraph& graph = graph;
         for(size_t i=0; i<graph.states.size(); i++) {
             if(graph.states[i].type != "connector")
                 rfsm.setStateCallback(graph.states[i].name, defaultCallback);
@@ -503,7 +524,7 @@ void MainWindow::onDebugStartrFSM() {
 void MainWindow::onDebugSteprFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {
         //rfsm.setStateCallback("Configure", defaultCallback);
-        const rfsm::StateGraph& graph = rfsm.getStateGraph();
+        const rfsm::StateGraph& graph = graph;
         for(size_t i=0; i<graph.states.size(); i++) {
             //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
             if(graph.states[i].type != "connector")
@@ -631,7 +652,7 @@ void MainWindow::onLayoutOrthogonal() {
     ui->actionLine->setChecked(false);
     ui->actionCurved->setChecked(false);
     layoutStyle = "ortho";
-    drawStateMachine();
+    drawStateMachine(graph);
 }
 
 void MainWindow::onLayoutPolyline() {
@@ -639,7 +660,7 @@ void MainWindow::onLayoutPolyline() {
     ui->actionLine->setChecked(false);
     ui->actionCurved->setChecked(false);
     layoutStyle = "polyline";
-    drawStateMachine();
+    drawStateMachine(graph);
 }
 
 void MainWindow::onLayoutLine() {
@@ -647,7 +668,7 @@ void MainWindow::onLayoutLine() {
     ui->actionPolyline->setChecked(false);
     ui->actionCurved->setChecked(false);
     layoutStyle = "line";
-    drawStateMachine();
+    drawStateMachine(graph);
 }
 
 void MainWindow::onLayoutCurved() {
@@ -655,7 +676,7 @@ void MainWindow::onLayoutCurved() {
     ui->actionPolyline->setChecked(false);
     ui->actionLine->setChecked(false);
     layoutStyle = "spline";
-    drawStateMachine();
+    drawStateMachine(graph);
 }
 
 void MainWindow::onQuit() {
@@ -703,6 +724,29 @@ void MainWindow::onExportScene() {
     scene->render(&painter);
     if(!image.save(filename))
         return;
+}
+
+void MainWindow::onSceneClicked(QPointF pos) {
+    QGraphicsItem *item = scene->itemAt(pos, QTransform());
+    if(ui->action_Single_State->isChecked()){
+        if(!item) {
+            rfsm::StateGraph::State state;
+            state.type = "single";
+            state.name = "State " + QString::number(graph.states.size()).toStdString();
+            graph.states.push_back(state);
+            drawStateMachine(graph);
+        }
+        else if(item->type() == QGVSubGraph::Type) {
+            QGVSubGraph* sgv = qgraphicsitem_cast<QGVSubGraph*>(item);
+            QString name = sgv->getAttribute("rawname");
+            rfsm::StateGraph::State state;
+            state.type = "single";
+            state.name = name.toStdString() + ".State " + QString::number(graph.states.size()).toStdString();
+            graph.states.push_back(state);
+            drawStateMachine(graph);
+        }
+        ui->action_Save_project->setEnabled(true);
+    }
 }
 
 void MainWindow::onSourceCode() {
@@ -938,6 +982,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
     machineMode = mode;
     switch (machineMode) {
     case UNLOADED:
+        ui->buildToolBar->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(true);
         ui->action_New_rFSM->setEnabled(true);
         ui->action_Single_State->setEnabled(false);
@@ -960,6 +1005,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(true);
         ui->action_New_rFSM->setEnabled(true);
         ui->actionExport_scene->setEnabled(true);
+        ui->buildToolBar->setEnabled(true);
         ui->action_Single_State->setEnabled(false);
         ui->action_Composite_State->setEnabled(false);
         ui->action_Initial_Transition->setEnabled(false);
@@ -980,6 +1026,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         ui->action_Save_project->setEnabled(true);
+        ui->buildToolBar->setEnabled(true);
         ui->action_Single_State->setEnabled(true);
         ui->action_Composite_State->setEnabled(true);
         ui->action_Initial_Transition->setEnabled(true);
@@ -999,6 +1046,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
+        ui->buildToolBar->setEnabled(false);
         ui->action_Single_State->setEnabled(false);
         ui->action_Composite_State->setEnabled(false);
         ui->action_Initial_Transition->setEnabled(false);
@@ -1019,6 +1067,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
+        ui->buildToolBar->setEnabled(false);
         ui->action_Single_State->setEnabled(false);
         ui->action_Composite_State->setEnabled(false);
         ui->action_Initial_Transition->setEnabled(false);
@@ -1039,6 +1088,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
+        ui->buildToolBar->setEnabled(false);
         ui->action_Single_State->setEnabled(false);
         ui->action_Composite_State->setEnabled(false);
         ui->action_Initial_Transition->setEnabled(false);

@@ -553,6 +553,9 @@
    </property>
   </action>
   <action name="action_Single_State">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="ress.qrc">
      <normaloff>:/icons/resources/state.svg</normaloff>:/icons/resources/state.svg</iconset>
@@ -565,6 +568,9 @@
    </property>
   </action>
   <action name="action_Composite_State">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="ress.qrc">
      <normaloff>:/icons/resources/cstate.svg</normaloff>:/icons/resources/cstate.svg</iconset>
@@ -577,6 +583,9 @@
    </property>
   </action>
   <action name="action_Initial_Transition">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="ress.qrc">
      <normaloff>:/icons/resources/initial.svg</normaloff>:/icons/resources/initial.svg</iconset>
@@ -589,6 +598,9 @@
    </property>
   </action>
   <action name="action_Connector">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="ress.qrc">
      <normaloff>:/icons/resources/connector.svg</normaloff>:/icons/resources/connector.svg</iconset>
@@ -601,6 +613,9 @@
    </property>
   </action>
   <action name="action_Transition">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="ress.qrc">
      <normaloff>:/icons/resources/transition.svg</normaloff>:/icons/resources/transition.svg</iconset>

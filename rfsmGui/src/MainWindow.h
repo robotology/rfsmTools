@@ -52,11 +52,11 @@ public slots:
 public:
     void start();
     void stop();
-    void close();    
+    void close();
     virtual void onPostStep();
     virtual void onWarning(const std::string message);
     virtual void onError(const std::string message);
-    virtual void onInfo(const std::string message);        
+    virtual void onInfo(const std::string message);
 
 public:
     int runPeriod;
@@ -103,8 +103,9 @@ protected:
 
 private:
     void initScene();    
-    void drawStateMachine();    
-    bool loadrFSM(const std::string filename);    
+    void drawStateMachine(const rfsm::StateGraph &graph);
+    bool loadrFSM(const std::string filename);
+    bool loadrFSMSourceCode(const std::string filename, QString& source);
     std::string getPureStateName(const std::string& name);
     void saveSetting();    
     void setNodeActiveMode(const std::string &name, bool mode);
@@ -163,6 +164,7 @@ private:
     QString authors;
     QString description;
     QString version;
+    rfsm::StateGraph graph;
 };
 
 #endif // MAINWINDOW_H
