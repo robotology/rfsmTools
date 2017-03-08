@@ -60,11 +60,12 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
 
     if (activeMode) {
         _brush.setColor(QGVCore::toColor("#a5cf80"));
-        //_pen.setColor(QGVCore::toColor("#a5cf80"));
+        setAttribute("labelfontcolor", "#191970");
     }
     else {
         _brush.setColor(QGVCore::toColor(getAttribute("fillcolor")));
         _pen.setColor(QGVCore::toColor(getAttribute("color")));
+        setAttribute("labelfontcolor", "#edad56");
     }
 
     painter->setPen(_pen);
@@ -81,7 +82,8 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     if(getAttribute("shape") == "box") {
         QPainterPath path;
         path.addRoundedRect(boundingRect(), 10, 10);
-        painter->drawPath(path);
+        painter->drawPath(path);        
+        painter->drawLine(QPointF(0, 25), QPointF(boundingRect().width(), 25));
     }
     else
         painter->drawPath(_path);
@@ -93,12 +95,12 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     }
 
     painter->setPen(QGVCore::toColor(getAttribute("labelfontcolor")));
-    const QRectF rect = boundingRect().adjusted(2,2,-2,-2); //Margin
+    const QRectF rect = boundingRect().adjusted(2,5,-2,-2); //Margin
     QFont font;
     font.setPixelSize(12);
     painter->setFont(font);
     if(_icon.isNull()) {
-        painter->drawText(rect, Qt::AlignCenter , QGVNode::label());
+        painter->drawText(rect, Qt::AlignTop | Qt::AlignHCenter , QGVNode::label());
     }
     else {
         painter->drawText(rect.adjusted(0,0,0, -rect.height()*2/3), Qt::AlignCenter , QGVNode::label());

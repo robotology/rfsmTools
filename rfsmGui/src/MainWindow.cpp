@@ -299,8 +299,9 @@ void MainWindow::drawStateMachine() {
                 node->setAttribute("label", getPureStateName(graph.states[i].name).c_str());
             }
             // use this for error : #FA8072
-            node->setAttribute("fillcolor", "#edad56");
+            node->setAttribute("fillcolor", "#2e3e56");
             node->setAttribute("color", "#edad56");
+            node->setAttribute("labelfontcolor", "#edad56");
             sceneNodeMap[graph.states[i].name] = node;
         }
     }

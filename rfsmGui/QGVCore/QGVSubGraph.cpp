@@ -101,6 +101,7 @@ void QGVSubGraph::paint(QPainter * painter, const QStyleOptionGraphicsItem * opt
     path.addRoundedRect(boundingRect(), 10, 10);
     painter->drawPath(path);
     painter->drawText(_label_rect, Qt::AlignCenter, _label);
+    painter->drawLine(QPointF(0, 25), QPointF(_width, 25));
     painter->restore();
 }
 
