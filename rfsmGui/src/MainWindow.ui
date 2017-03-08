@@ -254,7 +254,7 @@
      <x>0</x>
      <y>0</y>
      <width>839</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -431,6 +431,9 @@
    <property name="text">
     <string>&amp;Step</string>
    </property>
+   <property name="toolTip">
+    <string>Dubug Step</string>
+   </property>
   </action>
   <action name="actionDebugStart">
    <property name="icon">
@@ -440,6 +443,9 @@
    <property name="text">
     <string>&amp;Run</string>
    </property>
+   <property name="toolTip">
+    <string>Dubug Run</string>
+   </property>
   </action>
   <action name="actionDebugReset">
    <property name="icon">
@@ -448,6 +454,9 @@
    </property>
    <property name="text">
     <string>Rese&amp;t</string>
+   </property>
+   <property name="toolTip">
+    <string>Dubug Reset</string>
    </property>
   </action>
   <action name="actionDryrun">

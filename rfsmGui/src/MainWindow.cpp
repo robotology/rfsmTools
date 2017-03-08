@@ -166,6 +166,9 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     ui->actionExport_scene->setEnabled(false);
 
     switchMachineMode(UNLOADED);
+    if(parser->value("period").size())
+        rfsm.runPeriod = parser->value("period").toInt();
+
     if(parser->value("rfsm").size()) {
        bool ok = loadrFSM(parser->value("rfsm").toStdString());
        if (ok && parser->isSet("run")) {
@@ -293,13 +296,14 @@ void MainWindow::drawStateMachine() {
                 node->setAttribute("height", "0.1");
                 node->setAttribute("fixedsize", "true");
                 node->setAttribute("label", "");
+                node->setAttribute("fillcolor", "#edad56");
             }
             else {
                 node->setAttribute("shape", "box");                
                 node->setAttribute("label", getPureStateName(graph.states[i].name).c_str());
+                node->setAttribute("fillcolor", "#2e3e56");
             }
-            // use this for error : #FA8072
-            node->setAttribute("fillcolor", "#2e3e56");
+            // use this for error : #FA8072            
             node->setAttribute("color", "#edad56");
             node->setAttribute("labelfontcolor", "#edad56");
             sceneNodeMap[graph.states[i].name] = node;

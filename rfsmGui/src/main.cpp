@@ -21,10 +21,15 @@ int main(int argc, char *argv[])
     //parser.addPositionalArgument("source", QCoreApplication::translate("main", "Source file to copy."));
 
     // An option with a value
-    QCommandLineOption targetDirectoryOption(QStringList() << "f" << "rfsm",
+    QCommandLineOption rfsmOption(QStringList() << "f" << "rfsm",
             QCoreApplication::translate("main", "load <state-machine> at startup"),
             QCoreApplication::translate("main", "state-machine"));
-    parser.addOption(targetDirectoryOption);
+    parser.addOption(rfsmOption);
+
+    QCommandLineOption runPeriodOption(QStringList() << "p" << "period",
+            QCoreApplication::translate("main", "rfsm run <period> in ms"),
+            QCoreApplication::translate("main", "period"));
+    parser.addOption(runPeriodOption);
 
     // A boolean option with multiple names (-r, --run)
     QCommandLineOption forceOption(QStringList() << "r" << "run",
