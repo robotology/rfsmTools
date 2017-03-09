@@ -302,6 +302,9 @@ void MainWindow::drawStateMachine() {
                 node->setAttribute("shape", "box");                
                 node->setAttribute("label", getPureStateName(graph.states[i].name).c_str());
                 node->setAttribute("fillcolor", "#2e3e56");
+                node->setAttribute("entry", graph.states[i].entry.c_str());
+                node->setAttribute("doo", graph.states[i].doo.c_str());
+                node->setAttribute("exit", graph.states[i].exit.c_str());
             }
             // use this for error : #FA8072            
             node->setAttribute("color", "#edad56");

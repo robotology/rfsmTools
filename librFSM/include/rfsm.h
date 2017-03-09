@@ -58,6 +58,9 @@ public:
     struct State {
         std::string name;
         std::string type;
+        std::string entry;
+        std::string doo;
+        std::string exit;
         bool operator==(const State& s) const {
             return (s.name == name) && (s.type == type);
         }

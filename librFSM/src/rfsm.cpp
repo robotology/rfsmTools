@@ -553,11 +553,14 @@ bool StateMachine::Private::getAllStateGraph() {
     while(lua_next(L, -2) != 0) {
         if(lua_istable(L, -1)) {
             StateGraph::State state;
-            state.name = Utils::getTableField(L, "sname");
+            state.name = Utils::getTableStringField(L, "sname");
             std::size_t pos = state.name.find("root.");
             if(pos != std::string::npos)
                 state.name.erase(pos, 5);
-            state.type = Utils::getTableField(L, "stype");
+            state.type = Utils::getTableStringField(L, "stype");
+            state.entry = Utils::isNilTableField(L, "sentry") ? "" : "entry";
+            state.doo = Utils::isNilTableField(L, "sdoo") ? "" : "doo";
+            state.exit = Utils::isNilTableField(L, "sexit") ? "" : "exit";
             graph.states.push_back(state);
         }
         else
@@ -589,15 +592,15 @@ bool StateMachine::Private::getAllStateGraph() {
     while(lua_next(L, -2) != 0) {
         if(lua_istable(L, -1)) {
             StateGraph::Transition trans;
-            trans.source = Utils::getTableField(L, "source");
+            trans.source = Utils::getTableStringField(L, "source");
             std::size_t pos = trans.source.find("root.");
             if(pos != std::string::npos)
                 trans.source.erase(pos, 5);
-            trans.target = Utils::getTableField(L, "target");
+            trans.target = Utils::getTableStringField(L, "target");
             pos = trans.target.find("root.");
             if(pos != std::string::npos)
                 trans.target.erase(pos, 5);
-            istringstream ss(Utils::getTableField(L, "events"));
+            istringstream ss(Utils::getTableStringField(L, "events"));
             string s;
             while (getline(ss, s, ','))
                 trans.events.push_back(s);

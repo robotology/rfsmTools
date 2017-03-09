@@ -74,7 +74,16 @@ int Utils::dolibrary (lua_State *L, const char *name) {
   return report(L, lua_pcall(L, 1, 0, 0));
 }
 
-std::string Utils::getTableField(lua_State *L, const char *key) {
+bool Utils::isNilTableField(lua_State *L, const char *key) {
+    lua_pushstring(L, key);
+    lua_gettable(L, -2);
+    bool result = lua_isnil(L, -1);
+    lua_pop(L, 1);
+    return result;
+}
+
+
+std::string Utils::getTableStringField(lua_State *L, const char *key) {
     std::string result;
     lua_pushstring(L, key);
     lua_gettable(L, -2);
@@ -83,6 +92,6 @@ std::string Utils::getTableField(lua_State *L, const char *key) {
         return "";
     }
     result =  lua_tostring(L, -1);
-    lua_pop(L, 1);  /* remove number */
+    lua_pop(L, 1);
     return result;
 }

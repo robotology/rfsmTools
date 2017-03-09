@@ -95,12 +95,28 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     }
 
     painter->setPen(QGVCore::toColor(getAttribute("labelfontcolor")));
-    const QRectF rect = boundingRect().adjusted(2,5,-2,-2); //Margin
+    QRectF rect = boundingRect().adjusted(2,5,-2,-2); //Margin
     QFont font;
     font.setPixelSize(12);
+    font.setBold(true);
     painter->setFont(font);
     if(_icon.isNull()) {
         painter->drawText(rect, Qt::AlignTop | Qt::AlignHCenter , QGVNode::label());
+        rect = boundingRect().adjusted(2,30,-2,-2); //Margin
+        font.setPixelSize(10);
+        font.setBold(false);
+        font.setItalic(true);
+        painter->setFont(font);
+        QString callbacks;
+        if(getAttribute("entry").size())
+            callbacks += "+ entry()";
+        if(getAttribute("doo").size())
+            callbacks += "\n+ doo()";
+        if(getAttribute("exit").size())
+            callbacks += "\n+ exit()";
+
+        painter->drawText(rect, Qt::AlignTop | Qt::AlignLeft , callbacks);
+
     }
     else {
         painter->drawText(rect.adjusted(0,0,0, -rect.height()*2/3), Qt::AlignCenter , QGVNode::label());

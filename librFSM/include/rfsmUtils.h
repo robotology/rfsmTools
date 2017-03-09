@@ -92,7 +92,7 @@ namespace rfsm {
 "       elseif rfsm.is_leaf(node)  then node_type='single'\n"\
 "       elseif rfsm.is_conn(node)  then node_type='connector'\n"\
 "       else node_type='unknown' end\n"\
-"        table.insert(nodes, {sname=node._fqn, stype=node_type})\n"\
+"        table.insert(nodes, {sname=node._fqn, stype=node_type, sentry=node.entry, sdoo=node.doo, sexit=node.exit})\n"\
 "    end\n"\
 "   rfsm.mapfsm(function (s)\n"\
 "		  if rfsm.is_root(s) then return end\n"\
@@ -140,7 +140,8 @@ public:
     static int dofile(lua_State *L, const char *name);
     static int dostring (lua_State *L, const char *s, const char *name);
     static int dolibrary (lua_State *L, const char *name);
-    static std::string getTableField(lua_State *L, const char *key);
+    static std::string getTableStringField(lua_State *L, const char *key);
+    static bool isNilTableField(lua_State *L, const char *key);
 };
 
 
