@@ -20,6 +20,89 @@ extern "C" const char gen_rfsm_utils_res[];
 
 
 
+void StateGraph::clear() {
+    states.clear();
+    transitions.clear();
+}
+
+void StateGraph::addState(const string name, string type)
+{
+    rfsm::StateGraph::State state;
+    std::stringstream ss;
+    state.type = type;
+    ss<<"State " <<states.size();
+    if(name=="")
+        state.name = ss.str();
+    else
+        state.name = name;
+    states.push_back(state);
+}
+
+void StateGraph::removeState(const std::string name) {
+    std::vector<State>::iterator it;
+    for(it = states.begin(); it<states.end();) {
+        State & st = *it;
+        if((st.name == name) || (st.name.find(name+".") != string::npos))
+        {
+            removeTransitionFrom(st.name);
+            removeTransitionTo(st.name);
+            states.erase(it);
+        }
+        else
+            ++it;
+    }
+}
+
+void StateGraph::removeTransition(const std::string source,
+                      const std::string target,
+                      std::vector<std::string> events) {
+    std::vector<Transition>::iterator it;
+    for(it = transitions.begin(); it<transitions.end();) {
+        Transition &tr = *it;
+        if((tr.source == source) && (tr.target == target))
+            if(events.size()) {
+                 if(tr.events == events)
+                     transitions.erase(it);
+            }
+            else
+                transitions.erase(it);
+        else
+            ++it;
+    }
+}
+void StateGraph::removeTransitionFrom(const std::string source,
+                      std::vector<std::string> events) {
+    std::vector<Transition>::iterator it;
+    for(it = transitions.begin(); it<transitions.end();) {
+        Transition &tr = *it;
+        if((tr.source == source))
+            if(events.size()) {
+                 if(tr.events == events)
+                     transitions.erase(it);
+            }
+            else
+                transitions.erase(it);
+        else
+            ++it;
+    }
+}
+void StateGraph::removeTransitionTo(const std::string target,
+                      std::vector<std::string> events) {
+    std::vector<Transition>::iterator it;
+    for(it = transitions.begin(); it<transitions.end();) {
+        Transition &tr = *it;
+        if((tr.target == target))
+            if(events.size()) {
+                 if(tr.events == events)
+                     transitions.erase(it);
+            }
+            else
+                transitions.erase(it);
+        else
+            ++it;
+    }
+}
+
 class StateMachine::Private {
 public:
 	Private() : L(NULL) { } 

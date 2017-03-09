@@ -97,10 +97,16 @@ public:
         }
     };
 
-    void clear() {
-        states.clear();
-        transitions.clear();
-    }
+    void clear();
+    void addState(const std::string name="", std::string type="simple");
+    void removeState(const std::string name);
+    void removeTransition(const std::string source,
+                          const std::string target,
+                          std::vector<std::string> events=std::vector<std::string>());
+    void removeTransitionFrom(const std::string source,
+                          std::vector<std::string> events=std::vector<std::string>());
+    void removeTransitionTo(const std::string target,
+                            std::vector<std::string> events=std::vector<std::string>());
 
 public:
     /**
