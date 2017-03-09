@@ -990,6 +990,8 @@ void MainWindow::switchMachineMode(MachineMode mode) {
     switch (machineMode) {
     case UNLOADED:
         ui->buildToolBar->setEnabled(false);
+        if(actionGroup->checkedAction())
+            actionGroup->checkedAction()->setChecked(false);
         ui->action_LoadrFSM->setEnabled(true);
         ui->action_New_rFSM->setEnabled(true);
         ui->action_Single_State->setEnabled(false);
@@ -1059,6 +1061,8 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Initial_Transition->setEnabled(false);
         ui->action_Connector->setEnabled(false);
         ui->action_Transition->setEnabled(false);
+        if(actionGroup->checkedAction())
+            actionGroup->checkedAction()->setChecked(false);        
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(true);
@@ -1075,6 +1079,8 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         ui->buildToolBar->setEnabled(false);
+        if(actionGroup->checkedAction())
+            actionGroup->checkedAction()->setChecked(false);
         ui->action_Single_State->setEnabled(false);
         ui->action_Composite_State->setEnabled(false);
         ui->action_Initial_Transition->setEnabled(false);
@@ -1096,6 +1102,8 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         ui->buildToolBar->setEnabled(false);
+        if(actionGroup->checkedAction())
+            actionGroup->checkedAction()->setChecked(false);
         ui->action_Single_State->setEnabled(false);
         ui->action_Composite_State->setEnabled(false);
         ui->action_Initial_Transition->setEnabled(false);

@@ -17,6 +17,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QTimer>
+#include <QActionGroup>
 #include <QFileSystemWatcher>
 #include <rfsm.h>
 #include <map>
@@ -164,6 +165,7 @@ private:
     QString authors;
     QString description;
     QString version;
+    QActionGroup *actionGroup;
     rfsm::StateGraph graph;
 };
 
