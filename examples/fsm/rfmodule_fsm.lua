@@ -35,7 +35,12 @@ return rfsm.state {
     },
 
 	Phase = rfsm.csta{
-		Phase1 = rfsm.sista{ },
+                Phase1 = rfsm.sista{
+                entry = function()
+                    print("entry() of Phase1 (hello from Lua)")
+                end,
+
+                },
 		Phase2 = rfsm.sista{ },
 		rfsm.transition { src='initial', tgt='Phase1'},
 		rfsm.transition { src='Phase1', tgt='Phase2'},

@@ -42,6 +42,7 @@ public:
     //typedef int (rfsm::StateMachine::* LuaRfsmCallback) (lua_State *L);
     //bool registerLuaFunction(const std::string& name, LuaRfsmCallback func);
 
+    void close();
 
 public:
     lua_State *L;
@@ -64,12 +65,7 @@ StateMachine::~StateMachine() {
 }
 
 void StateMachine::close() {
-    if(mPriv->L){
-        lua_close(mPriv->L);
-        mPriv->L = NULL;
-    }
-    mPriv->luaFuncReg.clear();
-    mPriv->callbacks.clear();
+    mPriv->close();
 }
 
 const std::string StateMachine::getFileName() {
@@ -612,4 +608,15 @@ bool StateMachine::Private::getAllStateGraph() {
     }
     lua_pop(L, 1); // pop the result from Lua stack
     return true;
+}
+
+void StateMachine::Private::close() {
+    if(L){
+        lua_close(L);
+        L = NULL;
+    }
+    luaFuncReg.clear();
+    callbacks.clear();
+    graph.clear();
+    events.clear();
 }

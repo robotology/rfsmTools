@@ -75,6 +75,11 @@ public:
         }
     };
 
+    void clear() {
+        states.clear();
+        transitions.clear();
+    }
+
 public:
     /**
      * @brief states is a list of all states
