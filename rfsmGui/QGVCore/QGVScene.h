@@ -67,7 +67,8 @@ signals:
     void subGraphDoubleClick(QGVSubGraph* graph);
 
     void graphContextMenuEvent();
-    void sceneClicked(QPointF pos);
+    void sceneLeftClicked(QPointF pos);
+    void sceneRightClicked(QPointF pos);
     
 public slots:
 

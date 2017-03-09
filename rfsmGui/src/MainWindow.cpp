@@ -23,6 +23,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QtPrintSupport/QPrinter>
+#include <QMenu>
 #include "newrfsmdialog.h"
 #include <QActionGroup>
 #include <QMutexLocker>
@@ -129,7 +130,6 @@ void MyStateMachine::onInfo(const string message) {
 }
 
 
-
 /************************************************/
 /* MainWindow                                   */
 /************************************************/
@@ -143,13 +143,13 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     initScene();
 
     watcher = new QFileSystemWatcher(this);
-    QActionGroup *group = new QActionGroup(this) ;
-    group->addAction(ui->action_Single_State);
-    group->addAction(ui->action_Composite_State);
-    group->addAction(ui->action_Initial_Transition);
-    group->addAction(ui->action_Transition);
-    group->addAction(ui->action_Connector);
-    group->setExclusive(true);
+    actionGroup = new QActionGroup(this) ;
+    actionGroup->addAction(ui->action_Single_State);
+    actionGroup->addAction(ui->action_Composite_State);
+    actionGroup->addAction(ui->action_Initial_Transition);
+    actionGroup->addAction(ui->action_Transition);
+    actionGroup->addAction(ui->action_Connector);
+    actionGroup->setExclusive(true);
 
     connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(onFileChanged(const QString &)));
     connect(ui->actionQuit, SIGNAL(triggered()),this,SLOT(onQuit()));
@@ -232,7 +232,11 @@ void MainWindow::initScene() {
     connect(scene, SIGNAL(nodeContextMenu(QGVNode*)), SLOT(nodeContextMenu(QGVNode*)));
     connect(scene, SIGNAL(nodeDoubleClick(QGVNode*)), SLOT(nodeDoubleClick(QGVNode*)));
     connect(scene, SIGNAL(edgeContextMenu(QGVEdge*)), SLOT(edgeContextMenu(QGVEdge*)));
-    connect(scene, SIGNAL(sceneClicked(QPointF)), SLOT(onSceneClicked(QPointF)));
+    connect(scene, SIGNAL(subGraphContextMenu(QGVSubGraph*)), SLOT(subGraphContextMenu(QGVSubGraph*)));
+
+
+    connect(scene, SIGNAL(sceneLeftClicked(QPointF)), SLOT(onSceneLeftClicked(QPointF)));
+    connect(scene, SIGNAL(sceneRightClicked(QPointF)), SLOT(onSceneRightClicked(QPointF)));
 
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
@@ -367,7 +371,8 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
                 node->setAttribute("fillcolor", "#2e3e56");
                 node->setAttribute("entry", graph.states[i].entry.fileName.c_str());
                 node->setAttribute("doo", graph.states[i].doo.fileName.c_str());
-                node->setAttribute("exit", graph.states[i].exit.fileName.c_str());                
+                node->setAttribute("exit", graph.states[i].exit.fileName.c_str());
+                node->setAttribute("rawname", graph.states[i].name.c_str());
             }
             // use this for error : #FA8072
             node->setAttribute("color", "#edad56");
@@ -398,6 +403,8 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
             events += "\npn: " + QString::number(graph.transitions[i].priority).toStdString();
 
         QGVEdge* gve = scene->addEdge(from, to, events.c_str());
+        gve->setAttribute("sourcename", graph.transitions[i].source.c_str());
+        gve->setAttribute("targetname", graph.transitions[i].target.c_str());
         gve->setAttribute("color", "white");
         //gve->setAttribute("ltail", graph.transitions[i].source.c_str());
         //gve->setAttribute("lhead", graph.transitions[i].target.c_str());
@@ -733,23 +740,25 @@ void MainWindow::onExportScene() {
         return;
 }
 
-void MainWindow::onSceneClicked(QPointF pos) {
+void MainWindow::onSceneLeftClicked(QPointF pos) {
     QGraphicsItem *item = scene->itemAt(pos, QTransform());
-    if(ui->action_Single_State->isChecked()){
+    //add states
+    if(ui->action_Single_State->isChecked() || ui->action_Composite_State->isChecked()){
+        string type="";
+        if(ui->action_Single_State->isChecked())
+            type="single";
+        else
+            type="composit";
         if(!item) {
-            rfsm::StateGraph::State state;
-            state.type = "single";
-            state.name = "State " + QString::number(graph.states.size()).toStdString();
-            graph.states.push_back(state);
+            graph.addState("",type);
             drawStateMachine(graph);
         }
         else if(item->type() == QGVSubGraph::Type) {
             QGVSubGraph* sgv = qgraphicsitem_cast<QGVSubGraph*>(item);
-            QString name = sgv->getAttribute("rawname");
-            rfsm::StateGraph::State state;
-            state.type = "single";
-            state.name = name.toStdString() + ".State " + QString::number(graph.states.size()).toStdString();
-            graph.states.push_back(state);
+            std::string name = sgv->getAttribute("rawname").toStdString();
+            name = name + ".State " + QString::number(graph.states.size()).toStdString();
+            std::cout<<name<<endl;
+            graph.addState(name,type);
             drawStateMachine(graph);
         }
         ui->action_Save_project->setEnabled(true);
@@ -1062,7 +1071,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Connector->setEnabled(false);
         ui->action_Transition->setEnabled(false);
         if(actionGroup->checkedAction())
-            actionGroup->checkedAction()->setChecked(false);        
+            actionGroup->checkedAction()->setChecked(false);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(true);

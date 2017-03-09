@@ -115,6 +115,7 @@ private slots:
     void nodeContextMenu(QGVNode* node);
     void edgeContextMenu(QGVEdge* edge);
     void nodeDoubleClick(QGVNode* node);
+    void subGraphContextMenu(QGVSubGraph*sgraph);
     void onLayoutOrthogonal();
     void onLayoutPolyline();
     void onLayoutLine();
@@ -133,6 +134,8 @@ private slots:
     void onChangeRunPeriod();
     void onQuit();
     void onAbout();
+    void onSceneLeftClicked(QPointF pos);
+    void onSceneRightClicked(QPointF pos);
     void onSourceCode();
     void onSourceCodeSaved();
     void onFileChanged(const QString & path);

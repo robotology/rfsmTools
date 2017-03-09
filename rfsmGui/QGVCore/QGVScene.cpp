@@ -232,7 +232,10 @@ void QGVScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 void QGVScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     if(mouseEvent->button() == Qt::LeftButton) {
-        emit sceneClicked(mouseEvent->scenePos());
+        emit sceneLeftClicked(mouseEvent->scenePos());
+    }
+    if(mouseEvent->button() == Qt::RightButton) {
+        emit sceneRightClicked(mouseEvent->scenePos());
     }
 
     QGraphicsScene::mousePressEvent(mouseEvent);
