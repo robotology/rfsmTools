@@ -24,6 +24,7 @@
 #include <QInputDialog>
 #include <QtPrintSupport/QPrinter>
 #include "newrfsmdialog.h"
+#include <QActionGroup>
 #include <QMutexLocker>
 
 #ifdef USE_YARP
@@ -152,6 +153,7 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(ui->action_Save_project, SIGNAL(triggered()),this,SLOT(onSaverFSM()));
     connect(ui->pushButtonSendEvent, SIGNAL(clicked()),this, SLOT(onSendEvent()));
     connect(ui->actionChangeRunPeriod, SIGNAL(triggered()),this,SLOT(onChangeRunPeriod()));
+
 
     connect(ui->actionDebugStart, SIGNAL(triggered()),this,SLOT(onDebugStartrFSM()));
     connect(ui->actionDebugStep, SIGNAL(triggered()),this,SLOT(onDebugSteprFSM()));
@@ -447,8 +449,7 @@ bool MainWindow::loadrFSM(const std::string fname) {
     rfsm.getEventQueue(equeue);
     onUpdateEventQueue(equeue);
     graph = rfsm.getStateGraph();
-    // drawing state machine
-    drawStateMachine();
+    drawStateMachine(graph);
     switchMachineMode(IDLE);    
     showStatusBarMessage(("Loaded " + filename).c_str());
     watcher->addPath(filename.c_str());
