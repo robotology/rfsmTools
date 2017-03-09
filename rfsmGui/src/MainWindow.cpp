@@ -143,7 +143,13 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     initScene();
 
     watcher = new QFileSystemWatcher(this);
-
+    QActionGroup *group = new QActionGroup(this) ;
+    group->addAction(ui->action_Single_State);
+    group->addAction(ui->action_Composite_State);
+    group->addAction(ui->action_Initial_Transition);
+    group->addAction(ui->action_Transition);
+    group->addAction(ui->action_Connector);
+    group->setExclusive(true);
 
     connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(onFileChanged(const QString &)));
     connect(ui->actionQuit, SIGNAL(triggered()),this,SLOT(onQuit()));
