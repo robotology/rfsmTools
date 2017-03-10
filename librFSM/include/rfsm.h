@@ -98,7 +98,8 @@ public:
     };
 
     void clear();
-    void addState(const std::string name="", std::string type="simple");
+    void addState(const std::string name,
+                  const std::string type="single");
     void removeState(const std::string name);
     void removeTransition(const std::string source,
                           const std::string target,

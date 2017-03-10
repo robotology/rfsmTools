@@ -25,17 +25,21 @@ void StateGraph::clear() {
     transitions.clear();
 }
 
-void StateGraph::addState(const string name, string type)
+void StateGraph::addState(const string name, const string type)
 {
     rfsm::StateGraph::State state;
-    std::stringstream ss;
     state.type = type;
-    ss<<"State " <<states.size();
-    if(name=="")
-        state.name = ss.str();
-    else
-        state.name = name;
+    state.name = name;
+    //TODO check if already present
+    if(states.size()==0){
+        State initial;
+        initial.name="initial";
+        initial.type="connector";
+        states.push_back(initial);
+    }
     states.push_back(state);
+    if(state.type == "composit")
+        addState(name + ".initial", "connector");
 }
 
 void StateGraph::removeState(const std::string name) {
