@@ -230,6 +230,7 @@ void QGVScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
 }
 
+
 void QGVScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     if(mouseEvent->button() == Qt::LeftButton) {
         emit sceneLeftClicked(mouseEvent->scenePos());
@@ -239,6 +240,17 @@ void QGVScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     }
 
     QGraphicsScene::mousePressEvent(mouseEvent);
+}
+
+void QGVScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) {
+    emit sceneMouseReleased(mouseEvent->scenePos());
+    QGraphicsScene::mouseReleaseEvent(mouseEvent);
+}
+
+void QGVScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) {
+
+    emit sceneMouseMove(mouseEvent->scenePos());
+    QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
 /*

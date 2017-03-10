@@ -22,6 +22,7 @@
 #include <rfsm.h>
 #include <map>
 #include "SourceEditorWindow.h"
+#include <QGraphicsLineItem>
 #include <QSettings>
 
 namespace Ui {
@@ -136,6 +137,8 @@ private slots:
     void onAbout();
     void onSceneLeftClicked(QPointF pos);
     void onSceneRightClicked(QPointF pos);
+    void onSceneMouseReleased(QPointF pos);
+    void onSceneMouseMove(QPointF pos);
     void onSourceCode();
     void onSourceCodeSaved();
     void onFileChanged(const QString & path);
@@ -163,12 +166,13 @@ private:
     QTreeWidgetItem *moduleParentItem;
     QTreeWidgetItem *portParentItem;
     QFileSystemWatcher* watcher;
-    QSettings settings;
-    QString fileNameSave;
+    QSettings settings
+    QString fileName;
     QString authors;
     QString description;
     QString version;
     QActionGroup *actionGroup;
+    QGraphicsLineItem *line;
     rfsm::StateGraph graph;
 };
 

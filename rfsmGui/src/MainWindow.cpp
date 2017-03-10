@@ -149,6 +149,7 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     actionGroup->addAction(ui->action_Initial_Transition);
     actionGroup->addAction(ui->action_Transition);
     actionGroup->addAction(ui->action_Connector);
+    actionGroup->addAction(ui->action_Arrow);
     actionGroup->setExclusive(true);
 
     connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(onFileChanged(const QString &)));
@@ -189,7 +190,7 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(sourceWindow, SIGNAL(sourceCodeSaved()), SLOT(onSourceCodeSaved()));
 
     layoutStyle = "spline";
-    fileNameSave="";
+    fileName="";
     authors="";
     description="";
     version="";
@@ -237,9 +238,12 @@ void MainWindow::initScene() {
 
     connect(scene, SIGNAL(sceneLeftClicked(QPointF)), SLOT(onSceneLeftClicked(QPointF)));
     connect(scene, SIGNAL(sceneRightClicked(QPointF)), SLOT(onSceneRightClicked(QPointF)));
+    connect(scene, SIGNAL(sceneMouseMove(QPointF)), SLOT(onSceneMouseMove(QPointF)));
+    connect(scene, SIGNAL(sceneMouseReleased(QPointF)), SLOT(onSceneMouseReleased(QPointF)));
 
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
+    QApplication::setOverrideCursor(Qt::ArrowCursor);
 
     scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
     scene->setGraphAttribute("remincross", "true");
@@ -343,6 +347,7 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
             node->setAttribute("fillcolor", "#edad56");
             node->setAttribute("color", "#edad56");
             node->setAttribute("node_type", "end");
+            node->setAttribute("rawname", endNodeName.c_str());
             sceneNodeMap[endNodeName] = node;
         }
     }
@@ -362,7 +367,10 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
                 node->setAttribute("shape", "circle");
                 node->setAttribute("height", "0.1");
                 node->setAttribute("fixedsize", "true");
-                node->setAttribute("label", "");
+                if(graph.states[i].name.find(".initial") != string::npos)
+                    node->setLabel("I");
+                else
+                    node->setLabel("");
                 node->setAttribute("fillcolor", "#edad56");
             }
             else {
@@ -372,9 +380,9 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
                 node->setAttribute("entry", graph.states[i].entry.fileName.c_str());
                 node->setAttribute("doo", graph.states[i].doo.fileName.c_str());
                 node->setAttribute("exit", graph.states[i].exit.fileName.c_str());
-                node->setAttribute("rawname", graph.states[i].name.c_str());
             }
-            // use this for error : #FA8072
+            // use this for error : #FA8072     
+            node->setAttribute("rawname", graph.states[i].name.c_str());
             node->setAttribute("color", "#edad56");
             node->setAttribute("labelfontcolor", "#edad56");
             sceneNodeMap[graph.states[i].name] = node;
@@ -476,7 +484,10 @@ void MainWindow::onLoadrFSM() {
                                                     QDir::homePath(),
                                                     filters, &defaultFilter);
     if(filename.size() == 0)
-        return;    
+        return;
+    fileName=filename;
+    watcher->addPath(filename);
+
     loadrFSM(filename.toStdString());
 }
 
@@ -492,12 +503,12 @@ void MainWindow::onNewrFSM() {
     }
     if(!dialog.exec())
         return;
-    fileNameSave = dialog.getFileName();
+    fileName = dialog.getFileName();
     authors = dialog.getAuthors();
     description = dialog.getDescription();
     version = dialog.getVersion();
     switchMachineMode(BUILDER);
-    ui->statusBar->showMessage(("Building "+fileNameSave.toStdString()+" | author: "+authors.toStdString()
+    ui->statusBar->showMessage(("Building "+fileName.toStdString()+" | author: "+authors.toStdString()
                                +" | version "+version.toStdString()).c_str());
     //cleaning everithing for buinding a new state machine.
     rfsm.stop();
@@ -515,7 +526,7 @@ void MainWindow::onSaverFSM(){
     switchMachineMode(IDLE);
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
-    ui->statusBar->showMessage((fileNameSave.toStdString()+" saved successfully").c_str());
+    ui->statusBar->showMessage((fileName.toStdString()+" saved successfully").c_str());
     //remember to set the stato to UNLOADED if the saving fails
 }
 
@@ -649,11 +660,58 @@ void MainWindow::onUpdateEventQueue(const std::vector<string> equeue) {
 
 void MainWindow::edgeContextMenu(QGVEdge* edge) {
 
+    if(!ui->action_Arrow->isChecked())
+        return;
+    QMenu menu(edge->label());
+    menu.addSeparator();
+    menu.addAction(tr("Delete"));
+    QAction *action = menu.exec(QCursor::pos());
+    if(action == 0)
+        return;
+    if(action->text().toStdString() == "Delete") {
+        graph.removeTransition(edge->getAttribute("sourcename").toStdString(),
+                               edge->getAttribute("targetname").toStdString());
+        drawStateMachine(graph);
+    }
+
 }
 
 void MainWindow::nodeContextMenu(QGVNode *node)
 {
 
+    if(!ui->action_Arrow->isChecked()
+            || node->getAttribute("rawname").toStdString().find("initial") != string::npos
+            || node->getAttribute("rawname").toStdString().find("end") != string::npos )
+        return;
+    QMenu menu(node->label());
+    menu.addSeparator();
+    menu.addAction(tr("Delete"));
+    QAction *action = menu.exec(QCursor::pos());
+    if(action == 0)
+        return;
+    if(action->text().toStdString() == "Delete") {
+//        std::cout<<"deleteing ..."<<std::endl;
+        graph.removeState(node->getAttribute("rawname").toStdString());
+        drawStateMachine(graph);
+    }
+
+}
+
+void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
+
+    if(!ui->action_Arrow->isChecked())
+        return;
+    QMenu menu(sgraph->name());
+    menu.addSeparator();
+    menu.addAction(tr("Delete"));
+    QAction *action = menu.exec(QCursor::pos());
+    if(action == 0)
+        return;
+    if(action->text().toStdString() == "Delete") {
+//        std::cout<<"deleteing ..."<<std::endl;
+        graph.removeState(sgraph->getAttribute("rawname").toStdString());
+        drawStateMachine(graph);
+    }
 }
 
 void MainWindow::nodeDoubleClick(QGVNode *node)
@@ -741,6 +799,7 @@ void MainWindow::onExportScene() {
 }
 
 void MainWindow::onSceneLeftClicked(QPointF pos) {
+    QApplication::setOverrideCursor(Qt::OpenHandCursor);
     QGraphicsItem *item = scene->itemAt(pos, QTransform());
     //add states
     if(ui->action_Single_State->isChecked() || ui->action_Composite_State->isChecked()){
@@ -750,19 +809,96 @@ void MainWindow::onSceneLeftClicked(QPointF pos) {
         else
             type="composit";
         if(!item) {
-            graph.addState("",type);
+            QString name = "State_" + QString::number(graph.states.size());
+            graph.addState(name.toStdString(), type);
             drawStateMachine(graph);
         }
         else if(item->type() == QGVSubGraph::Type) {
             QGVSubGraph* sgv = qgraphicsitem_cast<QGVSubGraph*>(item);
             std::string name = sgv->getAttribute("rawname").toStdString();
-            name = name + ".State " + QString::number(graph.states.size()).toStdString();
-            std::cout<<name<<endl;
-            graph.addState(name,type);
+            name = name + ".State_" + QString::number(graph.states.size()).toStdString();
+            graph.addState(name, type);
             drawStateMachine(graph);
         }
+        QApplication::setOverrideCursor(Qt::ClosedHandCursor);
         ui->action_Save_project->setEnabled(true);
+        switchMachineMode(BUILDER);
+        return;
     }
+
+    if(!item)
+        return;
+//    cout<<"left clicked"<<endl;
+    if(ui->action_Transition->isChecked() && item->type() == QGVNode::Type) {
+        line = new QGraphicsLineItem(QLineF(pos, pos));
+        line->setPen(QPen(QColor(200,200,200), 1));
+        line->setZValue(0);
+        scene->addItem(line);
+    }
+}
+
+void MainWindow::onSceneMouseReleased(QPointF pos) {
+    if(ui->action_Transition->isChecked() && line) {
+        QApplication::setOverrideCursor(Qt::OpenHandCursor);
+        QGraphicsItem *item = scene->itemAt(pos, QTransform());
+        if(item && (item->type() == QGVNode::Type)) {
+            std::string source, target;
+
+            QGVNode* node = qgraphicsitem_cast<QGVNode*>(item);
+            Q_ASSERT(node);
+            target = node->getAttribute("rawname").toStdString();
+
+            item = scene->itemAt(line->line().p1(), QTransform());
+            node = qgraphicsitem_cast<QGVNode*>(item);
+            Q_ASSERT(node);
+            source = node->getAttribute("rawname").toStdString();
+
+            bool shouldConnect = (source != target);
+            shouldConnect &= (target.find(".end") == string::npos);
+
+            if(target.find(".initial") != string::npos)
+                shouldConnect &= (getParent(target) != getParent(source));
+
+            if(source.find(".initial") != string::npos)
+                shouldConnect &= (getParent(target) == getParent(source));
+
+            if(shouldConnect) {
+                size_t idx = source.find(".end");
+                if(idx != string::npos)
+                    source.erase(source.begin()+idx, source.end());
+                graph.addTransition(source, target);
+                scene->removeItem(line);
+                delete line;
+                line = NULL;
+                drawStateMachine(graph);
+            }
+        }
+        scene->removeItem(line);
+        delete line;
+        line = NULL;
+    }
+}
+
+void MainWindow::onSceneMouseMove(QPointF pos) {
+    if(ui->action_Transition->isChecked() && line) {
+        QLineF newLine(line->line().p1(), pos);
+        line->setLine(newLine);
+        QGraphicsItem *item = scene->itemAt(pos, QTransform());
+        if(item && (item->type() == QGVSubGraph::Type || item->type() == QGVNode::Type))
+            QApplication::setOverrideCursor(Qt::CrossCursor);
+        else
+            QApplication::setOverrideCursor(Qt::ForbiddenCursor);
+    }
+
+    if(ui->action_Arrow->isChecked()){
+        QApplication::setOverrideCursor(Qt::ArrowCursor);
+    }
+
+}
+
+
+void MainWindow::onSceneRightClicked(QPointF pos) {
+
 }
 
 void MainWindow::onSourceCode() {
@@ -788,7 +924,7 @@ void MainWindow::onSourceCodeSaved() {
     file.close();
     initScene();
     rfsm.close();
-    loadrFSM(filename);   
+    loadrFSM(filename);
 }
 
 void MainWindow::showEvent(QShowEvent *ev) {

@@ -57,6 +57,19 @@ void StateGraph::removeState(const std::string name) {
     }
 }
 
+void StateGraph::addTransition(const std::string source,
+                               const std::string target,
+                               std::vector<std::string> events){
+    rfsm::StateGraph::Transition transition;
+
+    transition.source=source;
+    transition.target=target;
+    std::stringstream ss;
+    transition.events=events;
+    //TODO check if already present
+    transitions.push_back(transition);
+}
+
 void StateGraph::removeTransition(const std::string source,
                       const std::string target,
                       std::vector<std::string> events) {

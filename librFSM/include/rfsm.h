@@ -93,7 +93,8 @@ public:
         std::vector<std::string> events;
         int priority;
         bool operator==(const Transition& s) const {
-            return (s.source == source) && (s.target == target) && (s.events == events);
+            //return (s.source == source) && (s.target == target) && (s.events == events);
+            return (s.source == source) && (s.target == target);
         }
     };
 
@@ -101,6 +102,9 @@ public:
     void addState(const std::string name,
                   const std::string type="single");
     void removeState(const std::string name);
+    void addTransition(const std::string source,
+                       const std::string target,
+                       std::vector<std::string> events=std::vector<std::string>());
     void removeTransition(const std::string source,
                           const std::string target,
                           std::vector<std::string> events=std::vector<std::string>());
