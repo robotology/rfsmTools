@@ -367,6 +367,7 @@
    <addaction name="action_Initial_Transition"/>
    <addaction name="action_Connector"/>
    <addaction name="action_Transition"/>
+   <addaction name="action_Arrow"/>
   </widget>
   <action name="action_LoadrFSM">
    <property name="icon">
@@ -625,6 +626,21 @@
    </property>
    <property name="toolTip">
     <string>Transition</string>
+   </property>
+  </action>
+  <action name="action_Arrow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ress.qrc">
+     <normaloff>:/icons/resources/arrow.svg</normaloff>:/icons/resources/arrow.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Arrow</string>
+   </property>
+   <property name="toolTip">
+    <string>Select objects</string>
    </property>
   </action>
  </widget>

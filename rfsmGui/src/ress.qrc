@@ -17,6 +17,7 @@
         <file>resources/transition.svg</file>
         <file>resources/initial.svg</file>
         <file>resources/connector.svg</file>
+        <file>resources/arrow.svg</file>
         <file>resources/source-edit.svg</file>
     </qresource>
 </RCC>
