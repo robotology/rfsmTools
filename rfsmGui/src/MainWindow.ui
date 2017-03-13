@@ -304,11 +304,10 @@
    </widget>
    <widget class="QMenu" name="menuBuild">
     <property name="title">
-     <string>Build</string>
+     <string>Insert</string>
     </property>
     <addaction name="action_Single_State"/>
     <addaction name="action_Composite_State"/>
-    <addaction name="action_Initial_Transition"/>
     <addaction name="action_Connector"/>
     <addaction name="action_Transition"/>
    </widget>
@@ -364,7 +363,6 @@
    <addaction name="action_Single_State"/>
    <addaction name="action_Composite_State"/>
    <addaction name="separator"/>
-   <addaction name="action_Initial_Transition"/>
    <addaction name="action_Connector"/>
    <addaction name="action_Transition"/>
    <addaction name="action_Arrow"/>
