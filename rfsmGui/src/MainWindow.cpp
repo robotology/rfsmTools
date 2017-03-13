@@ -135,7 +135,7 @@ void MyStateMachine::onInfo(const string message) {
 /************************************************/
 MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     parser(prsr), QMainWindow(parent),
-    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED)
+    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED), line(NULL)
 {
     ui->setupUi(this);
 
@@ -725,16 +725,62 @@ void MainWindow::nodeContextMenu(QGVNode *node)
         return;
     QMenu menu(node->label());
     menu.addSeparator();
+    menu.addAction(tr("Rename"));
+    menu.addSeparator();
     menu.addAction(tr("Delete"));
     QAction *action = menu.exec(QCursor::pos());
     if(action == 0)
         return;
     if(action->text().toStdString() == "Delete") {
-//        std::cout<<"deleteing ..."<<std::endl;
         graph.removeState(node->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
-    }
+        return;
 
+    }
+    if(action->text().toStdString() == "Rename")
+    {
+        bool ok;
+        QInputDialog* inputDialog = new QInputDialog();
+        inputDialog->setOptions(QInputDialog::NoButtons);
+
+        QString newName =  inputDialog->getText(NULL,"Set state name",
+                                          "Name:", QLineEdit::Normal,
+                                           node->getAttribute("label"), &ok);
+
+        newName=newName.trimmed();
+        if (!ok || !newName.size()) {
+            QMessageBox msgBox;
+            msgBox.setText("State name empty");
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+            return;
+        }
+        string parentName = node->getAttribute("rawname").toStdString();
+        size_t idx=parentName.find_last_of('.');
+
+        if(idx != string::npos)
+        {
+            parentName.erase(parentName.begin()+idx, parentName.end());
+            newName =QString(parentName.c_str()) + "." + newName;
+        }
+
+        //Checking if the state is already present
+        rfsm::StateGraph::State st;
+        st.name = newName.toStdString();
+        rfsm::StateGraph::StateItr it;
+        it= std::find(graph.states.begin(), graph.states.end(), st);
+        if(it != graph.states.end())
+        {
+            QMessageBox msgBox;
+            msgBox.setText("This state is already present.");
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+            return;
+        }
+
+        graph.renameState(node->getAttribute("rawname").toStdString(), newName.toStdString());
+        drawStateMachine(graph);
+    }
 }
 
 void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
@@ -743,15 +789,57 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
         return;
     QMenu menu(sgraph->name());
     menu.addSeparator();
+    menu.addAction(tr("Rename"));
+    menu.addSeparator();
     menu.addAction(tr("Delete"));
     QAction *action = menu.exec(QCursor::pos());
     if(action == 0)
         return;
     if(action->text().toStdString() == "Delete") {
-//        std::cout<<"deleteing ..."<<std::endl;
         graph.removeState(sgraph->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
     }
+    if(action->text().toStdString() == "Rename")
+    {
+        bool ok;
+        QInputDialog* inputDialog = new QInputDialog();
+        inputDialog->setOptions(QInputDialog::NoButtons);
+
+        QString newName =  inputDialog->getText(NULL,"Set state name",
+                                          "Name:", QLineEdit::Normal,
+                                           sgraph->getAttribute("label"), &ok);
+
+        newName=newName.trimmed();
+         if (!ok || !newName.size()) {
+            return;
+         }
+        string parentName = sgraph->getAttribute("rawname").toStdString();
+        size_t idx=parentName.find_last_of('.');
+
+        if(idx != string::npos)
+        {
+            parentName.erase(parentName.begin()+idx, parentName.end());
+            newName =QString(parentName.c_str()) + "." + newName;
+        }
+
+        //Checking if the state is already present
+        rfsm::StateGraph::State st;
+        st.name = newName.toStdString();
+        rfsm::StateGraph::StateItr it;
+        it= std::find(graph.states.begin(), graph.states.end(), st);
+        if(it != graph.states.end())
+        {
+            QMessageBox msgBox;
+            msgBox.setText("This state is already present.");
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+            return;
+        }
+
+        graph.renameState(sgraph->getAttribute("rawname").toStdString(), newName.toStdString());
+        drawStateMachine(graph);
+    }
+
 }
 
 void MainWindow::nodeDoubleClick(QGVNode *node)
@@ -842,12 +930,15 @@ void MainWindow::onSceneLeftClicked(QPointF pos) {
     QApplication::setOverrideCursor(Qt::OpenHandCursor);
     QGraphicsItem *item = scene->itemAt(pos, QTransform());
     //add states
-    if(ui->action_Single_State->isChecked() || ui->action_Composite_State->isChecked()){
-        string type="";
+    if(ui->action_Single_State->isChecked() || ui->action_Composite_State->isChecked()
+            || ui->action_Connector->isChecked()){
+        string type;
         if(ui->action_Single_State->isChecked())
-            type="single";
+            type = "single";
+        else if(ui->action_Composite_State->isChecked())
+            type = "composit";
         else
-            type="composit";
+            type = "connector";
         if(!item) {
             QString name = "State_" + QString::number(graph.states.size());
             graph.addState(name.toStdString(), type);
@@ -868,7 +959,6 @@ void MainWindow::onSceneLeftClicked(QPointF pos) {
 
     if(!item)
         return;
-//    cout<<"left clicked"<<endl;
     if(ui->action_Transition->isChecked() && item->type() == QGVNode::Type) {
         line = new QGraphicsLineItem(QLineF(pos, pos));
         line->setPen(QPen(QColor(200,200,200), 1));
@@ -1199,6 +1289,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(true);
         ui->action_New_rFSM->setEnabled(true);
         ui->actionExport_scene->setEnabled(true);
+        actionGroup->setEnabled(true);
         ui->buildToolBar->setEnabled(true);
         ui->action_Single_State->setEnabled(false);
         ui->action_Composite_State->setEnabled(false);
@@ -1220,6 +1311,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         ui->action_Save_project->setEnabled(true);
+        actionGroup->setEnabled(true);
         ui->buildToolBar->setEnabled(true);
         ui->action_Single_State->setEnabled(true);
         ui->action_Composite_State->setEnabled(true);
