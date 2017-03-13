@@ -98,6 +98,8 @@ public:
         }
     };
 
+    typedef std::vector<Transition>::iterator TransitionItr;
+    typedef std::vector<State>::iterator StateItr;
     void clear();
     void addState(const std::string name,
                   const std::string type="single");
@@ -108,6 +110,10 @@ public:
     void removeTransition(const std::string source,
                           const std::string target,
                           std::vector<std::string> events=std::vector<std::string>());
+    void addEvent(const std::string source,
+                  const std::string target,const std::string event);
+    void clearEvents(const std::string source,
+                     const std::string target);
     void removeTransitionFrom(const std::string source,
                           std::vector<std::string> events=std::vector<std::string>());
     void removeTransitionTo(const std::string target,

@@ -87,24 +87,33 @@ void StateGraph::removeTransition(const std::string source,
             ++it;
     }
 }
-void StateGraph::removeTransitionFrom(const std::string source,
-                      std::vector<std::string> events) {
-    std::vector<Transition>::iterator it;
-    for(it = transitions.begin(); it<transitions.end();) {
+
+void StateGraph::addEvent(const std::string source,
+              const std::string target,const std::string event){
+    TransitionItr it;
+    for(it = transitions.begin(); it<transitions.end();it++) {
         Transition &tr = *it;
-        if((tr.source == source))
-            if(events.size()) {
-                 if(tr.events == events)
-                     transitions.erase(it);
-            }
-            else
-                transitions.erase(it);
-        else
-            ++it;
+        if((tr.source == source) && (tr.target == target)){
+            assert(event!="");
+            if(find(tr.events.begin(), tr.events.end(), event) != tr.events.end())
+                return;
+            tr.events.push_back(event);
+        }
     }
+
 }
-void StateGraph::removeTransitionTo(const std::string target,
-                      std::vector<std::string> events) {
+
+void StateGraph::clearEvents(const std::string source,
+                 const std::string target)
+{
+    TransitionItr it;
+    for(it = transitions.begin(); it<transitions.end();it++) {
+        Transition &tr = *it;
+        if((tr.source == source) && (tr.target == target))
+            tr.events.clear();
+    }
+
+}
     std::vector<Transition>::iterator it;
     for(it = transitions.begin(); it<transitions.end();) {
         Transition &tr = *it;

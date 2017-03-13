@@ -146,7 +146,6 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     actionGroup = new QActionGroup(this) ;
     actionGroup->addAction(ui->action_Single_State);
     actionGroup->addAction(ui->action_Composite_State);
-    actionGroup->addAction(ui->action_Initial_Transition);
     actionGroup->addAction(ui->action_Transition);
     actionGroup->addAction(ui->action_Connector);
     actionGroup->addAction(ui->action_Arrow);
@@ -665,12 +664,53 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
     QMenu menu(edge->label());
     menu.addSeparator();
     menu.addAction(tr("Delete"));
+    menu.addSeparator();
+    menu.addAction(tr("Add events"));
+    menu.addSeparator();
+    menu.addAction(tr("Clear events"));
     QAction *action = menu.exec(QCursor::pos());
     if(action == 0)
         return;
     if(action->text().toStdString() == "Delete") {
         graph.removeTransition(edge->getAttribute("sourcename").toStdString(),
                                edge->getAttribute("targetname").toStdString());
+        drawStateMachine(graph);
+    }
+    if(action->text().toStdString() == "Add events") {
+        bool ok;
+        QInputDialog* inputDialog = new QInputDialog();
+        inputDialog->setOptions(QInputDialog::NoButtons);
+
+        QString event =  inputDialog->getText(NULL,"Add new event",
+                                          "Name:", QLineEdit::Normal,
+                                           "", &ok);
+
+        event=event.trimmed();
+        if (!ok || !event.size()) {
+            QMessageBox msgBox;
+            msgBox.setText("Event name empty");
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+            return;
+        }
+
+        //add multiple events once
+        QStringList pieces = event.split(",");
+        if(pieces.size()!=0){
+            for(int i=0; i<pieces.size();i++)
+            {
+                graph.addEvent(edge->getAttribute("sourcename").toStdString(),
+                                  edge->getAttribute("targetname").toStdString(), pieces[i].trimmed().toStdString());
+            }
+        }
+        else
+            graph.addEvent(edge->getAttribute("sourcename").toStdString(),
+                          edge->getAttribute("targetname").toStdString(), event.toStdString());
+        drawStateMachine(graph);
+    }
+    if(action->text().toStdString() == "Clear events"){
+        graph.clearEvents(edge->getAttribute("sourcename").toStdString(),
+                          edge->getAttribute("targetname").toStdString());
         drawStateMachine(graph);
     }
 
