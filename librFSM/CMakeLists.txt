@@ -65,6 +65,16 @@ endif()
 
 target_link_libraries(rFSM ${LUA_LIBRARY})
 
+# choose which header files should be installed
+set_property(TARGET rFSM PROPERTY PUBLIC_HEADER include/rfsm.h)
+
+install(TARGETS rFSM
+        EXPORT rFSM
+        COMPONENT runtime
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)
+
 # Add bindings
 add_subdirectory(bindings)
 

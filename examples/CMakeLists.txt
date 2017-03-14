@@ -14,6 +14,9 @@ add_executable(${PROJECTNAME} main.cpp )
 
 target_link_libraries(${PROJECTNAME} rFSM)
 
-install(TARGETS ${PROJECTNAME} RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
+#install(TARGETS ${PROJECTNAME}
+#        EXPORT ${PROJECTNAME}
+#        COMPONENT runtime
+#        RUNTIME DESTINATION bin)
 
 

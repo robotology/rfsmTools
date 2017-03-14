@@ -44,6 +44,8 @@ if(WIN32)
     target_link_libraries(${PROJECTNAME} qgvcore Qt5::WinMain rFSM)
 endif()
 
-#install(TARGETS ${PROJECTNAME} COMPONENT utilities DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-
+install(TARGETS ${PROJECTNAME}
+        EXPORT ${PROJECTNAME}
+        COMPONENT runtime
+        RUNTIME DESTINATION bin)
+       
