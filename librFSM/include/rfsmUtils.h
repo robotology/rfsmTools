@@ -131,6 +131,32 @@ namespace rfsm {
 #define POST_STEP_HOOK_CHUNK \
 "function rfsm_post_step_hook() RFSM.postStepCallback() end\n"
 
+#define RFSM_WARNING_CHUNK \
+"function rfsm_warning(...)\n"\
+"  res = ''\n"\
+"  for i,v in ipairs(arg) do\n"\
+"    res = res .. tostring(v) .. ' '\n"\
+"  end\n"\
+"  RFSM.warningCallback(res)\n"\
+"end"
+
+#define RFSM_ERROR_CHUNK \
+"function rfsm_error(...)\n"\
+"  res = ''\n"\
+"  for i,v in ipairs(arg) do\n"\
+"    res = res .. tostring(v) .. ' '\n"\
+"  end\n"\
+"  RFSM.errorCallback(res)\n"\
+"end"
+
+#define RFSM_INFO_CHUNK \
+"function rfsm_info(...)\n"\
+"  res = ''\n"\
+"  for i,v in ipairs(arg) do\n"\
+"    res = res .. tostring(v) .. ' '\n"\
+"  end\n"\
+"  RFSM.infoCallback(res)\n"\
+"end"
 
 class rfsm::Utils {
 public:

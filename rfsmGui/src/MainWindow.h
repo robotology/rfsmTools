@@ -41,6 +41,9 @@ public:
     void stop();
     virtual void onPreStep();
     virtual void onPostStep();
+    virtual void onWarning(const std::string message);
+    virtual void onError(const std::string message);
+    virtual void onInfo(const std::string message);
 
 public:
     int runPeriod;

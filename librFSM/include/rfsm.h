@@ -237,6 +237,26 @@ public:
      */
     virtual void onPostStep();
 
+    /**
+     * @brief this is called on every warning message generated from rFSM
+     *        in verbose mode (i.e. StateMachine(bool verbose=true) )
+     * @param message the warning message
+     */
+    virtual void onWarning(const std::string message);
+
+    /**
+     * @brief this is called on every error message generated from rFSM
+     * @param message the error message
+     */
+    virtual void onError(const std::string message);
+
+    /**
+     * @brief this is called on every info message generated from rFSM
+     *        in verbose mode (i.e. StateMachine(bool verbose=true) )
+     * @param message the info message
+     */
+    virtual void onInfo(const std::string message);
+
 private:
 	class Private;
     Private * const mPriv;

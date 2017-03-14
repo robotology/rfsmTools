@@ -30,6 +30,12 @@ public:
     static int exitCallback(lua_State* L);
     static int preStepCallback(lua_State* L);
     static int postStepCallback(lua_State* L);
+    static int warningCallback(lua_State* L);
+    static int infoCallback(lua_State* L);
+    static int errorCallback(lua_State* L);
+
+    static bool getLuaFuncStringParam(lua_State* L,
+                                      StateMachine* &owner, std::string& strParam);
 
     bool getAllEvents();
     bool getAllStateGraph();
@@ -119,11 +125,14 @@ bool StateMachine::load(const std::string& filename) {
 
     // setting verbosity mode
     if(!verbose) {
-        //doString("function rfsm_null_func() return end");
         doString("fsm_model.warn = rfsm_null_func");
         doString("fsm_model.info = rfsm_null_func");
-        //doString("fsm_model.err = rfsm_null_func");
     }
+    else {
+        doString("fsm_model.warn = rfsm_warning");
+        doString("fsm_model.info = rfsm_info");
+    }
+    doString("fsm_model.err = rfsm_error");
 
     // initializing rfsm state machine
     if(Utils::dostring(mPriv->L, "fsm = rfsm.init(fsm_model)", "fsm") != LUA_OK) {
@@ -334,6 +343,60 @@ int StateMachine::Private::postStepCallback(lua_State* L) {
 	return 0;
 }
 
+int StateMachine::Private::warningCallback(lua_State* L) {
+    std::string message;
+    StateMachine* owner;
+    if(getLuaFuncStringParam(L, owner, message))
+        owner->onWarning(message);
+    else
+        yError()<<"StateMachine::warningCallback() failed on getLuaFuncStringParam"<<ENDL;
+    return 0;
+}
+
+int StateMachine::Private::errorCallback(lua_State* L) {
+    std::string message;
+    StateMachine* owner;
+    if(getLuaFuncStringParam(L, owner, message))
+        owner->onError(message);
+    else
+        yError()<<"StateMachine::errorCallback() failed on getLuaFuncStringParam"<<ENDL;
+    return 0;
+}
+
+int StateMachine::Private::infoCallback(lua_State* L) {
+    std::string message;
+    StateMachine* owner;
+    if(getLuaFuncStringParam(L, owner, message))
+        owner->onInfo(message);
+    else
+        yError()<<"StateMachine::infoCallback() failed on getLuaFuncStringParam"<<ENDL;
+    return 0;
+}
+
+bool StateMachine::Private::getLuaFuncStringParam(lua_State* L, StateMachine* &owner , std::string& strParam) {
+    if (lua_gettop(L) < 1) {
+        yError()<<"StateMachine::getLuaFuncStringParam() expects exactly one argument"<<ENDL;
+       return false;
+    }
+
+    const char *cst = luaL_checkstring(L, -1);
+    if(cst) {
+        lua_getglobal(L, "RFSM_Owner");
+        if(!lua_islightuserdata(L, -1)) {
+            lua_pop(L, 1);
+            yError()<<"StateMachine::getLuaFuncStringParam() cannot access RFSM_Owner"<<ENDL;
+            return false;
+        }
+        owner = static_cast<StateMachine*>(lua_touserdata(L, -1));
+        lua_pop(L, 1);
+        yAssert(owner!=NULL);
+        strParam = cst;
+        return true;
+    }
+    else
+        yError()<<"StateMachine::getLuaFuncStringParam() expects a string argument"<<ENDL;
+    return false;
+}
 
 void StateMachine::Private::callEntryCallback(const std::string& state) {
     std::map<string,StateCallback*>::iterator it;
@@ -441,6 +504,22 @@ void StateMachine::onPostStep() {
 }
 
 
+void StateMachine::onWarning(const std::string message) {
+    if(verbose)
+        yWarning()<<" "<<message<<ENDL;
+}
+
+
+void StateMachine::onError(const std::string message) {
+    yError()<<" "<<message<<ENDL;
+}
+
+void StateMachine::onInfo(const std::string message) {
+    if(verbose)
+        yInfo()<<" "<<message<<ENDL;
+}
+
+
 /**********************************************************
 * class StateMachine::Private
 ***********************************************************/
@@ -478,7 +557,11 @@ bool StateMachine::Private::registerAuxiliaryFunctions() {
     registerCFunction("dooCallback", StateMachine::Private::dooCallback);
     registerCFunction("exitCallback", StateMachine::Private::exitCallback);
     registerCFunction("preStepCallback", StateMachine::Private::preStepCallback);
-    registerCFunction("postStepCallback", StateMachine::Private::postStepCallback);
+    registerCFunction("postStepCallback", StateMachine::Private::postStepCallback);    
+    registerCFunction("warningCallback", StateMachine::Private::warningCallback);
+    registerCFunction("errorCallback", StateMachine::Private::errorCallback);
+    registerCFunction("infoCallback", StateMachine::Private::infoCallback);
+
     if(Utils::dostring(L, RFSM_NULL_FUNCTION_CHUNK, "RFSM_NULL_FUNCTION_CHANK") != LUA_OK)
         return false;
     if(Utils::dostring(L, EVENT_RETREIVE_CHUNK, "EVENT_RETREIVE_CHUNK") != LUA_OK)
@@ -496,6 +579,12 @@ bool StateMachine::Private::registerAuxiliaryFunctions() {
     if(Utils::dostring(L, PRE_STEP_HOOK_CHUNK, "PRE_STEP_HOOK_CHUNK") != LUA_OK)
         return false;
     if(Utils::dostring(L, POST_STEP_HOOK_CHUNK, "POST_STEP_HOOK_CHUNK") != LUA_OK)
+        return false;
+    if(Utils::dostring(L, RFSM_WARNING_CHUNK, "RFSM_WARNING_CHUNK") != LUA_OK)
+        return false;
+    if(Utils::dostring(L, RFSM_ERROR_CHUNK, "RFSM_ERROR_CHUNK") != LUA_OK)
+        return false;
+    if(Utils::dostring(L, RFSM_INFO_CHUNK, "RFSM_INFO_CHUNK") != LUA_OK)
         return false;
     return true;
 }

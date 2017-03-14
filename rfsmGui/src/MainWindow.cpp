@@ -124,6 +124,39 @@ void MyStateMachine::onPostStep() {
 }
 
 
+void MyStateMachine::onWarning(const string message) {
+    QTime qt = QTime::currentTime();
+    QTreeWidgetItem* item;
+    QStringList qmessage;
+    qmessage.append(qt.toString());
+    qmessage.append(message.c_str());
+    item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
+    QBrush b( QColor("#FFFACD") );
+    item->setBackground( 0, b);
+    item->setBackground( 1, b);
+}
+
+void MyStateMachine::onError(const string message) {
+    QTime qt = QTime::currentTime();
+    QTreeWidgetItem* item;
+    QStringList qmessage;
+    qmessage.append(qt.toString());
+    qmessage.append(message.c_str());
+    item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
+    QBrush b( QColor("#FA8072") );
+    item->setBackground( 0, b);
+    item->setBackground( 1, b);
+}
+
+void MyStateMachine::onInfo(const string message) {
+    QTime qt = QTime::currentTime();
+    QTreeWidgetItem* item;
+    QStringList qmessage;
+    qmessage.append(qt.toString());
+    qmessage.append(message.c_str());
+    item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
+}
+
 
 /************************************************/
 /* MainWindow                                   */
@@ -349,7 +382,6 @@ bool MainWindow::loadrFSM(const std::string filename) {
     QDir path = QFileInfo(filename.c_str()).absoluteDir();
     rfsm.addLuaPackagePath((path.absolutePath()+"/?.lua").toStdString());
     QDir::setCurrent(path.absolutePath());
-    std::cout<<"current: "<<path.absolutePath().toStdString()<<std::endl;
 
     if(!rfsm.load(filename)) {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename).c_str()));
