@@ -59,7 +59,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-private:
+public:
     enum MachineMode {
         UNLOADED,
         IDLE,
@@ -75,11 +75,11 @@ public:
     QGVSubGraph * getParent(const std::string& name );
     QGVSubGraph* getSubGraph(const std::string& name);
     void updateEventQueue();
+    void switchMachineMode(MachineMode mode);
 
 private:
     void initScene();    
     void drawStateMachine();    
-    void switchMachineMode(MachineMode mode);
     bool loadrFSM(const std::string filename);
     std::string getPureStateName(const std::string& name);
 

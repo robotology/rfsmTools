@@ -159,7 +159,11 @@ void MyStateMachine::onError(const string message) {
             sgv->update();
         }
     }
+    mainWindow->switchMachineMode(MainWindow::PAUSE);
+    stop();
+    mainWindow->ui->statusBar->showMessage("Error occured! (paused)");
 }
+
 
 void MyStateMachine::onInfo(const string message) {
     QTime qt = QTime::currentTime();
