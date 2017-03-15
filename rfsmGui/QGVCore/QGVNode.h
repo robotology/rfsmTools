@@ -47,6 +47,7 @@ public:
     void setVertex(void* v);
     void* getVertex();
     void setActive(bool activeMode);
+    void setError(const std::string &errorMessage);
 
     enum { Type = UserType + 2 };
     int type() const
@@ -72,6 +73,7 @@ private:
     QGVScene *_scene;
     QGVNodePrivate* _node;
     bool activeMode;
+    std::string errorMessage;
     void* vertex;
 };
 

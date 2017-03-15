@@ -19,6 +19,7 @@ namespace rfsm {
     class StateMachine;
     class StateCallback;
     class StateGraph;
+    class LuaTraceCallback;
 }
 
 #ifndef luaL_reg
@@ -46,6 +47,19 @@ public:
      * @brief exit is called on rFSM state.exit
      */
     virtual void exit() {}
+};
+
+
+/**
+ * @brief The LuaTraceCallback class
+ */
+class rfsm::LuaTraceCallback {
+public:
+    /**
+     * @brief onTrace is called on lua traceback
+     * @param message the trace message
+     */
+    virtual void onTrace(const std::string& message ) { }
 };
 
 
@@ -95,7 +109,7 @@ public:
 /**
  * @brief The rfsm::StateMachine class
  */
-class rfsm::StateMachine {
+class rfsm::StateMachine : public rfsm::LuaTraceCallback{
 public:
 
     /**
@@ -256,6 +270,13 @@ public:
      * @param message the info message
      */
     virtual void onInfo(const std::string message);
+
+private:
+    /**
+     * @brief onTrace is called on lua traceback
+     * @param message the trace message
+     */
+    virtual void onTrace(const std::string& message );
 
 private:
 	class Private;

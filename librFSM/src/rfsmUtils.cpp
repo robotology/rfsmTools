@@ -1,16 +1,20 @@
 #include <string.h>
 #include <rfsmUtils.h>
+#include <rfsm.h>
 
 using namespace rfsm;
+
+LuaTraceCallback* Utils::traceCallback = NULL;
 
 int Utils::report (lua_State *L, int status) {
   if (status && !lua_isnil(L, -1)) {
     const char *msg = lua_tostring(L, -1);
-    if (msg == NULL)
-        msg = "(error object is not a string)";
-    else
-        yError()<<msg<<ENDL;
+    std::string strMessage = (msg != NULL) ? msg : "(error object is not a string)";
     lua_pop(L, 1);
+    if(traceCallback)
+        traceCallback->onTrace(strMessage);
+    else
+        yError()<<strMessage.c_str()<<ENDL;
   }
   return status;
 }
@@ -94,4 +98,8 @@ std::string Utils::getTableStringField(lua_State *L, const char *key) {
     result =  lua_tostring(L, -1);
     lua_pop(L, 1);
     return result;
+}
+
+void Utils::setLuaTraceCallback(LuaTraceCallback* callback) {
+     Utils::traceCallback = callback;
 }

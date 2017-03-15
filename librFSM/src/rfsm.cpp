@@ -63,6 +63,7 @@ public:
 
 StateMachine::StateMachine(bool verbose):  mPriv(new Private()) {	
     StateMachine::verbose = verbose;
+    Utils::setLuaTraceCallback((rfsm::LuaTraceCallback*) this);
 }
 
 StateMachine::~StateMachine() {	
@@ -93,7 +94,7 @@ bool StateMachine::load(const std::string& filename) {
     // setting user-defined lua package paths
     if(mPriv->luaPackagePath.size()) {
         string command = "package.path=package.path .. '" + mPriv->luaPackagePath + "'";
-        if(Utils::dostring(mPriv->L, command.c_str(), "command") == !LUA_OK)
+        if(Utils::dostring(mPriv->L, command.c_str(), "command") != LUA_OK)
             yWarning()<<"Could not set lua package path from"<<mPriv->luaPackagePath<<ENDL;
     }
 
@@ -435,7 +436,7 @@ bool StateMachine::setStateCallback(const string &state, rfsm::StateCallback& ca
     }
 
     // converting the results
-    bool result = (bool) lua_toboolean(mPriv->L, -1);
+    bool result = (lua_toboolean(mPriv->L, -1) == 1);
     lua_pop(mPriv->L, 1); // pop the result from Lua stack    
     if(result)
         mPriv->callbacks[state] = &callback;
@@ -519,6 +520,10 @@ void StateMachine::onInfo(const std::string message) {
         yInfo()<<" "<<message<<ENDL;
 }
 
+void StateMachine::onTrace(const std::string& message ) {
+    onError(message);
+}
+
 
 /**********************************************************
 * class StateMachine::Private
@@ -578,8 +583,10 @@ bool StateMachine::Private::registerAuxiliaryFunctions() {
         return false;
     if(Utils::dostring(L, PRE_STEP_HOOK_CHUNK, "PRE_STEP_HOOK_CHUNK") != LUA_OK)
         return false;
-    if(Utils::dostring(L, POST_STEP_HOOK_CHUNK, "POST_STEP_HOOK_CHUNK") != LUA_OK)
+    if(Utils::dostring(L, POST_STEP_HOOK_CHUNK, "POST_STEP_HOOK_CHUNK") != LUA_OK)                
         return false;
+    if(Utils::dostring(L, RFSM_PACK_ARGS_CHUNK, "RFSM_PACK_ARGS_CHUNK") != LUA_OK)
+            return false;
     if(Utils::dostring(L, RFSM_WARNING_CHUNK, "RFSM_WARNING_CHUNK") != LUA_OK)
         return false;
     if(Utils::dostring(L, RFSM_ERROR_CHUNK, "RFSM_ERROR_CHUNK") != LUA_OK)

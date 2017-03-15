@@ -146,6 +146,19 @@ void MyStateMachine::onError(const string message) {
     QBrush b( QColor("#FA8072") );
     item->setBackground( 0, b);
     item->setBackground( 1, b);
+    // setting node/subgrph error mode
+    QGVNode* node = mainWindow->getNode(getCurrentState());
+    if(node) {
+        node->setError(message);
+        node->update();
+    }
+    else {
+        QGVSubGraph* sgv = mainWindow->getSubGraph(getCurrentState());
+        if(sgv) {
+            sgv->setError(message);
+            sgv->update();
+        }
+    }
 }
 
 void MyStateMachine::onInfo(const string message) {
@@ -339,7 +352,7 @@ void MainWindow::drawStateMachine() {
                 node->setAttribute("doo", graph.states[i].doo.c_str());
                 node->setAttribute("exit", graph.states[i].exit.c_str());
             }
-            // use this for error : #FA8072            
+            // use this for error : #FA8072
             node->setAttribute("color", "#edad56");
             node->setAttribute("labelfontcolor", "#edad56");
             sceneNodeMap[graph.states[i].name] = node;

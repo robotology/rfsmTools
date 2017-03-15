@@ -16,6 +16,7 @@
 
 namespace rfsm {
     class Utils;
+    class LuaTraceCallback;
 }
 
 #ifndef LUA_OK
@@ -131,38 +132,44 @@ namespace rfsm {
 #define POST_STEP_HOOK_CHUNK \
 "function rfsm_post_step_hook() RFSM.postStepCallback() end\n"
 
-#define RFSM_WARNING_CHUNK \
-"function rfsm_warning(...)\n"\
+#if LUA_VERSION_NUM > 501
+#define RFSM_PACK_ARGS_CHUNK \
+"function rfsm_pack_args(...)\n"\
 "  res = ''\n"\
 "  local arguments=arg \n"\
 "  if arguments==nil then arguments = table.pack(...) end\n"\
 "  for i,v in ipairs(arguments) do\n"\
 "    res = res .. tostring(v) .. ' '\n"\
 "  end\n"\
-"  RFSM.warningCallback(res)\n"\
+"  return res\n"\
+"end"
+#else
+#define RFSM_PACK_ARGS_CHUNK \
+"function rfsm_pack_args(...)\n"\
+"  res = ''\n"\
+"  for i,v in ipairs(arg) do\n"\
+"    res = res .. tostring(v) .. ' '\n"\
+"  end\n"\
+"  return res\n"\
+"end"
+
+#endif
+
+#define RFSM_WARNING_CHUNK \
+"function rfsm_warning(...)\n"\
+"  RFSM.warningCallback(rfsm_pack_args(...))\n"\
 "end"
 
 #define RFSM_ERROR_CHUNK \
 "function rfsm_error(...)\n"\
-"  res = ''\n"\
-"  local arguments=arg \n"\
-"  if arguments==nil then arguments = table.pack(...) end\n"\
-"  for i,v in ipairs(arguments) do\n"\
-"    res = res .. tostring(v) .. ' '\n"\
-"  end\n"\
-"  RFSM.errorCallback(res)\n"\
+"  RFSM.errorCallback(rfsm_pack_args(...))\n"\
 "end"
 
 #define RFSM_INFO_CHUNK \
 "function rfsm_info(...)\n"\
-"  res = ''\n"\
-"  local arguments=arg \n"\
-"  if arguments==nil then arguments = table.pack(...) end\n"\
-"  for i,v in ipairs(arguments) do\n"\
-"    res = res .. tostring(v) .. ' '\n"\
-"  end\n"\
-"  RFSM.infoCallback(res)\n"\
+"  RFSM.infoCallback(rfsm_pack_args(...))\n"\
 "end"
+
 
 class rfsm::Utils {
 public:
@@ -173,7 +180,11 @@ public:
     static int dostring (lua_State *L, const char *s, const char *name);
     static int dolibrary (lua_State *L, const char *name);
     static std::string getTableStringField(lua_State *L, const char *key);
-    static bool isNilTableField(lua_State *L, const char *key);
+    static bool isNilTableField(lua_State *L, const char *key);    
+    static void setLuaTraceCallback(LuaTraceCallback* callback);
+
+private:
+    static LuaTraceCallback* traceCallback;
 };
 
 

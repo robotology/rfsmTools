@@ -47,6 +47,7 @@ public:
     QString getAttribute(const QString &name) const;
     void updateLayout();
     void setActive(bool activeMode);
+    void setError(const std::string& errorMessage);
 
     enum { Type = UserType + 4 };
     int type() const
@@ -60,6 +61,8 @@ private:
 		QGVSubGraph(QGVGraphPrivate* subGraph, QGVScene *scene);
 
     bool activeMode;
+    std::string errorMessage;
+
     double _height, _width;
     QPen _pen;
     QBrush _brush;

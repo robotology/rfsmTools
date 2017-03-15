@@ -93,6 +93,10 @@ void QGVSubGraph::paint(QPainter * painter, const QStyleOptionGraphicsItem * opt
     else
         _brush.setColor(QGVCore::toColor(getAttribute("fillcolor")));
 
+    if (errorMessage.size()) {
+        _brush.setColor(QGVCore::toColor("#FA8072"));
+    }
+
     painter->setPen(_pen);
     painter->setBrush(_brush);
 
@@ -154,3 +158,8 @@ void QGVSubGraph::updateLayout()
 void QGVSubGraph::setActive(bool activeMode) {
     QGVSubGraph::activeMode = activeMode;
 }
+
+void QGVSubGraph::setError(const std::string &errorMessage) {
+    QGVSubGraph::errorMessage = errorMessage;
+}
+

@@ -39,6 +39,10 @@ void QGVNode::setActive(bool activeMode) {
     QGVNode::activeMode = activeMode;
 }
 
+void QGVNode::setError(const std::string &errorMessage) {
+    QGVNode::errorMessage = errorMessage;
+}
+
 QString QGVNode::label() const
 {
     return getAttribute("label");
@@ -66,6 +70,10 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
         _brush.setColor(QGVCore::toColor(getAttribute("fillcolor")));
         _pen.setColor(QGVCore::toColor(getAttribute("color")));
         setAttribute("labelfontcolor", "#edad56");
+    }
+
+    if (errorMessage.size()) {
+        _brush.setColor(QGVCore::toColor("#FA8072"));
     }
 
     painter->setPen(_pen);

@@ -21,12 +21,12 @@ public:
 void printStateGraph(const rfsm::StateGraph& graph) {
     std::cout<<"------------------------------------------"<<std::endl;
     std::cout<<"States:";
-    for(int i=0; i<graph.states.size(); i++)
+    for(size_t i=0; i<graph.states.size(); i++)
         std::cout<<"\t"<<graph.states[i].name<<"("<<graph.states[i].type<<")"<<std::endl;
     std::cout<<"Transitions:"<<std::endl;
-    for(int i=0; i<graph.transitions.size(); i++) {
+    for(size_t i=0; i<graph.transitions.size(); i++) {
         std::string events;
-        for(int e=0; e<graph.transitions[i].events.size();e++)
+        for(size_t e=0; e<graph.transitions[i].events.size();e++)
             events = events +  ((events.size()) ?  ", " + graph.transitions[i].events[e] : graph.transitions[i].events[e]);
         std::cout<<"\t"<<graph.transitions[i].source<<"->"<<graph.transitions[i].target<<"("<<events<<")"<<std::endl;
     }
@@ -35,7 +35,7 @@ void printStateGraph(const rfsm::StateGraph& graph) {
 
 void printEventQueue(std::vector<std::string>& equeue) {
     std::string events;
-    for(int i=0; i<equeue.size(); i++)
+    for(size_t i=0; i<equeue.size(); i++)
         events = events +  ((events.size()) ?  ", " + equeue[i] : equeue[i]);
     std::cout<<"Event queue:"<<events<<std::endl;
 }
