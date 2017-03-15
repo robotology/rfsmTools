@@ -134,7 +134,9 @@ namespace rfsm {
 #define RFSM_WARNING_CHUNK \
 "function rfsm_warning(...)\n"\
 "  res = ''\n"\
-"  for i,v in ipairs(arg) do\n"\
+"  local arguments=arg \n"\
+"  if arguments==nil then arguments = table.pack(...) end\n"\
+"  for i,v in ipairs(arguments) do\n"\
 "    res = res .. tostring(v) .. ' '\n"\
 "  end\n"\
 "  RFSM.warningCallback(res)\n"\
@@ -143,7 +145,9 @@ namespace rfsm {
 #define RFSM_ERROR_CHUNK \
 "function rfsm_error(...)\n"\
 "  res = ''\n"\
-"  for i,v in ipairs(arg) do\n"\
+"  local arguments=arg \n"\
+"  if arguments==nil then arguments = table.pack(...) end\n"\
+"  for i,v in ipairs(arguments) do\n"\
 "    res = res .. tostring(v) .. ' '\n"\
 "  end\n"\
 "  RFSM.errorCallback(res)\n"\
@@ -152,7 +156,9 @@ namespace rfsm {
 #define RFSM_INFO_CHUNK \
 "function rfsm_info(...)\n"\
 "  res = ''\n"\
-"  for i,v in ipairs(arg) do\n"\
+"  local arguments=arg \n"\
+"  if arguments==nil then arguments = table.pack(...) end\n"\
+"  for i,v in ipairs(arguments) do\n"\
 "    res = res .. tostring(v) .. ' '\n"\
 "  end\n"\
 "  RFSM.infoCallback(res)\n"\
