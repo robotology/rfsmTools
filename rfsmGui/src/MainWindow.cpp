@@ -364,9 +364,10 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
 
             if(graph.states[i].type == "connector") {
                 node->setAttribute("shape", "circle");
-                node->setAttribute("height", "0.1");
+                node->setAttribute("height", "0.15");
                 node->setAttribute("fixedsize", "true");
-                if(graph.states[i].name.find(".initial") != string::npos)
+                node->setAttribute("color", "#edad56");
+                if(graph.states[i].name.find("initial") != string::npos)
                     node->setLabel("I");
                 else
                     node->setLabel("");

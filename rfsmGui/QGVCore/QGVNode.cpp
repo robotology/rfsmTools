@@ -73,7 +73,10 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     else {
         _brush.setColor(QGVCore::toColor(getAttribute("fillcolor")));
         _pen.setColor(QGVCore::toColor(getAttribute("color")));
-        setAttribute("labelfontcolor", "#edad56");
+        if(QGVNode::label()=="I")
+            setAttribute("labelfontcolor", "#2e3e56");
+        else
+            setAttribute("labelfontcolor", "#edad56");
     }
 
     if (errorMessage.size()) {
@@ -107,15 +110,22 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
     }
 
     painter->setPen(QGVCore::toColor(getAttribute("labelfontcolor")));
-    QRectF rect = boundingRect().adjusted(2,5,-2,-2); //Margin
+    QRectF rect;
     QFont font;
-    font.setPixelSize(12);
+    rect= boundingRect().adjusted(2,1,-2,-2); //Margin
+    if(QGVNode::label()=="I"){
+        font.setPixelSize(8);
+        rect= boundingRect().adjusted(2,1,-2,-2); //Margin
+    }
+    else{
+        font.setPixelSize(12);
+        rect= boundingRect().adjusted(2,5,-2,-2); //Margin
+    }
     font.setBold(true);
     painter->setFont(font);
     if(_icon.isNull()) {
         painter->drawText(rect, Qt::AlignTop | Qt::AlignHCenter , QGVNode::label());
         rect = boundingRect().adjusted(2,30,-2,-2); //Margin
-        font.setPixelSize(10);
         font.setBold(false);
         font.setItalic(true);
         painter->setFont(font);
