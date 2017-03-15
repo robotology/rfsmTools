@@ -150,12 +150,14 @@ void MyStateMachine::onError(const string message) {
     QGVNode* node = mainWindow->getNode(getCurrentState());
     if(node) {
         node->setError(message);
+        node->setToolTip(QString(message.c_str()));
         node->update();
     }
     else {
         QGVSubGraph* sgv = mainWindow->getSubGraph(getCurrentState());
         if(sgv) {
             sgv->setError(message);
+            sgv->setToolTip(QString(message.c_str()));
             sgv->update();
         }
     }
