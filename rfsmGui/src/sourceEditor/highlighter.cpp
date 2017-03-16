@@ -76,25 +76,29 @@ Highlighter::Highlighter(QTextDocument *parent)
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
-    multiLineCommentFormat.setForeground(Qt::red);
+//    multiLineCommentFormat.setForeground(Qt::red);
+//    rule.pattern = QRegExp("/--\[\[([^]*)\]\]--");
+//    rule.format = multiLineCommentFormat;
+    highlightingRules.append(rule);
 //! [3]
 
 //! [4]
-    quotationFormat.setForeground(Qt::darkGreen);
-    rule.pattern = QRegExp("\".*\"");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("\'.*\'");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
-//! [4]
-
-//! [5]
     functionFormat.setFontItalic(false);
     functionFormat.setForeground(Qt::blue);
     rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
     rule.format = functionFormat;
     highlightingRules.append(rule);
+//! [4]
+
+//! [5]
+    quotationFormat.setForeground(Qt::darkGreen);
+    rule.pattern = QRegExp("\"([^\"]*)\"");
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+    rule.pattern = QRegExp("\'([^\']*)\'");
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+
 //! [5]
 
 //! [6]
