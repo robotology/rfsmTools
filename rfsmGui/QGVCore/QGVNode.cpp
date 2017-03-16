@@ -41,6 +41,10 @@ void QGVNode::setActive(bool activeMode) {
 
 void QGVNode::setError(const std::string &errorMessage) {
     QGVNode::errorMessage = errorMessage;
+    QString toolTip = QString("<font color=darkred>");
+    toolTip += errorMessage.c_str();
+    toolTip += QString("</font>");
+    setToolTip(QString(toolTip));
 }
 
 QString QGVNode::label() const

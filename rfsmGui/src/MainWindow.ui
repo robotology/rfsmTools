@@ -294,6 +294,7 @@
     <addaction name="separator"/>
     <addaction name="menuLayout"/>
     <addaction name="separator"/>
+    <addaction name="actionSourceCode"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
     <property name="title">
@@ -329,6 +330,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="action_LoadrFSM"/>
+   <addaction name="actionSourceCode"/>
    <addaction name="separator"/>
    <addaction name="actionRunStart"/>
    <addaction name="actionRunPause"/>
@@ -497,6 +499,15 @@
   <action name="actionChangeRunPeriod">
    <property name="text">
     <string>Change run period...</string>
+   </property>
+  </action>
+  <action name="actionSourceCode">
+   <property name="icon">
+    <iconset resource="ress.qrc">
+     <normaloff>:/icons/resources/source-edit.svg</normaloff>:/icons/resources/source-edit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Source code...</string>
    </property>
   </action>
  </widget>

@@ -11,6 +11,7 @@
 #include "MainWindow.h"
 #include "moc_MainWindow.cpp"
 #include "ui_MainWindow.h"
+
 #include "QGVScene.h"
 #include "QGVNode.h"
 #include "QGVEdge.h"
@@ -149,23 +150,28 @@ void MyStateMachine::onError(const string message) {
     // setting node/subgrph error mode
     QGVNode* node = mainWindow->getNode(getCurrentState());
     if(node) {
-        node->setError(message);
-        node->setToolTip(QString(message.c_str()));
+        node->setError(message);        
         node->update();
     }
     else {
         QGVSubGraph* sgv = mainWindow->getSubGraph(getCurrentState());
         if(sgv) {
-            sgv->setError(message);
-            sgv->setToolTip(QString(message.c_str()));
+            sgv->setError(message);            
             sgv->update();
         }
     }
     mainWindow->switchMachineMode(MainWindow::PAUSE);
     stop();
-    mainWindow->ui->statusBar->showMessage("Error occured! (paused)");
+    mainWindow->showStatusBarMessage("Error occured! (paused)", Qt::darkRed);
 }
 
+void MainWindow::showStatusBarMessage(const QString& message,
+                                      QColor color) {
+    ui->statusBar->showMessage(message);
+    QPalette palette;
+    palette.setColor( QPalette::WindowText, color );
+    statusBar()->setPalette(palette);
+}
 
 void MyStateMachine::onInfo(const string message) {
     QTime qt = QTime::currentTime();
@@ -208,6 +214,10 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(ui->actionPolyline, SIGNAL(triggered()),this,SLOT(onLayoutPolyline()));
     connect(ui->actionLine, SIGNAL(triggered()),this,SLOT(onLayoutLine()));
     connect(ui->actionExport_scene, SIGNAL(triggered()),this,SLOT(onExportScene()));
+    connect(ui->actionSourceCode, SIGNAL(triggered()),this,SLOT(onSourceCode()));
+
+    sourceWindow = new SourceEditorWindow(this);
+    connect(sourceWindow, SIGNAL(sourceCodeSaved()), SLOT(onSourceCodeSaved()));
 
     layoutStyle = "spline";
     ui->actionCurved->setChecked(true);
@@ -422,7 +432,7 @@ bool MainWindow::loadrFSM(const std::string filename) {
     updateEventQueue();
     drawStateMachine();
     switchMachineMode(IDLE);    
-    ui->statusBar->showMessage(("Loaded " + filename).c_str());
+    showStatusBarMessage(("Loaded " + filename).c_str());
     return true;
 }
 
@@ -450,7 +460,7 @@ void MainWindow::onDebugStartrFSM() {
     switchMachineMode(DEBUG);
     rfsm.run();
     updateEventQueue();
-    ui->statusBar->showMessage(("Debugging " +  std::string(((ui->actionDryrun->isChecked()) ? "(Dry Run) ..." : "..."))).c_str());
+    showStatusBarMessage(("Debugging " +  std::string(((ui->actionDryrun->isChecked()) ? "(Dry Run) ..." : "..."))).c_str());
 }
 
 void MainWindow::onDebugSteprFSM() {
@@ -466,7 +476,7 @@ void MainWindow::onDebugSteprFSM() {
     switchMachineMode(DEBUG);
     rfsm.step();
     updateEventQueue();
-    ui->statusBar->showMessage(("Debugging " +  std::string(((ui->actionDryrun->isChecked()) ? "(Dry Run) ..." : "..."))).c_str());
+    showStatusBarMessage(("Debugging " +  std::string(((ui->actionDryrun->isChecked()) ? "(Dry Run) ..." : "..."))).c_str());
 }
 
 void MainWindow::onDebugResetrFSM() {
@@ -485,18 +495,19 @@ void MainWindow::onDebugResetrFSM() {
 void MainWindow::onRunStartrFSM() {
     if(machineMode == PAUSE) {
         rfsm.start();
-        switchMachineMode(RUN);
-        return;
+        switchMachineMode(RUN);     
     }
-    rfsm.stop();
-    initScene();
-    std::string filename = rfsm.getFileName();
-    rfsm.close();
-    if( loadrFSM(filename) ) {
-        switchMachineMode(RUN);
-        rfsm.start();
+    else {
+        rfsm.stop();
+        initScene();
+        std::string filename = rfsm.getFileName();
+        rfsm.close();
+        if( loadrFSM(filename) ) {
+            switchMachineMode(RUN);
+            rfsm.start();
+        }
     }
-    ui->statusBar->showMessage("Running...");
+    showStatusBarMessage("Running...", Qt::darkGreen);
 }
 
 void MainWindow::onRunStoprFSM() {
@@ -517,7 +528,7 @@ void MainWindow::onRunStoprFSM() {
 void MainWindow::onRunPauserFSM() {
     switchMachineMode(PAUSE);
     rfsm.stop();
-    ui->statusBar->showMessage("Paused!");
+    showStatusBarMessage("Paused!", Qt::darkYellow);
 }
 
 
@@ -637,6 +648,34 @@ void MainWindow::onExportScene() {
         return;
 }
 
+void MainWindow::onSourceCode() {
+
+    QFile file(rfsm.getFileName().c_str());
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + rfsm.getFileName()).c_str()));
+        return;
+    }
+
+    sourceWindow->setSourceCode(file.readAll());
+    file.close();
+    sourceWindow->setWindowModality(Qt::ApplicationModal);
+    sourceWindow->show();    
+}
+
+void MainWindow::onSourceCodeSaved() {
+    std::string filename = rfsm.getFileName();
+    QFile file(filename.c_str());
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + filename).c_str()));
+        return;
+    }
+    if(file.write(sourceWindow->getSourceCode().toUtf8()) == -1)
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot save to " + filename).c_str()));
+    file.close();
+    initScene();
+    rfsm.close();
+    loadrFSM(filename);
+}
 
 void MainWindow::switchMachineMode(MachineMode mode) {
     machineMode = mode;
@@ -651,6 +690,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionRunStop->setEnabled(false);
         ui->actionRunPause->setEnabled(false);
         ui->actionChangeRunPeriod->setEnabled(true);
+        ui->actionSourceCode->setEnabled(false);
         break;
     case IDLE:
         ui->actionExport_scene->setEnabled(true);
@@ -663,6 +703,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionRunStop->setEnabled(false);
         ui->actionRunPause->setEnabled(false);
         ui->actionChangeRunPeriod->setEnabled(true);
+        ui->actionSourceCode->setEnabled(true);
         break;
     case DEBUG:
         // debug
@@ -674,6 +715,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionRunStop->setEnabled(false);
         ui->actionRunPause->setEnabled(false);
         ui->actionChangeRunPeriod->setEnabled(false);
+        ui->actionSourceCode->setEnabled(false);
         break;
     case RUN:
         // debug
@@ -685,6 +727,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionRunStop->setEnabled(true);
         ui->actionRunPause->setEnabled(true);
         ui->actionChangeRunPeriod->setEnabled(false);
+        ui->actionSourceCode->setEnabled(false);
         break;
     case PAUSE:
         // debug
@@ -696,6 +739,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionRunStop->setEnabled(true);
         ui->actionRunPause->setEnabled(false);
         ui->actionChangeRunPeriod->setEnabled(false);
+        ui->actionSourceCode->setEnabled(false);
         break;
     default:
         break;

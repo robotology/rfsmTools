@@ -161,5 +161,6 @@ void QGVSubGraph::setActive(bool activeMode) {
 
 void QGVSubGraph::setError(const std::string &errorMessage) {
     QGVSubGraph::errorMessage = errorMessage;
+    setToolTip(QString(errorMessage.c_str()));
 }
 

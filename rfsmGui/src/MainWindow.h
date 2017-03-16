@@ -18,7 +18,7 @@
 #include <QTimer>
 #include <rfsm.h>
 #include <map>
-
+#include "SourceEditorWindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -76,16 +76,13 @@ public:
     QGVSubGraph* getSubGraph(const std::string& name);
     void updateEventQueue();
     void switchMachineMode(MachineMode mode);
-
+    void showStatusBarMessage(const QString& message,
+                              QColor color = Qt::black);
 private:
     void initScene();    
     void drawStateMachine();    
     bool loadrFSM(const std::string filename);
     std::string getPureStateName(const std::string& name);
-
-//    void onNodeContextMenuProccess(QGVNode *node, YarpvizVertex* vertex);
-//    void onNodeContextMenuPort(QGVNode *node, YarpvizVertex* vertex);
-//    void updateNodeWidgetItems();
 
 private slots:
     void nodeContextMenu(QGVNode* node);
@@ -107,6 +104,8 @@ private slots:
     void onChangeRunPeriod();
     void onQuit();
     void onAbout();
+    void onSourceCode();
+    void onSourceCodeSaved();
 
 public:    
     Ui::MainWindow *ui;
@@ -120,7 +119,8 @@ private:
     MachineMode machineMode;    
     std::string layoutStyle;    
     QTreeWidgetItem *moduleParentItem;
-    QTreeWidgetItem *portParentItem;
+    QTreeWidgetItem *portParentItem;    
+    SourceEditorWindow* sourceWindow;
 };
 
 #endif // MAINWINDOW_H

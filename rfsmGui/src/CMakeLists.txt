@@ -3,35 +3,45 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(../QGVCore
-                    ../../librFSM/include)
+                    ../../librFSM/include
+                    ./sourceEditor)
 
 
-set(yarpviz_qt_SRCS main.cpp MainWindow.cpp QGraphicsViewEc.cpp)
+set(rfsmgui_qt_SRCS main.cpp
+                    MainWindow.cpp
+                    QGraphicsViewEc.cpp
+                    sourceEditor/SourceEditorWindow.cpp
+                    sourceEditor/highlighter.cpp)
 
-set(yarpviz_qt_HDRS MainWindow.h QGraphicsViewEc.h QGraphicsViewEc.h)
+set(rfsmgui_qt_HDRS MainWindow.h
+                    QGraphicsViewEc.h
+                    QGraphicsViewEc.h
+                    sourceEditor/SourceEditorWindow.h
+                    sourceEditor/highlighter.h)
 
-set(yarpviz_qt_QRC_FILES ress.qrc)
+set(rfsmgui_qt_QRC_FILES ress.qrc)
 
-set(yarpviz_qt_UI_FILES MainWindow.ui)
-
-
-qt5_add_resources(yarpviz_qt_QRC_GEN_SRCS ${yarpviz_qt_QRC_FILES})
-qt5_wrap_ui(yarpviz_qt_UI_GEN_SRCS ${yarpviz_qt_UI_FILES})
-
-source_group("Source Files" FILES ${yarpviz_qt_SRCS})
-source_group("Header Files" FILES ${yarpviz_qt_HDRS})
-source_group("Resources Files" FILES ${yarpviz_qt_QRC_FILES})
-source_group("UI Files" FILES ${yarpviz_qt_UI_FILES})
-source_group("Generated Files" FILES ${yarpviz_qt_QRC_GEN_SRCS}
-                                  ${yarpviz_qt_UI_GEN_SRCS})
+set(rfsmgui_qt_UI_FILES MainWindow.ui
+                        sourceEditor/SourceEditorWindow.ui)
 
 
-add_executable(${PROJECTNAME} WIN32 ${yarpviz_qt_SRCS}
-                                      ${yarpviz_qt_HDRS}
-                                      ${yarpviz_qt_QRC_FILES}
-                                      ${yarpviz_qt_QRC_GEN_SRCS}
-                                      ${yarpviz_qt_UI_GEN_SRCS}
-                                      ${yarpviz_qt_UI_FILES})
+qt5_add_resources(rfsmgui_qt_QRC_GEN_SRCS ${rfsmgui_qt_QRC_FILES})
+qt5_wrap_ui(rfsmgui_qt_UI_GEN_SRCS ${rfsmgui_qt_UI_FILES})
+
+source_group("Source Files" FILES ${rfsmgui_qt_SRCS})
+source_group("Header Files" FILES ${rfsmgui_qt_HDRS})
+source_group("Resources Files" FILES ${rfsmgui_qt_QRC_FILES})
+source_group("UI Files" FILES ${rfsmgui_qt_UI_FILES})
+source_group("Generated Files" FILES ${rfsmgui_qt_QRC_GEN_SRCS}
+                                  ${rfsmgui_qt_UI_GEN_SRCS})
+
+
+add_executable(${PROJECTNAME} WIN32 ${rfsmgui_qt_SRCS}
+                                      ${rfsmgui_qt_HDRS}
+                                      ${rfsmgui_qt_QRC_FILES}
+                                      ${rfsmgui_qt_QRC_GEN_SRCS}
+                                      ${rfsmgui_qt_UI_GEN_SRCS}
+                                      ${rfsmgui_qt_UI_FILES})
 
 
 
