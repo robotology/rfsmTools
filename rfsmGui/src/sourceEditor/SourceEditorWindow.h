@@ -24,6 +24,7 @@ signals:
 private slots:
     void onSave();
     void onClose();
+    void closeEvent(QCloseEvent *event);
 
 
 private:    

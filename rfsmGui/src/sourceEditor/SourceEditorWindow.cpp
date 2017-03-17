@@ -1,6 +1,8 @@
 #include "SourceEditorWindow.h"
 #include "ui_SourceEditorWindow.h"
 #include <QMessageBox>
+#include <QShortcut>
+#include <QCloseEvent>
 
 SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -18,6 +20,8 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
 
     connect(ui->action_Save, SIGNAL(triggered()),this,SLOT(onSave()));
     connect(ui->action_Close, SIGNAL(triggered()),this,SLOT(onClose()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this, SLOT(onSave()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(onClose()));
 }
 
 SourceEditorWindow::~SourceEditorWindow()
@@ -30,6 +34,11 @@ void SourceEditorWindow::setSourceCode(const QString& sourceCode){
     ui->textEdit->setPlainText(sourceCode);
 }
 
+void SourceEditorWindow::closeEvent(QCloseEvent *event)
+{
+    onClose();
+    QWidget::closeEvent(event);
+}
 
 void SourceEditorWindow::onClose() {
 
