@@ -160,9 +160,16 @@ void MyStateMachine::onError(const string message) {
             sgv->update();
         }
     }
-    mainWindow->switchMachineMode(MainWindow::PAUSE);
+
+    if(mainWindow->machineMode == MainWindow::RUN)
+        mainWindow->switchMachineMode(MainWindow::PAUSE);
     stop();
     mainWindow->showStatusBarMessage("Error occured! (paused)", Qt::darkRed);
+    mainWindow->sourceWindow->setErrorMessage(message.c_str());
+    //cout<<mainWindow->machineMode<<endl;
+    mainWindow->sourceWindow->setReadOnly((mainWindow->machineMode != MainWindow::IDLE)
+                                          && (mainWindow->machineMode != MainWindow::UNLOADED));
+    mainWindow->sourceWindow->show();
 }
 
 void MainWindow::showStatusBarMessage(const QString& message,
@@ -217,6 +224,7 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(ui->actionSourceCode, SIGNAL(triggered()),this,SLOT(onSourceCode()));
 
     sourceWindow = new SourceEditorWindow(this);
+    sourceWindow->setWindowModality(Qt::ApplicationModal);
     connect(sourceWindow, SIGNAL(sourceCodeSaved()), SLOT(onSourceCodeSaved()));
 
     layoutStyle = "spline";
@@ -231,12 +239,8 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     if(parser->value("period").size())
         rfsm.runPeriod = parser->value("period").toInt();
 
-    if(parser->value("rfsm").size()) {
-       bool ok = loadrFSM(parser->value("rfsm").toStdString());
-       if (ok && parser->isSet("run")) {
-           QTimer::singleShot(10, this, SLOT(onRunStartrFSM()));
-       }
-    }
+    // loading and running state machine (if set via command line param)
+    // is done in MainWindow::showEvent()
 }
 
 MainWindow::~MainWindow()
@@ -408,18 +412,33 @@ void MainWindow::drawStateMachine() {
 }
 
 bool MainWindow::loadrFSM(const std::string filename) {
+
+    // loading the source code
+    QFile file(filename.c_str());
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + rfsm.getFileName()).c_str()));
+        return false;
+    }
+    sourceWindow->setSourceCode(file.readAll());
+    file.close();
+
+    // setting lua extra paths
     QDir path = QFileInfo(filename.c_str()).absoluteDir();
     rfsm.addLuaPackagePath((path.absolutePath()+"/?.lua").toStdString());
     QDir::setCurrent(path.absolutePath());
 
+    // loading the state machine using rfsm
     if(!rfsm.load(filename)) {
-        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename).c_str()));
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename).c_str()));        
+        sourceWindow->show();
         return false;
     }
 
+    // enablng hooks
     rfsm.enablePreStepHook();
     rfsm.enablePostStepHook();
 
+    // adding events to gui event list
     QStringList ql;
     const std::vector<std::string>& events = rfsm.getEventsList();
     for (size_t i=0; i<events.size(); i++) {
@@ -430,6 +449,8 @@ bool MainWindow::loadrFSM(const std::string filename) {
     ui->comboBoxEvents->clear();
     ui->comboBoxEvents->addItems(ql);
     updateEventQueue();
+
+    // drawing state machine
     drawStateMachine();
     switchMachineMode(IDLE);    
     showStatusBarMessage(("Loaded " + filename).c_str());
@@ -649,16 +670,14 @@ void MainWindow::onExportScene() {
 }
 
 void MainWindow::onSourceCode() {
-
     QFile file(rfsm.getFileName().c_str());
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + rfsm.getFileName()).c_str()));
         return;
     }
-
     sourceWindow->setSourceCode(file.readAll());
+    sourceWindow->setReadOnly(false);
     file.close();
-    sourceWindow->setWindowModality(Qt::ApplicationModal);
     sourceWindow->show();    
 }
 
@@ -675,6 +694,16 @@ void MainWindow::onSourceCodeSaved() {
     initScene();
     rfsm.close();
     loadrFSM(filename);
+}
+
+void MainWindow::showEvent(QShowEvent *ev) {
+    QMainWindow::showEvent(ev);
+    if(parser->value("rfsm").size()) {
+       bool ok = loadrFSM(parser->value("rfsm").toStdString());
+       if (ok && parser->isSet("run")) {
+           QTimer::singleShot(10, this, SLOT(onRunStartrFSM()));
+       }
+    }
 }
 
 void MainWindow::switchMachineMode(MachineMode mode) {

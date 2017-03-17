@@ -61,50 +61,6 @@ Highlighter::Highlighter(QTextDocument *parent)
         highlightingRules.append(rule);
     }
 
-
-//! [2]
-    //classFormat.setFontWeight(QFont::Bold);
-    //classFormat.setForeground(Qt::darkMagenta);
-    //rule.pattern = QRegExp("\\bQ[A-Za-z]+\\b");
-    //rule.format = classFormat;
-    //highlightingRules.append(rule);
-//! [2]
-
-//! [3]
-    singleLineCommentFormat.setForeground(Qt::red);
-    rule.pattern = QRegExp("--[^\n]*");
-    rule.format = singleLineCommentFormat;
-    highlightingRules.append(rule);
-
-//    multiLineCommentFormat.setForeground(Qt::red);
-//    rule.pattern = QRegExp("/--\[\[([^]*)\]\]--");
-//    rule.format = multiLineCommentFormat;
-    highlightingRules.append(rule);
-//! [3]
-
-//! [4]
-    functionFormat.setFontItalic(false);
-    functionFormat.setForeground(Qt::blue);
-    rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
-    rule.format = functionFormat;
-    highlightingRules.append(rule);
-//! [4]
-
-//! [5]
-    quotationFormat.setForeground(Qt::darkGreen);
-    rule.pattern = QRegExp("\"([^\"]*)\"");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("\'([^\']*)\'");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
-
-//! [5]
-
-//! [6]
-    commentStartExpression = QRegExp("/\\*");
-    commentEndExpression = QRegExp("\\*/");
-
     keywordFormat.setForeground(Qt::darkBlue);
     keywordFormat.setFontWeight(QFont::Bold);
     QStringList keywordPatterns;
@@ -120,15 +76,39 @@ Highlighter::Highlighter(QTextDocument *parent)
         rule.pattern = QRegExp(pattern);
         rule.format = keywordFormat;
         highlightingRules.append(rule);
-//! [0] //! [1]
     }
-//! [1]
 
+    functionFormat.setFontItalic(false);
+    functionFormat.setForeground(Qt::blue);
+    rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
+    rule.format = functionFormat;
+    highlightingRules.append(rule);
+
+    quotationFormat.setForeground(Qt::darkGreen);
+    rule.pattern = QRegExp("\"([^\"]*)\"");
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+    rule.pattern = QRegExp("\'([^\']*)\'");
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+
+
+    multiLineCommentFormat.setForeground(Qt::gray);
+//    rule.pattern = QRegExp("/--\[\[([^]*)\\]\\]--");
+//    rule.format = multiLineCommentFormat;
+//    highlightingRules.append(rule);
+
+    singleLineCommentFormat.setForeground(Qt::gray);
+    rule.pattern = QRegExp("--[^\n]*");
+    rule.format = singleLineCommentFormat;
+    highlightingRules.append(rule);
+
+    commentStartExpression = QRegExp("--\\[\\[");
+    commentEndExpression = QRegExp("\\]\\]");
 
 }
-//! [6]
 
-//! [7]
+
 void Highlighter::highlightBlock(const QString &text)
 {
     foreach (const HighlightingRule &rule, highlightingRules) {
@@ -140,18 +120,12 @@ void Highlighter::highlightBlock(const QString &text)
             index = expression.indexIn(text, index + length);
         }
     }
-//! [7] //! [8]
     setCurrentBlockState(0);
-//! [8]
-
-//! [9]
     int startIndex = 0;
     if (previousBlockState() != 1)
         startIndex = commentStartExpression.indexIn(text);
 
-//! [9] //! [10]
     while (startIndex >= 0) {
-//! [10] //! [11]
         int endIndex = commentEndExpression.indexIn(text, startIndex);
         int commentLength;
         if (endIndex == -1) {
@@ -166,4 +140,3 @@ void Highlighter::highlightBlock(const QString &text)
     }
 
 }
-//! [11]

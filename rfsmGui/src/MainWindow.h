@@ -78,6 +78,9 @@ public:
     void switchMachineMode(MachineMode mode);
     void showStatusBarMessage(const QString& message,
                               QColor color = Qt::black);
+protected:
+    void showEvent(QShowEvent *ev);
+
 private:
     void initScene();    
     void drawStateMachine();    
@@ -112,15 +115,15 @@ public:
     std::map<std::string, QGVNode*> sceneNodeMap;
     std::map<std::string, QGVSubGraph*> sceneSubGraphMap;
     QGVScene *scene;
+    SourceEditorWindow* sourceWindow;
+    MachineMode machineMode;
 
 private:
     QCommandLineParser* parser;
-    MyStateMachine rfsm;
-    MachineMode machineMode;    
+    MyStateMachine rfsm;    
     std::string layoutStyle;    
     QTreeWidgetItem *moduleParentItem;
-    QTreeWidgetItem *portParentItem;    
-    SourceEditorWindow* sourceWindow;
+    QTreeWidgetItem *portParentItem;        
 };
 
 #endif // MAINWINDOW_H

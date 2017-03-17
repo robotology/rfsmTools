@@ -17,6 +17,8 @@ public:
     ~SourceEditorWindow();
     void setSourceCode(const QString& sourceCode);
     QString& getSourceCode();
+    void setErrorMessage(const QString& message);
+    void setReadOnly(bool flag);
 
 signals:
     void sourceCodeSaved();
@@ -25,6 +27,9 @@ private slots:
     void onSave();
     void onClose();
 
+private:
+    void showStatusBarMessage(const QString& message,
+                              QColor color = Qt::black);
 
 private:    
     QString sourceCode;
