@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "highlighter.h"
+#include "codeeditor.h"
 
 namespace Ui {
 class SourceEditorWindow;
