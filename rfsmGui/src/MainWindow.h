@@ -16,6 +16,7 @@
 #include <QTreeWidgetItem>
 #include <QThread>
 #include <QTimer>
+#include <QFileSystemWatcher>
 #include <rfsm.h>
 #include <map>
 #include "SourceEditorWindow.h"
@@ -109,6 +110,7 @@ private slots:
     void onAbout();
     void onSourceCode();
     void onSourceCodeSaved();
+    void onFileChanged(const QString & path);
 
 public:    
     Ui::MainWindow *ui;
@@ -124,6 +126,7 @@ private:
     std::string layoutStyle;    
     QTreeWidgetItem *moduleParentItem;
     QTreeWidgetItem *portParentItem;        
+    QFileSystemWatcher* watcher;
 };
 
 #endif // MAINWINDOW_H

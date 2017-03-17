@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "highlighter.h"
+#include "codeeditor.h"
 
 namespace Ui {
 class SourceEditorWindow;
@@ -26,6 +27,7 @@ signals:
 private slots:
     void onSave();
     void onClose();
+    void closeEvent(QCloseEvent *event);
 
 private:
     void showStatusBarMessage(const QString& message,

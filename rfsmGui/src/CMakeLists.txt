@@ -11,13 +11,15 @@ set(rfsmgui_qt_SRCS main.cpp
                     MainWindow.cpp
                     QGraphicsViewEc.cpp
                     sourceEditor/SourceEditorWindow.cpp
-                    sourceEditor/highlighter.cpp)
+                    sourceEditor/highlighter.cpp
+                    sourceEditor/codeeditor.cpp)
 
 set(rfsmgui_qt_HDRS MainWindow.h
                     QGraphicsViewEc.h
                     QGraphicsViewEc.h
                     sourceEditor/SourceEditorWindow.h
-                    sourceEditor/highlighter.h)
+                    sourceEditor/highlighter.h
+                    sourceEditor/codeeditor.h)
 
 set(rfsmgui_qt_QRC_FILES ress.qrc)
 
