@@ -330,6 +330,7 @@
    </attribute>
    <addaction name="action_New_rFSM"/>
    <addaction name="action_LoadrFSM"/>
+   <addaction name="action_Save_project"/>
    <addaction name="actionSourceCode"/>
    <addaction name="separator"/>
    <addaction name="actionRunStart"/>

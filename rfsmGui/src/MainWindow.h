@@ -166,7 +166,7 @@ private:
     QTreeWidgetItem *moduleParentItem;
     QTreeWidgetItem *portParentItem;
     QFileSystemWatcher* watcher;
-    QSettings settings
+    QSettings settings;
     QString fileName;
     QString authors;
     QString description;

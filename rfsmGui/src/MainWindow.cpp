@@ -316,7 +316,6 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
     //scene->setEdgeAttribute("dir", "both");
 
     // adding composit states
-    const rfsm::StateGraph& graph = rfsm.getStateGraph();
     for(size_t i=0; i<graph.states.size(); i++) {
         if(graph.states[i].type == "composit") {
             //std::cout<<graph.states[i].name<<std::endl;
@@ -1268,13 +1267,6 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->buildToolBar->setEnabled(false);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
-        ui->action_LoadrFSM->setEnabled(true);
-        ui->action_New_rFSM->setEnabled(true);
-        ui->action_Single_State->setEnabled(false);
-        ui->action_Composite_State->setEnabled(false);
-        ui->action_Initial_Transition->setEnabled(false);
-        ui->action_Connector->setEnabled(false);
-        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -1292,11 +1284,6 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionExport_scene->setEnabled(true);
         actionGroup->setEnabled(true);
         ui->buildToolBar->setEnabled(true);
-        ui->action_Single_State->setEnabled(false);
-        ui->action_Composite_State->setEnabled(false);
-        ui->action_Initial_Transition->setEnabled(false);
-        ui->action_Connector->setEnabled(false);
-        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(false);
@@ -1314,11 +1301,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(true);
         actionGroup->setEnabled(true);
         ui->buildToolBar->setEnabled(true);
-        ui->action_Single_State->setEnabled(true);
-        ui->action_Composite_State->setEnabled(true);
-        ui->action_Initial_Transition->setEnabled(true);
-        ui->action_Connector->setEnabled(true);
-        ui->action_Transition->setEnabled(true);
+        ui->actionSourceCode->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -1334,11 +1317,6 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         ui->buildToolBar->setEnabled(false);
-        ui->action_Single_State->setEnabled(false);
-        ui->action_Composite_State->setEnabled(false);
-        ui->action_Initial_Transition->setEnabled(false);
-        ui->action_Connector->setEnabled(false);
-        ui->action_Transition->setEnabled(false);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
         // debug
@@ -1359,11 +1337,6 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->buildToolBar->setEnabled(false);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
-        ui->action_Single_State->setEnabled(false);
-        ui->action_Composite_State->setEnabled(false);
-        ui->action_Initial_Transition->setEnabled(false);
-        ui->action_Connector->setEnabled(false);
-        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -1382,11 +1355,6 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->buildToolBar->setEnabled(false);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
-        ui->action_Single_State->setEnabled(false);
-        ui->action_Composite_State->setEnabled(false);
-        ui->action_Initial_Transition->setEnabled(false);
-        ui->action_Connector->setEnabled(false);
-        ui->action_Transition->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
