@@ -23,6 +23,7 @@
 #include <QtPrintSupport/QPrinter>
 
 
+
 using namespace std;
 
 class DefaultCallback : public rfsm::StateCallback {
@@ -195,6 +196,10 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     // initialize the scene
     initScene();
 
+    watcher = new QFileSystemWatcher(this);
+
+
+    connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(onFileChanged(const QString &)));
     connect(ui->actionQuit, SIGNAL(triggered()),this,SLOT(onQuit()));
     connect(ui->actionAbout, SIGNAL(triggered()),this,SLOT(onAbout()));
     connect(ui->action_LoadrFSM, SIGNAL(triggered()),this,SLOT(onLoadrFSM()));
@@ -444,6 +449,8 @@ void MainWindow::onLoadrFSM() {
                                                     filters, &defaultFilter);
     if(filename.size() == 0)
         return;
+    watcher->addPath(filename);
+
     loadrFSM(filename.toStdString());
 }
 
@@ -675,6 +682,22 @@ void MainWindow::onSourceCodeSaved() {
     initScene();
     rfsm.close();
     loadrFSM(filename);
+}
+
+void MainWindow::onFileChanged(const QString &path){
+
+    watcher->addPath(path);
+    if(machineMode==IDLE)
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "File changed", "Lua file changed.\nDo you want to reload the state machine?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+        rfsm.close();
+        loadrFSM(path.toStdString());
+    }
+
 }
 
 void MainWindow::switchMachineMode(MachineMode mode) {
