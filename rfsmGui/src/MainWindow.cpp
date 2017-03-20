@@ -724,6 +724,7 @@ bool MainWindow::loadrFSMSourceCode(const std::string filename, QString& source)
     }
     source = file.readAll();
     file.close();
+    return true;
 }
 
 void MainWindow::onFileChanged(const QString &path){
