@@ -675,6 +675,7 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
         graph.removeTransition(edge->getAttribute("sourcename").toStdString(),
                                edge->getAttribute("targetname").toStdString());
         drawStateMachine(graph);
+        switchMachineMode(BUILDER);
     }
     if(action->text().toStdString() == "Add events") {
         bool ok;
@@ -707,11 +708,13 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
             graph.addEvent(edge->getAttribute("sourcename").toStdString(),
                           edge->getAttribute("targetname").toStdString(), event.toStdString());
         drawStateMachine(graph);
+        switchMachineMode(BUILDER);
     }
     if(action->text().toStdString() == "Clear events"){
         graph.clearEvents(edge->getAttribute("sourcename").toStdString(),
                           edge->getAttribute("targetname").toStdString());
         drawStateMachine(graph);
+        switchMachineMode(BUILDER);
     }
 
 }
@@ -734,6 +737,7 @@ void MainWindow::nodeContextMenu(QGVNode *node)
     if(action->text().toStdString() == "Delete") {
         graph.removeState(node->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
+        switchMachineMode(BUILDER);
         return;
 
     }
@@ -780,6 +784,7 @@ void MainWindow::nodeContextMenu(QGVNode *node)
 
         graph.renameState(node->getAttribute("rawname").toStdString(), newName.toStdString());
         drawStateMachine(graph);
+        switchMachineMode(BUILDER);
     }
 }
 
@@ -798,6 +803,7 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
     if(action->text().toStdString() == "Delete") {
         graph.removeState(sgraph->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
+        switchMachineMode(BUILDER);
     }
     if(action->text().toStdString() == "Rename")
     {
@@ -838,6 +844,7 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
 
         graph.renameState(sgraph->getAttribute("rawname").toStdString(), newName.toStdString());
         drawStateMachine(graph);
+        switchMachineMode(BUILDER);
     }
 
 }
@@ -1001,6 +1008,7 @@ void MainWindow::onSceneMouseReleased(QPointF pos) {
                 delete line;
                 line = NULL;
                 drawStateMachine(graph);
+                switchMachineMode(BUILDER);
             }
         }
         scene->removeItem(line);
