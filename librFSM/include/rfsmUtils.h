@@ -78,6 +78,7 @@ namespace rfsm {
 "      if node._actchild._actchild == nil then return node._actchild._fqn end\n"\
 "      return get_active_state(node._actchild)\n"\
 "    end\n"\
+"    if fsm == nil then return '<none>' end\n"\
 "    if not fsm._actchild then return '<none>' end\n"\
 "    return get_active_state(fsm)\n"\
 "end"
