@@ -18,7 +18,7 @@ public:
     ~SourceEditorWindow();
     void setSourceCode(const QString& sourceCode);
     QString& getSourceCode();
-    void setErrorMessage(const QString& message);
+    void setErrorMessage(const QString& message, const int line=0);
     void setReadOnly(bool flag);
 
 signals:

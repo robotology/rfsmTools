@@ -165,8 +165,16 @@ void MyStateMachine::onError(const string message) {
         mainWindow->switchMachineMode(MainWindow::PAUSE);
     stop();
     mainWindow->showStatusBarMessage("Error occured! (paused)", Qt::darkRed);
-    mainWindow->sourceWindow->setErrorMessage(message.c_str());
-    //cout<<mainWindow->machineMode<<endl;
+    int line = 0;
+    QString filename = QFileInfo(getFileName().c_str()).fileName();
+    QRegularExpression re(filename + ":(.*):");
+    QRegularExpressionMatch match = re.match(message.c_str(), 1);
+    if (match.hasMatch()) {
+        QStringList strlist =  match.captured(0).split(":");
+        if(strlist.size() > 1)
+            line = strlist[1].toInt() - 1;
+    }
+    mainWindow->sourceWindow->setErrorMessage(message.c_str(), line);
     mainWindow->sourceWindow->setReadOnly((mainWindow->machineMode != MainWindow::IDLE)
                                           && (mainWindow->machineMode != MainWindow::UNLOADED));
     mainWindow->sourceWindow->show();
