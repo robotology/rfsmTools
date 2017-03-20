@@ -20,6 +20,7 @@
 #include <rfsm.h>
 #include <map>
 #include "SourceEditorWindow.h"
+#include <QSettings>
 
 namespace Ui {
 class MainWindow;
@@ -88,6 +89,7 @@ private:
     bool loadrFSM(const std::string filename);
     bool loadrFSMSourceCode(const std::string filename, QString& source);
     std::string getPureStateName(const std::string& name);
+    void saveSetting();
 
 private slots:
     void nodeContextMenu(QGVNode* node);
@@ -128,6 +130,7 @@ private:
     QTreeWidgetItem *moduleParentItem;
     QTreeWidgetItem *portParentItem;        
     QFileSystemWatcher* watcher;
+    QSettings settings;
 };
 
 #endif // MAINWINDOW_H

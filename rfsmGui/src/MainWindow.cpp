@@ -253,6 +253,8 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
 
     // loading and running state machine (if set via command line param)
     // is done in MainWindow::showEvent()
+
+    rfsm.runPeriod = settings.value("run-period", 500).toInt();
 }
 
 MainWindow::~MainWindow()
@@ -652,6 +654,9 @@ void MainWindow::onQuit() {
         if (reply == QMessageBox::No)
             return;
     }
+    // save setting
+    saveSetting();
+
     rfsm.stop();
     rfsm.close();
     MainWindow::close();
@@ -817,4 +822,8 @@ void MainWindow::switchMachineMode(MachineMode mode) {
     default:
         break;
     }
+}
+
+void MainWindow::saveSetting() {
+    settings.setValue("run-period", rfsm.runPeriod);
 }

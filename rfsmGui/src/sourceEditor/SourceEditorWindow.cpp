@@ -5,6 +5,8 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QCloseEvent>
+#include <QFontDialog>
+#include <QSettings>
 
 SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,12 +14,11 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
 {    
     ui->setupUi(this);
 
+    QSettings settings;
     QFont font;
-    font.setFamily("Courier");
-    font.setFixedPitch(true);
-    //QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    font.setFamily("Courier");
-    font.setPointSize(10);
+    font.setFixedPitch(true);    
+    font.setFamily(settings.value("editor-font-name", "Courier").toString());
+    font.setPointSize(settings.value("editor-font-size", 10).toInt());
     ui->textEdit->setFont(font);
     QFontMetrics metrics(font);
     ui->textEdit->setTabStopWidth(4 * metrics.width(' '));
@@ -27,6 +28,8 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
     connect(ui->action_Save, SIGNAL(triggered()),this,SLOT(onSave()));
     connect(ui->action_Close, SIGNAL(triggered()),this,SLOT(onClose()));
     connect(ui->textEdit, SIGNAL(textChanged()),this,SLOT(onTextChanged()));
+    connect(ui->action_Font, SIGNAL(triggered()),this,SLOT(onFontChanged()));
+
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this, SLOT(onSave()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(onClose()));
 
@@ -113,3 +116,23 @@ void SourceEditorWindow::setReadOnly(bool flag) {
     ui->textEdit->setReadOnly(flag);
     //ui->action_Save->setEnabled(!flag);
 }
+
+
+void SourceEditorWindow::onFontChanged() {
+    bool ok;
+    QSettings settings;
+    QFont font = QFontDialog::getFont( &ok,
+                                       QFont(settings.value("editor-font-name", "Courier").toString(),
+                                             settings.value("editor-font-size", 10).toInt()),
+                                       this, tr("Set Editor font") );
+    if(ok) {
+        ui->textEdit->setFont(font);
+        QFontMetrics metrics(font);
+        ui->textEdit->setTabStopWidth(4 * metrics.width(' '));
+        settings.setValue("editor-font-name", font.family());
+        settings.setValue("editor-font-size", font.pointSize());
+    }
+}
+
+
+

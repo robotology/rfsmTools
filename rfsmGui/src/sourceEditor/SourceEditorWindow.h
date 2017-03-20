@@ -29,11 +29,11 @@ private slots:
     void onClose();
     void closeEvent(QCloseEvent *event);
     void onTextChanged();
+    void onFontChanged();
 
 private:
     void showStatusBarMessage(const QString& message,
                               QColor color = Qt::black);
-
 private:    
     QString sourceCode;
     Ui::SourceEditorWindow *ui;
