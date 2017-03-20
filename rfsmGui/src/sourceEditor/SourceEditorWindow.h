@@ -28,6 +28,7 @@ private slots:
     void onSave();
     void onClose();
     void closeEvent(QCloseEvent *event);
+    void onTextChanged();
 
 private:
     void showStatusBarMessage(const QString& message,

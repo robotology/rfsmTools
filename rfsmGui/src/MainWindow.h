@@ -86,6 +86,7 @@ private:
     void initScene();    
     void drawStateMachine();    
     bool loadrFSM(const std::string filename);
+    bool loadrFSMSourceCode(const std::string filename, QString& source);
     std::string getPureStateName(const std::string& name);
 
 private slots:

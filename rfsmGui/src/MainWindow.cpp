@@ -426,13 +426,11 @@ void MainWindow::drawStateMachine() {
 bool MainWindow::loadrFSM(const std::string filename) {
 
     // loading the source code
-    QFile file(filename.c_str());
-    if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
-        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + rfsm.getFileName()).c_str()));
+    QString source;
+    if(!loadrFSMSourceCode(filename, source))
         return false;
-    }
-    sourceWindow->setSourceCode(file.readAll());
-    file.close();
+
+    sourceWindow->setSourceCode(source);
 
     // setting lua extra paths
     QDir path = QFileInfo(filename.c_str()).absoluteDir();
@@ -466,6 +464,7 @@ bool MainWindow::loadrFSM(const std::string filename) {
     drawStateMachine();
     switchMachineMode(IDLE);    
     showStatusBarMessage(("Loaded " + filename).c_str());
+    watcher->addPath(filename.c_str());
     return true;
 }
 
@@ -476,9 +475,7 @@ void MainWindow::onLoadrFSM() {
                                                     QDir::homePath(),
                                                     filters, &defaultFilter);
     if(filename.size() == 0)
-        return;
-    watcher->addPath(filename);
-
+        return;    
     loadrFSM(filename.toStdString());
 }
 
@@ -684,14 +681,12 @@ void MainWindow::onExportScene() {
 }
 
 void MainWindow::onSourceCode() {
-    QFile file(rfsm.getFileName().c_str());
-    if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
-        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + rfsm.getFileName()).c_str()));
+
+    QString source;
+    if(!loadrFSMSourceCode(rfsm.getFileName(), source))
         return;
-    }
-    sourceWindow->setSourceCode(file.readAll());
+    sourceWindow->setSourceCode(source);
     sourceWindow->setReadOnly(false);
-    file.close();
     sourceWindow->show();    
 }
 
@@ -702,12 +697,13 @@ void MainWindow::onSourceCodeSaved() {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + filename).c_str()));
         return;
     }
+    watcher->removePath(filename.c_str());
     if(file.write(sourceWindow->getSourceCode().toUtf8()) == -1)
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot save to " + filename).c_str()));
     file.close();
     initScene();
     rfsm.close();
-    loadrFSM(filename);
+    loadrFSM(filename);   
 }
 
 void MainWindow::showEvent(QShowEvent *ev) {
@@ -718,6 +714,16 @@ void MainWindow::showEvent(QShowEvent *ev) {
            QTimer::singleShot(10, this, SLOT(onRunStartrFSM()));
        }
     }
+}
+
+bool MainWindow::loadrFSMSourceCode(const std::string filename, QString& source) {
+    QFile file(filename.c_str());
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + rfsm.getFileName()).c_str()));
+        return false;
+    }
+    source = file.readAll();
+    file.close();
 }
 
 void MainWindow::onFileChanged(const QString &path){
@@ -731,7 +737,13 @@ void MainWindow::onFileChanged(const QString &path){
         if (reply == QMessageBox::No)
             return;
         rfsm.close();
-        loadrFSM(path.toStdString());
+        if(sourceWindow->isActiveWindow()) {
+            QString source;
+            if(loadrFSMSourceCode(path.toStdString(), source))
+                sourceWindow->setSourceCode(source);
+        }
+        else
+            loadrFSM(path.toStdString());
     }
 
 }

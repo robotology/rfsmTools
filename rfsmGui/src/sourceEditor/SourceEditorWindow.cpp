@@ -21,13 +21,16 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
     ui->textEdit->setFont(font);
     QFontMetrics metrics(font);
     ui->textEdit->setTabStopWidth(4 * metrics.width(' '));
-
+    ui->action_Save->setEnabled(false);
     highlighter = new Highlighter(ui->textEdit->document());    
 
     connect(ui->action_Save, SIGNAL(triggered()),this,SLOT(onSave()));
     connect(ui->action_Close, SIGNAL(triggered()),this,SLOT(onClose()));
+    connect(ui->textEdit, SIGNAL(textChanged()),this,SLOT(onTextChanged()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this, SLOT(onSave()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(onClose()));
+
+
 }
 
 SourceEditorWindow::~SourceEditorWindow()
@@ -35,11 +38,18 @@ SourceEditorWindow::~SourceEditorWindow()
     delete ui;
 }
 
+
+void SourceEditorWindow::onTextChanged() {
+    ui->action_Save->setEnabled(true);
+}
+
+
 void SourceEditorWindow::setSourceCode(const QString& sourceCode){
     SourceEditorWindow::sourceCode = sourceCode;
     ui->textEdit->clear();
     ui->textEdit->setPlainText(sourceCode);
     showStatusBarMessage("");    
+    ui->action_Save->setEnabled(false);
 }
 
 void SourceEditorWindow::closeEvent(QCloseEvent *event)
@@ -50,7 +60,8 @@ void SourceEditorWindow::closeEvent(QCloseEvent *event)
 
 void SourceEditorWindow::onClose() {
 
-    if((sourceCode != ui->textEdit->toPlainText())) {
+    //if((sourceCode != ui->textEdit->toPlainText())) {
+    if(ui->action_Save->isEnabled()) {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Close", "The source code has been changed.\n Do you want to save it?",
                                       QMessageBox::Yes|QMessageBox::No);
@@ -68,6 +79,7 @@ void SourceEditorWindow::onSave() {
     // clear extra selections
     QList<QTextEdit::ExtraSelection> extraSelections;
     ui->textEdit->setExtraSelections(extraSelections);
+    ui->action_Save->setEnabled(false);
     emit sourceCodeSaved();
 }
 
@@ -99,5 +111,5 @@ void SourceEditorWindow::setErrorMessage(const QString& message, const int line)
 
 void SourceEditorWindow::setReadOnly(bool flag) {
     ui->textEdit->setReadOnly(flag);
-    ui->action_Save->setEnabled(!flag);
+    //ui->action_Save->setEnabled(!flag);
 }
