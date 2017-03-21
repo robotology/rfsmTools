@@ -531,7 +531,7 @@ void MainWindow::onSaverFSM(){
 
 void MainWindow::onDebugStartrFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {        
-        const rfsm::StateGraph& graph = graph;
+        const rfsm::StateGraph& graph = this->graph;
         for(size_t i=0; i<graph.states.size(); i++) {
             if(graph.states[i].type != "connector")
                 rfsm.setStateCallback(graph.states[i].name, defaultCallback);
@@ -547,10 +547,8 @@ void MainWindow::onDebugStartrFSM() {
 
 void MainWindow::onDebugSteprFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {
-        //rfsm.setStateCallback("Configure", defaultCallback);
-        const rfsm::StateGraph& graph = graph;
+        const rfsm::StateGraph& graph = this->graph;
         for(size_t i=0; i<graph.states.size(); i++) {
-            //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
             if(graph.states[i].type != "connector")
                 rfsm.setStateCallback(graph.states[i].name, defaultCallback);
         }

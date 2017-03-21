@@ -107,7 +107,6 @@ private:
     void initScene();    
     void drawStateMachine(const rfsm::StateGraph &graph);
     bool loadrFSM(const std::string filename);
-    bool loadrFSMSourceCode(const std::string filename, QString& source);
     std::string getPureStateName(const std::string& name);
     void saveSetting();    
     void setNodeActiveMode(const std::string &name, bool mode);
