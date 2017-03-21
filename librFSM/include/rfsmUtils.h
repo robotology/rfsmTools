@@ -84,17 +84,27 @@ namespace rfsm {
 "end"
 
 
-
 #define GET_ALL_STATES_CHUNK \
 "function rfsm_get_all_states()\n"\
 "    local nodes = {}\n"\
+"    local function getFunctionInfo(func)\n"\
+"         if func == nil then\n"\
+"            return -1, -1, ''\n"\
+"         end\n"\
+"         local dbg = debug.getinfo(func)\n"\
+"         assert(dbg)\n"\
+"         return dbg.linedefined, dbg.lastlinedefined, dbg.source:sub(2)\n"\
+"    end\n"\
 "    local function proc_node(node)\n"\
 "       local node_type = ''\n"\
 "       if rfsm.is_composite(node) then node_type='composit'\n"\
 "       elseif rfsm.is_leaf(node)  then node_type='single'\n"\
 "       elseif rfsm.is_conn(node)  then node_type='connector'\n"\
 "       else node_type='unknown' end\n"\
-"        table.insert(nodes, {sname=node._fqn, stype=node_type, sentry=node.entry, sdoo=node.doo, sexit=node.exit})\n"\
+"        local el1, el2, efn = getFunctionInfo(node.entry)\n"\
+"        local dl1, dl2, dfn = getFunctionInfo(node.doo)\n"\
+"        local xl1, xl2, xfn = getFunctionInfo(node.exit)\n"\
+"       table.insert(nodes, {sname=node._fqn, stype=node_type, sentry_l1=el1, sentry_l2=el2, sentry_filename=efn, sdoo_l1=dl1, sdoo_l2=dl2, sdoo_filename=dfn, sexit_l1=xl1, sexit_l2=xl2, sexit_filename=xfn })\n"\
 "    end\n"\
 "   rfsm.mapfsm(function (s)\n"\
 "		  if rfsm.is_root(s) then return end\n"\
@@ -180,7 +190,8 @@ public:
     static int dofile(lua_State *L, const char *name);
     static int dostring (lua_State *L, const char *s, const char *name);
     static int dolibrary (lua_State *L, const char *name);
-    static std::string getTableStringField(lua_State *L, const char *key);
+    static int getTableNumberField(lua_State *L, const char *key);
+    static std::string getTableStringField(lua_State *L, const char *key);    
     static bool isNilTableField(lua_State *L, const char *key);    
     static void setLuaTraceCallback(LuaTraceCallback* callback);
 

@@ -650,9 +650,19 @@ bool StateMachine::Private::getAllStateGraph() {
             if(pos != std::string::npos)
                 state.name.erase(pos, 5);
             state.type = Utils::getTableStringField(L, "stype");
-            state.entry = Utils::isNilTableField(L, "sentry") ? "" : "entry";
-            state.doo = Utils::isNilTableField(L, "sdoo") ? "" : "doo";
-            state.exit = Utils::isNilTableField(L, "sexit") ? "" : "exit";
+
+            state.entry.startLine = Utils::getTableNumberField(L, "sentry_l1");
+            state.entry.endLine = Utils::getTableNumberField(L, "sentry_l2");
+            state.entry.fileName = Utils::getTableStringField(L, "sentry_filename");
+
+            state.doo.startLine = Utils::getTableNumberField(L, "sdoo_l1");
+            state.doo.endLine = Utils::getTableNumberField(L, "sdoo_l2");
+            state.doo.fileName = Utils::getTableStringField(L, "sdoo_filename");
+
+            state.exit.startLine = Utils::getTableNumberField(L, "sexit_l1");
+            state.exit.endLine = Utils::getTableNumberField(L, "sexit_l2");
+            state.exit.fileName = Utils::getTableStringField(L, "sexit_filename");
+
             graph.states.push_back(state);
         }
         else

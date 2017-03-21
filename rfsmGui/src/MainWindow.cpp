@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 #include "MainWindow.h"
 #include "moc_MainWindow.cpp"
@@ -174,6 +175,29 @@ void MyStateMachine::onError(const string message) {
         if(strlist.size() > 1)
             line = strlist[1].toInt() - 1;
     }
+
+    /**
+     * TODO : Fix the copy graph!
+     */
+    rfsm::StateGraph graph = getStateGraph();
+    rfsm::StateGraph::State st;
+    st.name = getCurrentState();
+    std::vector<rfsm::StateGraph::State>::iterator itr;
+    itr = find(graph.states.begin(), graph.states.end(), st);
+    Q_ASSERT(itr != graph.states.end());
+    if(message.find("ENTRY") == 0)
+        filename = (*itr).entry.fileName.c_str();
+    else if(message.find("DOO") == 0)
+        filename = (*itr).doo.fileName.c_str();
+    else if(message.find("EXIT") == 0)
+        filename = (*itr).exit.fileName.c_str();
+
+
+    if(getFileName() != filename.toStdString()) {
+        QString source;
+        mainWindow->loadrFSMSourceCode(filename.toStdString(), source);
+        mainWindow->sourceWindow->setSourceCode(source);
+    }    
     mainWindow->sourceWindow->setErrorMessage(message.c_str(), line);
     mainWindow->sourceWindow->setReadOnly((mainWindow->machineMode != MainWindow::IDLE)
                                           && (mainWindow->machineMode != MainWindow::UNLOADED));
@@ -196,6 +220,7 @@ void MyStateMachine::onInfo(const string message) {
     qmessage.append(message.c_str());
     item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
 }
+
 
 
 /************************************************/
@@ -382,9 +407,9 @@ void MainWindow::drawStateMachine() {
                 node->setAttribute("shape", "box");                
                 node->setAttribute("label", getPureStateName(graph.states[i].name).c_str());
                 node->setAttribute("fillcolor", "#2e3e56");
-                node->setAttribute("entry", graph.states[i].entry.c_str());
-                node->setAttribute("doo", graph.states[i].doo.c_str());
-                node->setAttribute("exit", graph.states[i].exit.c_str());
+                node->setAttribute("entry", graph.states[i].entry.fileName.c_str());
+                node->setAttribute("doo", graph.states[i].doo.fileName.c_str());
+                node->setAttribute("exit", graph.states[i].exit.fileName.c_str());                
             }
             // use this for error : #FA8072
             node->setAttribute("color", "#edad56");

@@ -86,6 +86,19 @@ bool Utils::isNilTableField(lua_State *L, const char *key) {
     return result;
 }
 
+int Utils::getTableNumberField(lua_State *L, const char *key) {
+    int result;
+    lua_pushstring(L, key);
+    lua_gettable(L, -2);
+    if (!lua_isnumber(L, -1)) {
+        lua_pop(L, 1);
+        return -1;
+    }
+    result =  lua_tonumber(L, -1);
+    lua_pop(L, 1);
+    return result;
+}
+
 
 std::string Utils::getTableStringField(lua_State *L, const char *key) {
     std::string result;

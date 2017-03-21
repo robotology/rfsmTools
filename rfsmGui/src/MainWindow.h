@@ -45,7 +45,7 @@ public:
     virtual void onPostStep();
     virtual void onWarning(const std::string message);
     virtual void onError(const std::string message);
-    virtual void onInfo(const std::string message);
+    virtual void onInfo(const std::string message);    
 
 public:
     int runPeriod;
@@ -80,14 +80,15 @@ public:
     void switchMachineMode(MachineMode mode);
     void showStatusBarMessage(const QString& message,
                               QColor color = Qt::black);
+    bool loadrFSMSourceCode(const std::string filename, QString& source);
+
 protected:
     void showEvent(QShowEvent *ev);
 
 private:
     void initScene();    
     void drawStateMachine();    
-    bool loadrFSM(const std::string filename);
-    bool loadrFSMSourceCode(const std::string filename, QString& source);
+    bool loadrFSM(const std::string filename);    
     std::string getPureStateName(const std::string& name);
     void saveSetting();
 

@@ -69,14 +69,21 @@ public:
  */
 class rfsm::StateGraph {
 public:
+    struct LuaFuncCode {
+        int startLine;
+        int endLine;
+        std::string fileName;
+    };
+
+
     struct State {
         std::string name;
         std::string type;
-        std::string entry;
-        std::string doo;
-        std::string exit;
+        LuaFuncCode entry;
+        LuaFuncCode doo;
+        LuaFuncCode exit;
         bool operator==(const State& s) const {
-            return (s.name == name) && (s.type == type);
+            return (s.name == name);
         }
     };
 
