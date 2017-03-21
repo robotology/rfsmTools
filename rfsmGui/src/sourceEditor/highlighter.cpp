@@ -78,12 +78,21 @@ Highlighter::Highlighter(QTextDocument *parent)
         highlightingRules.append(rule);
     }
 
+    // state names
+    //stateFormat.setFontItalic(true);
+    //stateFormat.setForeground(Qt::red);
+    //rule.pattern = QRegExp(".+?(?=\\s*=\\s*rfsm.)");
+    //rule.format = stateFormat;
+    //highlightingRules.append(rule);
+
+    //functions
     functionFormat.setFontItalic(false);
     functionFormat.setForeground(Qt::blue);
     rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
     rule.format = functionFormat;
     highlightingRules.append(rule);
 
+    // string quatations
     quotationFormat.setForeground(Qt::darkGreen);
     rule.pattern = QRegExp("\"([^\"]*)\"");
     rule.format = quotationFormat;
@@ -105,7 +114,6 @@ Highlighter::Highlighter(QTextDocument *parent)
 
     commentStartExpression = QRegExp("--\\[\\[");
     commentEndExpression = QRegExp("\\]\\]");
-
 }
 
 

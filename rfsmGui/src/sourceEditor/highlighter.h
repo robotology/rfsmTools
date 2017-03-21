@@ -73,6 +73,7 @@ private:
     QTextCharFormat keywordFormat;
     QTextCharFormat keywordRFSMFormat;
     //QTextCharFormat classFormat;
+    QTextCharFormat stateFormat;
     QTextCharFormat singleLineCommentFormat;
     QTextCharFormat multiLineCommentFormat;
     QTextCharFormat quotationFormat;
