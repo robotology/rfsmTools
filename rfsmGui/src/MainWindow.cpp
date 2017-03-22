@@ -226,6 +226,7 @@ void MainWindow::initScene() {
         scene->clear();
         delete scene;
     }
+    graphEditor.setGraph(graph);
     scene = new QGVScene("rFSM", this);
     ui->graphicsView->setBackgroundBrush(QBrush(QColor("#2e3e56"), Qt::SolidPattern));
     ui->graphicsView->setScene(scene);
@@ -469,6 +470,7 @@ bool MainWindow::loadrFSM(const std::string fname) {
     rfsm.getEventQueue(equeue);
     onUpdateEventQueue(equeue);
     graph = rfsm.getStateGraph();
+    graphEditor.setGraph(graph);
     drawStateMachine(graph);
     switchMachineMode(IDLE);    
     showStatusBarMessage(("Loaded " + filename).c_str());
@@ -670,7 +672,7 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
     if(action == 0)
         return;
     if(action->text().toStdString() == "Delete") {
-        graph.removeTransition(edge->getAttribute("sourcename").toStdString(),
+        graphEditor.removeTransition(edge->getAttribute("sourcename").toStdString(),
                                edge->getAttribute("targetname").toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
@@ -698,18 +700,18 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
         if(pieces.size()!=0){
             for(int i=0; i<pieces.size();i++)
             {
-                graph.addEvent(edge->getAttribute("sourcename").toStdString(),
+                graphEditor.addEvent(edge->getAttribute("sourcename").toStdString(),
                                   edge->getAttribute("targetname").toStdString(), pieces[i].trimmed().toStdString());
             }
         }
         else
-            graph.addEvent(edge->getAttribute("sourcename").toStdString(),
+            graphEditor.addEvent(edge->getAttribute("sourcename").toStdString(),
                           edge->getAttribute("targetname").toStdString(), event.toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
     if(action->text().toStdString() == "Clear events"){
-        graph.clearEvents(edge->getAttribute("sourcename").toStdString(),
+        graphEditor.clearEvents(edge->getAttribute("sourcename").toStdString(),
                           edge->getAttribute("targetname").toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
@@ -733,7 +735,7 @@ void MainWindow::nodeContextMenu(QGVNode *node)
     if(action == 0)
         return;
     if(action->text().toStdString() == "Delete") {
-        graph.removeState(node->getAttribute("rawname").toStdString());
+        graphEditor.removeState(node->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
         return;
@@ -780,7 +782,7 @@ void MainWindow::nodeContextMenu(QGVNode *node)
             return;
         }
 
-        graph.renameState(node->getAttribute("rawname").toStdString(), newName.toStdString());
+        graphEditor.renameState(node->getAttribute("rawname").toStdString(), newName.toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
@@ -799,7 +801,7 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
     if(action == 0)
         return;
     if(action->text().toStdString() == "Delete") {
-        graph.removeState(sgraph->getAttribute("rawname").toStdString());
+        graphEditor.removeState(sgraph->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
@@ -840,7 +842,7 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
             return;
         }
 
-        graph.renameState(sgraph->getAttribute("rawname").toStdString(), newName.toStdString());
+        graphEditor.renameState(sgraph->getAttribute("rawname").toStdString(), newName.toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
@@ -946,14 +948,14 @@ void MainWindow::onSceneLeftClicked(QPointF pos) {
             type = "connector";
         if(!item) {
             QString name = "State_" + QString::number(graph.states.size());
-            graph.addState(name.toStdString(), type);
+            graphEditor.addState(name.toStdString(), type);
             drawStateMachine(graph);
         }
         else if(item->type() == QGVSubGraph::Type) {
             QGVSubGraph* sgv = qgraphicsitem_cast<QGVSubGraph*>(item);
             std::string name = sgv->getAttribute("rawname").toStdString();
             name = name + ".State_" + QString::number(graph.states.size()).toStdString();
-            graph.addState(name, type);
+            graphEditor.addState(name, type);
             drawStateMachine(graph);
         }
         QApplication::setOverrideCursor(Qt::ClosedHandCursor);
@@ -1001,7 +1003,7 @@ void MainWindow::onSceneMouseReleased(QPointF pos) {
                 size_t idx = source.find(".end");
                 if(idx != string::npos)
                     source.erase(source.begin()+idx, source.end());
-                graph.addTransition(source, target);
+                graphEditor.addTransition(source, target);
                 scene->removeItem(line);
                 delete line;
                 line = NULL;

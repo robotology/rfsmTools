@@ -21,9 +21,10 @@
 #include <QFileSystemWatcher>
 #include <rfsm.h>
 #include <map>
-#include "SourceEditorWindow.h"
+#include <SourceEditorWindow.h>
 #include <QGraphicsLineItem>
 #include <QSettings>
+#include <StateGraphEditor.h>
 
 namespace Ui {
 class MainWindow;
@@ -173,6 +174,8 @@ private:
     QActionGroup *actionGroup;
     QGraphicsLineItem *line;
     rfsm::StateGraph graph;
+    StateGraphEditor graphEditor;
+
 };
 
 #endif // MAINWINDOW_H
