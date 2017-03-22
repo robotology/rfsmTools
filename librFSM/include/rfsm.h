@@ -102,20 +102,6 @@ public:
     typedef std::vector<State>::iterator StateItr;
 
     void clear();
-    void addState(const std::string name,
-                  const std::string type="single");
-    void removeState(const std::string name);
-    void renameState(const std::string oldName, const std::string newName);
-    void addTransition(const std::string source,
-                       const std::string target,
-                       std::vector<std::string> events=std::vector<std::string>());
-    void removeTransition(const std::string source,
-                          const std::string target,
-                          std::vector<std::string> events=std::vector<std::string>());
-    void addEvent(const std::string source,
-                  const std::string target,const std::string event);
-    void clearEvents(const std::string source,
-                     const std::string target);
 
 public:
     /**
@@ -127,11 +113,7 @@ public:
      */
     std::vector<Transition> transitions;
 
-private:
 
-    TransitionItr getTransition(const std::string stateName, bool from,
-                          std::vector<std::string> events=std::vector<std::string>());
-    void updateTransitions(const std::string oldName, const std::string newName);
 };
 
 
