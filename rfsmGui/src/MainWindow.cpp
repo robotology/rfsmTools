@@ -162,12 +162,42 @@ void MyStateMachine::onError(const string message) {
         }
     }
 
+
+    if(mainWindow->sourceWindow->isVisible())
+        return;
+
     if(mainWindow->machineMode == MainWindow::RUN)
         mainWindow->switchMachineMode(MainWindow::PAUSE);
     stop();
     mainWindow->showStatusBarMessage("Error occured! (paused)", Qt::darkRed);
+
+    /**
+     * TODO : Fix the copy graph!
+     */
+    QString filename = getFileName().c_str();
     int line = 0;
-    QString filename = QFileInfo(getFileName().c_str()).fileName();
+    rfsm::StateGraph graph = getStateGraph();
+    rfsm::StateGraph::State st;
+    st.name = getCurrentState();
+    cout<<getCurrentState()<<endl;
+    std::vector<rfsm::StateGraph::State>::iterator itr;
+    itr = find(graph.states.begin(), graph.states.end(), st);
+    if(itr != graph.states.end()) {
+        if(message.find("ENTRY") == 0)
+            filename = (*itr).entry.fileName.c_str();
+        else if(message.find("DOO") == 0)
+            filename = (*itr).doo.fileName.c_str();
+        else if(message.find("EXIT") == 0)
+            filename = (*itr).exit.fileName.c_str();
+    }
+
+    if(getFileName() != filename.toStdString()) {
+        QString source;
+        mainWindow->loadrFSMSourceCode(filename.toStdString(), source);
+        mainWindow->sourceWindow->setSourceCode(source);
+    }
+
+    filename = QFileInfo(filename).fileName();
     QRegularExpression re(filename + ":(.*):");
     QRegularExpressionMatch match = re.match(message.c_str(), 1);
     if (match.hasMatch()) {
@@ -176,28 +206,7 @@ void MyStateMachine::onError(const string message) {
             line = strlist[1].toInt() - 1;
     }
 
-    /**
-     * TODO : Fix the copy graph!
-     */
-    rfsm::StateGraph graph = getStateGraph();
-    rfsm::StateGraph::State st;
-    st.name = getCurrentState();
-    std::vector<rfsm::StateGraph::State>::iterator itr;
-    itr = find(graph.states.begin(), graph.states.end(), st);
-    Q_ASSERT(itr != graph.states.end());
-    if(message.find("ENTRY") == 0)
-        filename = (*itr).entry.fileName.c_str();
-    else if(message.find("DOO") == 0)
-        filename = (*itr).doo.fileName.c_str();
-    else if(message.find("EXIT") == 0)
-        filename = (*itr).exit.fileName.c_str();
 
-
-    if(getFileName() != filename.toStdString()) {
-        QString source;
-        mainWindow->loadrFSMSourceCode(filename.toStdString(), source);
-        mainWindow->sourceWindow->setSourceCode(source);
-    }    
     mainWindow->sourceWindow->setErrorMessage(message.c_str(), line);
     mainWindow->sourceWindow->setReadOnly((mainWindow->machineMode != MainWindow::IDLE)
                                           && (mainWindow->machineMode != MainWindow::UNLOADED));
