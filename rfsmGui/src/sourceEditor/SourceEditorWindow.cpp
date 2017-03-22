@@ -105,6 +105,7 @@ void SourceEditorWindow::setErrorMessage(const QString& message, const int line)
     highlight.cursor = ui->textEdit->textCursor();
     highlight.cursor.setPosition(0);
     highlight.cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, line);
+    ui->textEdit->setTextCursor(highlight.cursor);
     highlight.format.setProperty(QTextFormat::FullWidthSelection, true);
     highlight.format.setBackground( QColor("#FA8072") );
     QList<QTextEdit::ExtraSelection> extras;

@@ -11,7 +11,7 @@
 using namespace std;
 using namespace rfsm;
 
-#define CHECK_RFSM_LOADED(L) if(!L) { yError()<<"StateMachine has not been initialized. call StateMachine::load()"<<ENDL; return false; }
+#define CHECK_LUA_INITIALIZED(L) if(!L) { yError()<<"Lua has not been initialized. call StateMachine::load()"<<ENDL; return false; }
 
 #ifdef WITH_EMBEDDED_RFSM
 extern "C" const char gen_rfsm_res[];
@@ -44,7 +44,7 @@ public:
     void callEntryCallback(const std::string& state);
     void callDooCallback(const std::string& state);
     void callExitCallback(const std::string& state);
-
+    bool isrFSMLoaded();
     //typedef int (rfsm::StateMachine::* LuaRfsmCallback) (lua_State *L);
     //bool registerLuaFunction(const std::string& name, LuaRfsmCallback func);
 
@@ -151,12 +151,12 @@ bool StateMachine::load(const std::string& filename) {
 }
 
 bool StateMachine::run() {
-    CHECK_RFSM_LOADED(mPriv->L);
+    CHECK_LUA_INITIALIZED(mPriv->L);
     return (Utils::dostring(mPriv->L, "rfsm.run(fsm)", "run") == LUA_OK);
 }
 
 bool StateMachine::step(unsigned int n) {
-    CHECK_RFSM_LOADED(mPriv->L);
+    CHECK_LUA_INITIALIZED(mPriv->L);
     char command[128];
 
 #ifdef WIN32
@@ -168,7 +168,8 @@ bool StateMachine::step(unsigned int n) {
 }
 
 bool StateMachine::sendEvent(const std::string& event) {
-    CHECK_RFSM_LOADED(mPriv->L);
+    if(!mPriv->isrFSMLoaded())
+        return false;
     if(std::find(mPriv->events.begin(), mPriv->events.end(), event) == mPriv->events.end())
         yWarning()<<"Sending the undefined event"<<event<<ENDL;
     string command = "rfsm.send_events(fsm, '"+event+"')";
@@ -176,7 +177,8 @@ bool StateMachine::sendEvent(const std::string& event) {
 }
 
 bool StateMachine::sendEvents(unsigned int n, ...) {
-    CHECK_RFSM_LOADED(mPriv->L);
+    if(!mPriv->isrFSMLoaded())
+        return false;
     register unsigned int i;
     va_list ap;
     va_start(ap, n);
@@ -201,7 +203,8 @@ const std::vector<std::string>& StateMachine::getEventsList() {
 }
 
 bool StateMachine::getEventQueue(std::vector<std::string>& equeue) {
-    CHECK_RFSM_LOADED(mPriv->L);
+    if(!mPriv->isrFSMLoaded())
+        return false;
     equeue.clear();
     lua_getglobal(mPriv->L, "rfsm_get_event_queue");
     if(!lua_isfunction(mPriv->L, -1)) {
@@ -233,12 +236,12 @@ bool StateMachine::getEventQueue(std::vector<std::string>& equeue) {
 }
 
 bool StateMachine::doString(const std::string& command) {
-    CHECK_RFSM_LOADED(mPriv->L);
+    CHECK_LUA_INITIALIZED(mPriv->L);
     return (Utils::dostring(mPriv->L, command.c_str(), "command") == LUA_OK);
 }
 
 bool StateMachine::doFile(const std::string& filename) {
-    CHECK_RFSM_LOADED(mPriv->L);
+    CHECK_LUA_INITIALIZED(mPriv->L);
     return (Utils::dofile(mPriv->L, filename.c_str()) == LUA_OK);
 }
 
@@ -420,8 +423,15 @@ void StateMachine::Private::callExitCallback(const std::string& state) {
     it->second->exit();
 }
 
+bool StateMachine::Private::isrFSMLoaded() {
+    CHECK_LUA_INITIALIZED(L);
+    lua_getglobal(L, "fsm");
+    return lua_istable(L, -1);
+}
+
 bool StateMachine::setStateCallback(const string &state, rfsm::StateCallback& callback) {
-    CHECK_RFSM_LOADED(mPriv->L);
+    if(!mPriv->isrFSMLoaded())
+        return false;
     lua_getglobal(mPriv->L, "rfsm_set_state_callbacks");
     if(!lua_isfunction(mPriv->L, -1)) {
         yError()<<"StateMachine::setStateCallback() could not find rfsm_set_state_callbacks()"<<ENDL;
@@ -445,8 +455,8 @@ bool StateMachine::setStateCallback(const string &state, rfsm::StateCallback& ca
     return result;
 }
 
-const std::string StateMachine::getCurrentState() {    
-    if(!mPriv->L) {
+const std::string StateMachine::getCurrentState() {
+    if(!mPriv->isrFSMLoaded()) {
         yError()<<"StateMachine has not been initialized. call StateMachine::load()"<<ENDL;
         return "";
     }
@@ -483,13 +493,15 @@ const rfsm::StateGraph& StateMachine::getStateGraph() {
 
 
 bool StateMachine::enablePreStepHook() {
-    CHECK_RFSM_LOADED(mPriv->L);
+    if(!mPriv->isrFSMLoaded())
+        return false;
     return (Utils::dostring(mPriv->L, "rfsm.pre_step_hook_add(fsm, rfsm_pre_step_hook)", "rfsm_pre_step_hook") != LUA_OK);
 }
 
 
 bool StateMachine::enablePostStepHook() {
-    CHECK_RFSM_LOADED(mPriv->L);
+    if(!mPriv->isrFSMLoaded())
+        return false;
     return (Utils::dostring(mPriv->L, "rfsm.post_step_hook_add(fsm, rfsm_post_step_hook)", "rfsm_post_step_hook") != LUA_OK);
 }
 
@@ -597,7 +609,8 @@ bool StateMachine::Private::registerAuxiliaryFunctions() {
 }
 
 bool StateMachine::Private::getAllEvents() {
-    CHECK_RFSM_LOADED(L);
+    if(!isrFSMLoaded())
+        return false;
     events.clear();
     if(Utils::dostring(L, "events = rfsm_get_all_events()", "EVENT_RETREIVE_CHUNK") != LUA_OK)
         return false;
@@ -618,7 +631,8 @@ bool StateMachine::Private::getAllEvents() {
 }
 
 bool StateMachine::Private::getAllStateGraph() {
-    CHECK_RFSM_LOADED(L);
+    if(!isrFSMLoaded())
+        return false;
     graph.states.clear();
     graph.transitions.clear();
 
