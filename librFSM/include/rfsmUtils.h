@@ -75,10 +75,10 @@ namespace rfsm {
 #define GET_CURRENT_STATE_CHUNK \
 "function rfsm_get_current_state()\n"\
 "    function get_active_state(node)\n"\
-"      if node._actchild._actchild == nil then return node._actchild._fqn end\n"\
+"      if node._actchild._actchild == nil or node._actchild._actchild == node._actchild then return node._actchild._fqn end\n"\
 "      return get_active_state(node._actchild)\n"\
 "    end\n"\
-"    if fsm == nil then return '<none>' end\n"\
+"    if fsm == nil or type(fsm) ~= 'table' then return '<none>' end\n"\
 "    if not fsm._actchild then return '<none>' end\n"\
 "    return get_active_state(fsm)\n"\
 "end"
