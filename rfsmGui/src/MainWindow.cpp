@@ -99,6 +99,7 @@ void MyStateMachine::onPostStep() {
         message.append(qt.toString());
         message.append(msg.c_str());
         item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, message);
+        mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
     }
 
     if(getCurrentState() != "<none>") {
@@ -133,6 +134,7 @@ void MyStateMachine::onWarning(const string message) {
     qmessage.append(qt.toString());
     qmessage.append(message.c_str());
     item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
+    mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
     QBrush b( QColor("#FFFACD") );
     item->setBackground( 0, b);
     item->setBackground( 1, b);
@@ -145,6 +147,7 @@ void MyStateMachine::onError(const string message) {
     qmessage.append(qt.toString());
     qmessage.append(message.c_str());
     item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
+    mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
     QBrush b( QColor("#FA8072") );
     item->setBackground( 0, b);
     item->setBackground( 1, b);
@@ -228,6 +231,12 @@ void MyStateMachine::onInfo(const string message) {
     qmessage.append(qt.toString());
     qmessage.append(message.c_str());
     item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
+    if( message.find("INFO:") != string::npos){
+        QBrush b( QColor("#bbff99") );
+        item->setBackground( 0, b);
+        item->setBackground( 1, b);
+    }
+    mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
 }
 
 
@@ -280,6 +289,12 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     ui->actionDocumentaion->setEnabled(false);
     ui->actionDryrun->setChecked(true);
     ui->actionExport_scene->setEnabled(false);
+    ui->nodesTreeWidgetLog->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
+    ui->nodesTreeWidgetLog->setSortingEnabled(true);             // should cause sort on add
+//    ui->nodesTreeWidgetLog->setAutoScroll(true);
+    ui->nodesTreeWidgetEvent->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
+    ui->nodesTreeWidgetEvent->setSortingEnabled(true);             // should cause sort on add
+//    ui->nodesTreeWidgetEvent->setAutoScroll(true);
 
     switchMachineMode(UNLOADED);
     if(parser->value("period").size())
@@ -632,6 +647,7 @@ void MainWindow::updateEventQueue() {
         event.append(qt.toString());
         event.append(equeue[i].c_str());
         item = new QTreeWidgetItem( ui->nodesTreeWidgetEvent, event);
+        ui->nodesTreeWidgetEvent->scrollToBottom();
     }
 }
 
