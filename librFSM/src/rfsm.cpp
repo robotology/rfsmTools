@@ -33,6 +33,7 @@ public:
     static int warningCallback(lua_State* L);
     static int infoCallback(lua_State* L);
     static int errorCallback(lua_State* L);
+    static int luaPrint(lua_State* L);
 
     static bool getLuaFuncStringParam(lua_State* L,
                                       StateMachine* &owner, std::string& strParam);
@@ -40,7 +41,7 @@ public:
     bool getAllEvents();
     bool getAllStateGraph();
     bool registerAuxiliaryFunctions();
-    bool registerCFunction(const std::string& name, lua_CFunction func);
+    bool registerCFunction(const std::string& name, lua_CFunction func, bool global=false);
     void callEntryCallback(const std::string& state);
     void callDooCallback(const std::string& state);
     void callExitCallback(const std::string& state);
@@ -377,6 +378,26 @@ int StateMachine::Private::infoCallback(lua_State* L) {
     return 0;
 }
 
+
+int StateMachine::Private::luaPrint(lua_State* L) {
+    std::string message;
+    int nargs = lua_gettop(L);
+    for(int i=1; i <= nargs; ++i)
+        message += (message.size()) ? std::string("\t") + lua_tostring(L, i) : lua_tostring(L, i);
+
+    lua_getglobal(L, "RFSM_Owner");
+    if(!lua_islightuserdata(L, -1)) {
+        lua_pop(L, 1);
+        yError()<<"StateMachine::luaPrint() cannot access RFSM_Owner"<<ENDL;
+        return false;
+    }
+    StateMachine* owner = static_cast<StateMachine*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+    yAssert(owner!=NULL);
+    owner->onInfo(message);
+    return 0;
+}
+
 bool StateMachine::Private::getLuaFuncStringParam(lua_State* L, StateMachine* &owner , std::string& strParam) {
     if (lua_gettop(L) < 1) {
         yError()<<"StateMachine::getLuaFuncStringParam() expects exactly one argument"<<ENDL;
@@ -505,6 +526,10 @@ bool StateMachine::enablePostStepHook() {
     return (Utils::dostring(mPriv->L, "rfsm.post_step_hook_add(fsm, rfsm_post_step_hook)", "rfsm_post_step_hook") != LUA_OK);
 }
 
+bool StateMachine::catchPrintOutput() {
+    CHECK_LUA_INITIALIZED(mPriv->L);
+    return mPriv->registerCFunction("print", StateMachine::Private::luaPrint, true);
+}
 
 void StateMachine::onPreStep() {
     if(verbose)
@@ -540,7 +565,7 @@ void StateMachine::onTrace(const std::string& message ) {
 /**********************************************************
 * class StateMachine::Private
 ***********************************************************/
-bool StateMachine::Private::registerCFunction(const std::string& name, lua_CFunction func) {
+bool StateMachine::Private::registerCFunction(const std::string& name, lua_CFunction func, bool global) {
     if(!func)
         return false;
     luaL_reg reg;
@@ -557,14 +582,27 @@ bool StateMachine::Private::registerCFunction(const std::string& name, lua_CFunc
     reg.func = 0;
     luaFuncReg.push_back(reg);
 #if LUA_VERSION_NUM > 501
-    if(luaFuncReg.size() <= 2)
-        lua_newtable(L);
-    luaL_setfuncs (L, &luaFuncReg[0], 0);
-    lua_pushvalue(L, -1);
-    if(luaFuncReg.size() <= 2)
-        lua_setglobal(L, "RFSM");
+    if(global) {
+        lua_getglobal(L, "_G");
+        luaL_setfuncs(L, &luaFuncReg[0], 0);
+        Lua_pop(L, 1);
+    }
+    else {
+        if(luaFuncReg.size() <= 2)
+            lua_newtable(L);
+        luaL_setfuncs (L, &luaFuncReg[0], 0);
+        lua_pushvalue(L, -1);
+        if(luaFuncReg.size() <= 2)
+            lua_setglobal(L, "RFSM");
+    }
 #else
-    luaL_register(L, "RFSM", &luaFuncReg[0]);
+    if(global) {
+        lua_getglobal(L, "_G");
+        luaL_register(L, NULL, &luaFuncReg[0]);
+        lua_pop(L, 1);
+    }
+    else
+        luaL_register(L, "RFSM", &luaFuncReg[0]);
 #endif
     return true;
 }

@@ -234,6 +234,8 @@ public:
      * of the rFSM. If it is enabled, then onPreStep() callback will be called
      * before stepping the state machine.
      * @return true on success
+     *
+     * \note This should be called before running/stepping the state machine
      */
     bool enablePreStepHook();
 
@@ -242,8 +244,19 @@ public:
      * of the rFSM. If it is enabled, then onPostStep() callback will be called
      * after stepping the state machine.
      * @return true on success
+     *
+     * \note This should be called before running/stepping the state machine
      */
     bool enablePostStepHook();
+
+    /**
+     * @brief catchPrintOutput redirect the output of the lua 'print()' function
+     * to rfsm::StateMachine::onInfo()
+     * @return true on success
+     *
+     * \note This should be called before running/stepping the state machine
+     */
+    bool catchPrintOutput();
 
 public:
     /**

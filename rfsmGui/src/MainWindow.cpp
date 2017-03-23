@@ -483,6 +483,7 @@ bool MainWindow::loadrFSM(const std::string filename) {
     // enablng hooks
     rfsm.enablePreStepHook();
     rfsm.enablePostStepHook();
+    rfsm.catchPrintOutput();
 
     // adding events to gui event list
     QStringList ql;
