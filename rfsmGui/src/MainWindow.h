@@ -15,6 +15,7 @@
 #include <QStringListModel>
 #include <QTreeWidgetItem>
 #include <QThread>
+#include <QMutex>
 #include <QTimer>
 #include <QFileSystemWatcher>
 #include <rfsm.h>
@@ -32,7 +33,7 @@ class MainWindow;
 class MyStateMachine : public QObject, public rfsm::StateMachine {
       Q_OBJECT
 public:
-    MyStateMachine(MainWindow* mainWnd);
+    explicit MyStateMachine(MainWindow* mainWnd);
     virtual ~MyStateMachine();
 
 public slots:
@@ -41,11 +42,15 @@ public slots:
 public:
     void start();
     void stop();
+    void close();
     virtual void onPreStep();
     virtual void onPostStep();
     virtual void onWarning(const std::string message);
     virtual void onError(const std::string message);
     virtual void onInfo(const std::string message);    
+
+private:
+    void setNodeActiveMode(const std::string &mame, bool mode);
 
 public:
     int runPeriod;
@@ -53,7 +58,10 @@ public:
 private:
     MainWindow* mainWindow;
     QTimer *timer;
+    QThread* thread;
+    QMutex mutex;
     std::string stateName;
+    bool stopped;
 };
 
 
@@ -90,7 +98,7 @@ private:
     void drawStateMachine();    
     bool loadrFSM(const std::string filename);    
     std::string getPureStateName(const std::string& name);
-    void saveSetting();
+    void saveSetting();    
 
 private slots:
     void nodeContextMenu(QGVNode* node);
@@ -115,6 +123,7 @@ private slots:
     void onSourceCode();
     void onSourceCodeSaved();
     void onFileChanged(const QString & path);
+    void closeEvent(QCloseEvent *event);
 
 public:    
     Ui::MainWindow *ui;

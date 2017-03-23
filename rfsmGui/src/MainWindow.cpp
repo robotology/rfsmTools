@@ -22,7 +22,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QtPrintSupport/QPrinter>
-
+#include <QMutexLocker>
 
 using namespace std;
 
@@ -38,58 +38,84 @@ public:
 
 
 MyStateMachine::MyStateMachine(MainWindow* mainWnd)
-    : rfsm::StateMachine(true) {
+    : rfsm::StateMachine(true), stopped(false) {
     mainWindow = mainWnd;
     runPeriod = 500;
-    timer = new QTimer(this);
+    thread = new QThread();    
+    this->moveToThread(thread);
+    timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(execute()));
 }
 
 MyStateMachine::~MyStateMachine() {
     delete timer;
+    delete thread;
 }
 
 
 void MyStateMachine::execute() {
+    mutex.lock();
+    if(stopped) {
+        mutex.unlock();
+        return;
+    }
     mainWindow->updateEventQueue();
     run();
+    mutex.unlock();
 }
 
 void MyStateMachine::start() {
+    mutex.lock();
+    stopped = false;
+    thread->start();
     timer->start(runPeriod);
+    mutex.unlock();
 }
 
 void MyStateMachine::stop() {
+    mutex.lock();
+    stopped = true;
     timer->stop();
+    thread->quit();
+    mutex.unlock();
 }
 
+void MyStateMachine::close() {
+    stateName.clear();
+    StateMachine::close();
+}
 
 void MyStateMachine::onPreStep() {
-    stateName = getCurrentState();
-    if(stateName != "<none>") {
-        QStringList pieces = QString(getCurrentState().c_str()).split( "." );
-        //std::cout<<"onPostStep(): geting parent of "<<getCurrentState()<<std::endl;
-        std::string subName;
-        for(int i=0; i<pieces.size(); i++) {
-            subName = subName + pieces[i].toStdString();
-            QGVSubGraph* sgraph = mainWindow->getParent(subName);
-            if(sgraph != NULL) {
-                sgraph->setActive(false);
-                sgraph->update();
-            }
-            subName += ".";
-        }
-        QGVNode* node = mainWindow->getNode(stateName);
-        if(node == NULL)
-            node = mainWindow->getNode(stateName+".initial");
-        Q_ASSERT(node != NULL);
-        node->setActive(false);
-        node->update();
-    }
+    cout<<"onPreStep(): "<<stateName<<", "<<getCurrentState()<<endl;
 }
 
+void MyStateMachine::setNodeActiveMode(const std::string &name, bool mode) {
+    if(!name.size() || (name == "<none>"))
+        return;
 
-void MyStateMachine::onPostStep() {    
+    QStringList pieces = QString(name.c_str()).split( "." );
+    std::string subName;
+    for(int i=0; i<pieces.size(); i++) {
+        subName = subName + pieces[i].toStdString();
+        QGVSubGraph* sgraph = mainWindow->getParent(subName);
+        if(sgraph != NULL) {
+            sgraph->setActive(mode);
+            sgraph->update();
+        }
+        subName += ".";
+    }
+    QGVNode* node = mainWindow->getNode(name);
+    if(node == NULL)
+        node = mainWindow->getNode(name+".initial");
+    Q_ASSERT(node != NULL);
+    node->setActive(mode);
+    node->update();
+    if(mode)
+        mainWindow->ui->graphicsView->centerOn(node);
+}
+
+void MyStateMachine::onPostStep() {
+    cout<<"onPostStep(): "<<stateName<<", "<<getCurrentState()<<endl;
     if(stateName != getCurrentState()) {
         string msg = "Transited from <"+ stateName + "> to <"+ getCurrentState() + ">";
         QTime qt = QTime::currentTime();
@@ -100,30 +126,12 @@ void MyStateMachine::onPostStep() {
         message.append(msg.c_str());
         item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, message);
         mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
+        //////////////////////////////////////////////////////
+        setNodeActiveMode(stateName, false);
     }
 
-    if(getCurrentState() != "<none>") {
-        QStringList pieces = QString(getCurrentState().c_str()).split( "." );
-        //std::cout<<"onPostStep(): geting parent of "<<getCurrentState()<<std::endl;
-        std::string subName;
-        for(int i=0; i<pieces.size(); i++) {
-            subName = subName + pieces[i].toStdString();
-            QGVSubGraph* sgraph = mainWindow->getParent(subName);
-            if(sgraph != NULL) {
-                sgraph->setActive(true);
-                sgraph->update();
-            }
-            subName += ".";
-        }
-        QGVNode* node = mainWindow->getNode(getCurrentState());
-        if(node == NULL)
-            node = mainWindow->getNode(getCurrentState()+".initial");
-        Q_ASSERT(node != NULL);
-        node->setActive(true);
-        node->update();
-        if(stateName != getCurrentState())
-            mainWindow->ui->graphicsView->centerOn(node);
-    }
+    setNodeActiveMode(getCurrentState(), true);
+    stateName = getCurrentState();
 }
 
 
@@ -165,7 +173,6 @@ void MyStateMachine::onError(const string message) {
         }
     }
 
-
     if(mainWindow->sourceWindow->isVisible())
         return;
 
@@ -180,9 +187,7 @@ void MyStateMachine::onError(const string message) {
     QString filename = getFileName().c_str();
     int line = 0;
     rfsm::StateGraph graph = getStateGraph();
-    rfsm::StateGraph::State st;
-    st.name = getCurrentState();
-    cout<<getCurrentState()<<endl;
+    rfsm::StateGraph::State st;    
     std::vector<rfsm::StateGraph::State>::iterator itr;
     itr = find(graph.states.begin(), graph.states.end(), st);
     if(itr != graph.states.end()) {
@@ -214,14 +219,6 @@ void MyStateMachine::onError(const string message) {
     mainWindow->sourceWindow->setReadOnly((mainWindow->machineMode != MainWindow::IDLE)
                                           && (mainWindow->machineMode != MainWindow::UNLOADED));
     mainWindow->sourceWindow->show();
-}
-
-void MainWindow::showStatusBarMessage(const QString& message,
-                                      QColor color) {
-    ui->statusBar->showMessage(message);
-    QPalette palette;
-    palette.setColor( QPalette::WindowText, color );
-    statusBar()->setPalette(palette);
 }
 
 void MyStateMachine::onInfo(const string message) {
@@ -532,11 +529,9 @@ void MainWindow::onLoadrFSM() {
 }
 
 void MainWindow::onDebugStartrFSM() {
-    if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {
-        //rfsm.setStateCallback("Configure", defaultCallback);
+    if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {        
         const rfsm::StateGraph& graph = rfsm.getStateGraph();
         for(size_t i=0; i<graph.states.size(); i++) {
-            //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
             if(graph.states[i].type != "connector")
                 rfsm.setStateCallback(graph.states[i].name, defaultCallback);
         }
@@ -582,13 +577,13 @@ void MainWindow::onRunStartrFSM() {
         switchMachineMode(RUN);     
     }
     else {
-        rfsm.stop();
+        //rfsm.stop();
         initScene();
         std::string filename = rfsm.getFileName();
         rfsm.close();
-        if( loadrFSM(filename) ) {
-            switchMachineMode(RUN);
+        if( loadrFSM(filename) ) {            
             rfsm.start();
+            switchMachineMode(RUN);
         }
     }
     showStatusBarMessage("Running...", Qt::darkGreen);
@@ -601,17 +596,19 @@ void MainWindow::onRunStoprFSM() {
     if (reply == QMessageBox::No)
         return;
 
-    switchMachineMode(IDLE);
     rfsm.stop();
+    switchMachineMode(IDLE);
+    /*
     initScene();
     std::string filename = rfsm.getFileName();
     rfsm.close();
     loadrFSM(filename);
+    */
 }
 
-void MainWindow::onRunPauserFSM() {
-    switchMachineMode(PAUSE);
+void MainWindow::onRunPauserFSM() {    
     rfsm.stop();
+    switchMachineMode(PAUSE);
     showStatusBarMessage("Paused!", Qt::darkYellow);
 }
 
@@ -713,6 +710,12 @@ void MainWindow::onQuit() {
     MainWindow::close();
 }
 
+void MainWindow::closeEvent(QCloseEvent *event) {
+    onQuit();
+    QMainWindow::closeEvent(event);
+}
+
+
 void MainWindow::onAbout() {
     QMessageBox::about(this, "rFSM Gui (version 1.0.0)",
                        "A graphical tool for running and debuging rFSM state machines\n\nAuthors:\n\t-Ali Paikan <ali.paikan@iit.it>\n\t-Nicolò Genesio <nicolo.genesio@iit.it>");
@@ -805,6 +808,13 @@ void MainWindow::onFileChanged(const QString &path){
 
 }
 
+void MainWindow::showStatusBarMessage(const QString& message,
+                                      QColor color) {
+    ui->statusBar->showMessage(message);
+    QPalette palette;
+    palette.setColor( QPalette::WindowText, color );
+    statusBar()->setPalette(palette);
+}
 
 void MainWindow::switchMachineMode(MachineMode mode) {
     machineMode = mode;

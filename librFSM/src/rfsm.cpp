@@ -152,14 +152,15 @@ bool StateMachine::load(const std::string& filename) {
 }
 
 bool StateMachine::run() {
-    CHECK_LUA_INITIALIZED(mPriv->L);
+    if(!mPriv->isrFSMLoaded())
+        return false;
     return (Utils::dostring(mPriv->L, "rfsm.run(fsm)", "run") == LUA_OK);
 }
 
 bool StateMachine::step(unsigned int n) {
-    CHECK_LUA_INITIALIZED(mPriv->L);
+    if(!mPriv->isrFSMLoaded())
+        return false;
     char command[128];
-
 #ifdef WIN32
     _snprintf(command, 128, "rfsm.step(fsm, %d)", n);
 #else
