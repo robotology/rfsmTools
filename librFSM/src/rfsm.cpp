@@ -585,7 +585,7 @@ bool StateMachine::Private::registerCFunction(const std::string& name, lua_CFunc
     if(global) {
         lua_getglobal(L, "_G");
         luaL_setfuncs(L, &luaFuncReg[0], 0);
-        Lua_pop(L, 1);
+        lua_pop(L, 1);
     }
     else {
         if(luaFuncReg.size() <= 2)
