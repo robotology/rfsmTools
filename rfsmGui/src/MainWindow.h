@@ -36,21 +36,26 @@ public:
     explicit MyStateMachine(MainWindow* mainWnd);
     virtual ~MyStateMachine();
 
+signals:
+    void fsmStopped();
+    void updateEventQueue(const std::vector<std::string> equeue);
+    void warning(const std::string message);
+    void info(const std::string message);
+    void error(const std::string message, const std::string currentState);
+    void postStep(const std::string prevState, const std::string currentState);
+
 public slots:
     void execute();
+    void onThreadFinished();
 
 public:
     void start();
     void stop();
-    void close();
-    virtual void onPreStep();
+    void close();    
     virtual void onPostStep();
     virtual void onWarning(const std::string message);
     virtual void onError(const std::string message);
-    virtual void onInfo(const std::string message);    
-
-private:
-    void setNodeActiveMode(const std::string &mame, bool mode);
+    virtual void onInfo(const std::string message);        
 
 public:
     int runPeriod;
@@ -83,8 +88,7 @@ public:
     ~MainWindow();
     QGVNode* getNode(const std::string& name);
     QGVSubGraph * getParent(const std::string& name );
-    QGVSubGraph* getSubGraph(const std::string& name);
-    void updateEventQueue();
+    QGVSubGraph* getSubGraph(const std::string& name);    
     void switchMachineMode(MachineMode mode);
     void showStatusBarMessage(const QString& message,
                               QColor color = Qt::black);
@@ -99,6 +103,7 @@ private:
     bool loadrFSM(const std::string filename);    
     std::string getPureStateName(const std::string& name);
     void saveSetting();    
+    void setNodeActiveMode(const std::string &name, bool mode);
 
 private slots:
     void nodeContextMenu(QGVNode* node);
@@ -124,6 +129,13 @@ private slots:
     void onSourceCodeSaved();
     void onFileChanged(const QString & path);
     void closeEvent(QCloseEvent *event);
+
+    void onUpdateEventQueue(const std::vector<std::string> equeue);
+    void onWarning(const std::string message);
+    void onInfo(const std::string message);
+    void onError(const std::string message, const std::string currentState);
+    void onPostStep(const std::string prevState, const std::string currentState);
+    void onFsmStopped();
 
 public:    
     Ui::MainWindow *ui;

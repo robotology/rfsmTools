@@ -41,10 +41,15 @@ MyStateMachine::MyStateMachine(MainWindow* mainWnd)
     : rfsm::StateMachine(true), stopped(false) {
     mainWindow = mainWnd;
     runPeriod = 500;
+
+    qRegisterMetaType<std::vector<std::string> >("std::vector<std::string>");
+    qRegisterMetaType<std::string>("std::string");
+
     thread = new QThread();    
     this->moveToThread(thread);
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(execute()));
+    connect(thread, SIGNAL(finished()), this, SLOT(onThreadFinished()));
 }
 
 MyStateMachine::~MyStateMachine() {
@@ -54,30 +59,33 @@ MyStateMachine::~MyStateMachine() {
 
 
 void MyStateMachine::execute() {
-    mutex.lock();
-    if(stopped) {
-        mutex.unlock();
+    if(stopped) {        
+        timer->stop();
+        thread->quit();
         return;
     }
-    mainWindow->updateEventQueue();
+    mutex.lock();    
+    std::vector<std::string> equeue;
+    getEventQueue(equeue);
+    emit updateEventQueue(equeue);
     run();
     mutex.unlock();
 }
 
+void MyStateMachine::onThreadFinished() {
+    emit fsmStopped();
+}
+
 void MyStateMachine::start() {
-    mutex.lock();
     stopped = false;
+    mutex.lock();
     thread->start();
     timer->start(runPeriod);
     mutex.unlock();
 }
 
 void MyStateMachine::stop() {
-    mutex.lock();
     stopped = true;
-    timer->stop();
-    thread->quit();
-    mutex.unlock();
 }
 
 void MyStateMachine::close() {
@@ -85,155 +93,23 @@ void MyStateMachine::close() {
     StateMachine::close();
 }
 
-void MyStateMachine::onPreStep() {
-    cout<<"onPreStep(): "<<stateName<<", "<<getCurrentState()<<endl;
-}
-
-void MyStateMachine::setNodeActiveMode(const std::string &name, bool mode) {
-    if(!name.size() || (name == "<none>"))
-        return;
-
-    QStringList pieces = QString(name.c_str()).split( "." );
-    std::string subName;
-    for(int i=0; i<pieces.size(); i++) {
-        subName = subName + pieces[i].toStdString();
-        QGVSubGraph* sgraph = mainWindow->getParent(subName);
-        if(sgraph != NULL) {
-            sgraph->setActive(mode);
-            sgraph->update();
-        }
-        subName += ".";
-    }
-    QGVNode* node = mainWindow->getNode(name);
-    if(node == NULL)
-        node = mainWindow->getNode(name+".initial");
-    Q_ASSERT(node != NULL);
-    node->setActive(mode);
-    node->update();
-    if(mode)
-        mainWindow->ui->graphicsView->centerOn(node);
-}
 
 void MyStateMachine::onPostStep() {
-    cout<<"onPostStep(): "<<stateName<<", "<<getCurrentState()<<endl;
-    if(stateName != getCurrentState()) {
-        string msg = "Transited from <"+ stateName + "> to <"+ getCurrentState() + ">";
-        QTime qt = QTime::currentTime();
-        QTreeWidgetItem* item;
-        QStringList message;
-        message.clear();
-        message.append(qt.toString());
-        message.append(msg.c_str());
-        item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, message);
-        mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
-        //////////////////////////////////////////////////////
-        setNodeActiveMode(stateName, false);
-    }
-
-    setNodeActiveMode(getCurrentState(), true);
+    emit postStep(stateName, getCurrentState());
     stateName = getCurrentState();
 }
 
 
 void MyStateMachine::onWarning(const string message) {
-    QTime qt = QTime::currentTime();
-    QTreeWidgetItem* item;
-    QStringList qmessage;
-    qmessage.append(qt.toString());
-    qmessage.append(message.c_str());
-    item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
-    mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
-    QBrush b( QColor("#FFFACD") );
-    item->setBackground( 0, b);
-    item->setBackground( 1, b);
+    emit warning(message);
 }
 
 void MyStateMachine::onError(const string message) {
-    QTime qt = QTime::currentTime();
-    QTreeWidgetItem* item;
-    QStringList qmessage;
-    qmessage.append(qt.toString());
-    qmessage.append(message.c_str());
-    item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
-    mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
-    QBrush b( QColor("#FA8072") );
-    item->setBackground( 0, b);
-    item->setBackground( 1, b);
-    // setting node/subgrph error mode
-    QGVNode* node = mainWindow->getNode(getCurrentState());
-    if(node) {
-        node->setError(message);        
-        node->update();
-    }
-    else {
-        QGVSubGraph* sgv = mainWindow->getSubGraph(getCurrentState());
-        if(sgv) {
-            sgv->setError(message);            
-            sgv->update();
-        }
-    }
-
-    if(mainWindow->sourceWindow->isVisible())
-        return;
-
-    if(mainWindow->machineMode == MainWindow::RUN)
-        mainWindow->switchMachineMode(MainWindow::PAUSE);
-    stop();
-    mainWindow->showStatusBarMessage("Error occured! (paused)", Qt::darkRed);
-
-    /**
-     * TODO : Fix the copy graph!
-     */
-    QString filename = getFileName().c_str();
-    int line = 0;
-    rfsm::StateGraph graph = getStateGraph();
-    rfsm::StateGraph::State st;    
-    std::vector<rfsm::StateGraph::State>::iterator itr;
-    itr = find(graph.states.begin(), graph.states.end(), st);
-    if(itr != graph.states.end()) {
-        if(message.find("ENTRY") == 0)
-            filename = (*itr).entry.fileName.c_str();
-        else if(message.find("DOO") == 0)
-            filename = (*itr).doo.fileName.c_str();
-        else if(message.find("EXIT") == 0)
-            filename = (*itr).exit.fileName.c_str();
-    }
-
-    if(getFileName() != filename.toStdString()) {
-        QString source;
-        mainWindow->loadrFSMSourceCode(filename.toStdString(), source);
-        mainWindow->sourceWindow->setSourceCode(source);
-    }
-
-    filename = QFileInfo(filename).fileName();
-    QRegularExpression re(filename + ":(.*):");
-    QRegularExpressionMatch match = re.match(message.c_str(), 1);
-    if (match.hasMatch()) {
-        QStringList strlist =  match.captured(0).split(":");
-        if(strlist.size() > 1)
-            line = strlist[1].toInt() - 1;
-    }
-
-
-    mainWindow->sourceWindow->setErrorMessage(message.c_str(), line);
-    mainWindow->sourceWindow->setReadOnly((mainWindow->machineMode != MainWindow::IDLE)
-                                          && (mainWindow->machineMode != MainWindow::UNLOADED));
-    mainWindow->sourceWindow->show();
+    emit error(message, getCurrentState());
 }
 
 void MyStateMachine::onInfo(const string message) {
-    QTime qt = QTime::currentTime();
-    QTreeWidgetItem* item;
-    QStringList qmessage;
-    qmessage.append(qt.toString());
-    qmessage.append(message.c_str());
-    item = new QTreeWidgetItem(mainWindow->ui->nodesTreeWidgetLog, qmessage);
-    if( message.find("INFO:") != string::npos){
-        QBrush b( QColor("#bbff99") );
-        item->setBackground( 0, b);
-        item->setBackground( 1, b);
-    }
-    mainWindow->ui->nodesTreeWidgetLog->scrollToBottom();
+    emit info(message);
 }
 
 
@@ -274,6 +150,14 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(ui->actionLine, SIGNAL(triggered()),this,SLOT(onLayoutLine()));
     connect(ui->actionExport_scene, SIGNAL(triggered()),this,SLOT(onExportScene()));
     connect(ui->actionSourceCode, SIGNAL(triggered()),this,SLOT(onSourceCode()));
+
+    // rfsm signals
+    connect(&rfsm, SIGNAL(updateEventQueue(const std::vector<std::string>)),this, SLOT(onUpdateEventQueue(const std::vector<std::string>)));
+    connect(&rfsm, SIGNAL(error(const std::string, const std::string)),this, SLOT(onError(const std::string, const std::string)));
+    connect(&rfsm, SIGNAL(warning(const std::string)),this, SLOT(onWarning(std::string)));
+    connect(&rfsm, SIGNAL(info(const std::string)),this, SLOT(onInfo(std::string)));
+    connect(&rfsm, SIGNAL(postStep(const std::string, const std::string)),this, SLOT(onPostStep(const std::string, const std::string)));
+    connect(&rfsm, SIGNAL(fsmStopped()),this, SLOT(onFsmStopped()));
 
     sourceWindow = new SourceEditorWindow(this);
     sourceWindow->setWindowModality(Qt::ApplicationModal);
@@ -493,7 +377,6 @@ bool MainWindow::loadrFSM(const std::string filename) {
     }
 
     // enablng hooks
-    rfsm.enablePreStepHook();
     rfsm.enablePostStepHook();
     rfsm.catchPrintOutput();
 
@@ -507,7 +390,9 @@ bool MainWindow::loadrFSM(const std::string filename) {
     ql.sort();
     ui->comboBoxEvents->clear();
     ui->comboBoxEvents->addItems(ql);
-    updateEventQueue();
+    std::vector<std::string> equeue;
+    rfsm.getEventQueue(equeue);
+    onUpdateEventQueue(equeue);
 
     // drawing state machine
     drawStateMachine();
@@ -538,7 +423,9 @@ void MainWindow::onDebugStartrFSM() {
     }
     switchMachineMode(DEBUG);
     rfsm.run();
-    updateEventQueue();
+    std::vector<std::string> equeue;
+    rfsm.getEventQueue(equeue);
+    onUpdateEventQueue(equeue);
     showStatusBarMessage(("Debugging " +  std::string(((ui->actionDryrun->isChecked()) ? "(Dry Run) ..." : "..."))).c_str());
 }
 
@@ -554,7 +441,9 @@ void MainWindow::onDebugSteprFSM() {
     }
     switchMachineMode(DEBUG);
     rfsm.step();
-    updateEventQueue();
+    std::vector<std::string> equeue;
+    rfsm.getEventQueue(equeue);
+    onUpdateEventQueue(equeue);
     showStatusBarMessage(("Debugging " +  std::string(((ui->actionDryrun->isChecked()) ? "(Dry Run) ..." : "..."))).c_str());
 }
 
@@ -597,13 +486,10 @@ void MainWindow::onRunStoprFSM() {
         return;
 
     rfsm.stop();
+}
+
+void MainWindow::onFsmStopped() {
     switchMachineMode(IDLE);
-    /*
-    initScene();
-    std::string filename = rfsm.getFileName();
-    rfsm.close();
-    loadrFSM(filename);
-    */
 }
 
 void MainWindow::onRunPauserFSM() {    
@@ -615,7 +501,9 @@ void MainWindow::onRunPauserFSM() {
 
 void MainWindow::onSendEvent() {
     rfsm.sendEvent(ui->comboBoxEvents->currentText().toStdString());
-    updateEventQueue();
+    std::vector<std::string> equeue;
+    rfsm.getEventQueue(equeue);
+    onUpdateEventQueue(equeue);
 }
 
 
@@ -632,10 +520,8 @@ void MainWindow::onChangeRunPeriod() {
      }
 }
 
-void MainWindow::updateEventQueue() {
-    std::vector<std::string> equeue;
-    rfsm.getEventQueue(equeue);
-    ui->nodesTreeWidgetEvent->clear();
+void MainWindow::onUpdateEventQueue(const std::vector<string> equeue) {
+    ui->nodesTreeWidgetEvent->clear();    
     QTime qt = QTime::currentTime();
     for(size_t i=0; i<equeue.size(); i++) {
         QTreeWidgetItem* item;
@@ -695,6 +581,10 @@ void MainWindow::onLayoutCurved() {
 }
 
 void MainWindow::onQuit() {
+    MainWindow::close();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
     if(machineMode != IDLE && machineMode != UNLOADED) {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Quit", "State machine is running.\n Do you want to stop it and exit?",
@@ -704,14 +594,9 @@ void MainWindow::onQuit() {
     }
     // save setting
     saveSetting();
-
+    // close state machine
     rfsm.stop();
     rfsm.close();
-    MainWindow::close();
-}
-
-void MainWindow::closeEvent(QCloseEvent *event) {
-    onQuit();
     QMainWindow::closeEvent(event);
 }
 
@@ -807,6 +692,149 @@ void MainWindow::onFileChanged(const QString &path){
     }
 
 }
+
+void MainWindow::onWarning(const string message) {
+    QTime qt = QTime::currentTime();
+    QTreeWidgetItem* item;
+    QStringList qmessage;
+    qmessage.append(qt.toString());
+    qmessage.append(message.c_str());
+    item = new QTreeWidgetItem(ui->nodesTreeWidgetLog, qmessage);
+    ui->nodesTreeWidgetLog->scrollToBottom();
+    QBrush b( QColor("#FFFACD") );
+    item->setBackground( 0, b);
+    item->setBackground( 1, b);
+}
+
+
+void MainWindow::onInfo(const string message) {
+    QTime qt = QTime::currentTime();
+    QTreeWidgetItem* item;
+    QStringList qmessage;
+    qmessage.append(qt.toString());
+    qmessage.append(message.c_str());
+    item = new QTreeWidgetItem(ui->nodesTreeWidgetLog, qmessage);
+    if( message.find("INFO:") != string::npos){
+        QBrush b( QColor("#bbff99") );
+        item->setBackground( 0, b);
+        item->setBackground( 1, b);
+    }
+    ui->nodesTreeWidgetLog->scrollToBottom();
+}
+
+void MainWindow::onError(const string message, const string currentState) {
+    QTime qt = QTime::currentTime();
+    QTreeWidgetItem* item;
+    QStringList qmessage;
+    qmessage.append(qt.toString());
+    qmessage.append(message.c_str());
+    item = new QTreeWidgetItem(ui->nodesTreeWidgetLog, qmessage);
+    ui->nodesTreeWidgetLog->scrollToBottom();
+    QBrush b( QColor("#FA8072") );
+    item->setBackground( 0, b);
+    item->setBackground( 1, b);
+    // setting node/subgrph error mode
+    QGVNode* node = getNode(currentState);
+    if(node) {
+        node->setError(message);
+        node->update();
+    }
+    else {
+        QGVSubGraph* sgv = getSubGraph(currentState);
+        if(sgv) {
+            sgv->setError(message);
+            sgv->update();
+        }
+    }
+
+    if(sourceWindow->isVisible())
+        return;
+
+    if(machineMode == MainWindow::RUN)
+        switchMachineMode(MainWindow::PAUSE);
+    rfsm.stop();
+    showStatusBarMessage("Error occured! (paused)", Qt::darkRed);
+
+    // TODO : Fix the copy graph!
+    QString filename = rfsm.getFileName().c_str(); // check if this should be moved to signal param
+    int line = 0;
+    rfsm::StateGraph graph = rfsm.getStateGraph();
+    rfsm::StateGraph::State st;
+    st.name = currentState;
+    std::vector<rfsm::StateGraph::State>::iterator itr;
+    itr = std::find(graph.states.begin(), graph.states.end(), st);
+    if(itr != graph.states.end()) {
+        if(message.find("ENTRY") == 0)
+            filename = (*itr).entry.fileName.c_str();
+        else if(message.find("DOO") == 0)
+            filename = (*itr).doo.fileName.c_str();
+        else if(message.find("EXIT") == 0)
+            filename = (*itr).exit.fileName.c_str();
+    }
+
+    if(rfsm.getFileName() != filename.toStdString()) {
+        QString source;
+        loadrFSMSourceCode(filename.toStdString(), source);
+        sourceWindow->setSourceCode(source);
+    }
+
+    filename = QFileInfo(filename).fileName();
+    QRegularExpression re(filename + ":(.*):");
+    QRegularExpressionMatch match = re.match(message.c_str(), 1);
+    if (match.hasMatch()) {
+        QStringList strlist =  match.captured(0).split(":");
+        if(strlist.size() > 1)
+            line = strlist[1].toInt() - 1;
+    }
+
+    sourceWindow->setErrorMessage(message.c_str(), line);
+    sourceWindow->setReadOnly((machineMode != MainWindow::IDLE)
+                                          && (machineMode != MainWindow::UNLOADED));
+    sourceWindow->show();
+}
+
+void MainWindow::onPostStep(const std::string prevState, const std::string currentState) {
+    if(prevState != currentState) {
+        string msg = "Transited from <"+ prevState + "> to <"+ currentState + ">";
+        QTime qt = QTime::currentTime();
+        QTreeWidgetItem* item;
+        QStringList message;
+        message.clear();
+        message.append(qt.toString());
+        message.append(msg.c_str());
+        item = new QTreeWidgetItem(ui->nodesTreeWidgetLog, message);
+        ui->nodesTreeWidgetLog->scrollToBottom();
+        //////////////////////////////////////////////////////
+        setNodeActiveMode(prevState, false);
+        setNodeActiveMode(currentState, true);
+    }
+}
+
+void MainWindow::setNodeActiveMode(const std::string &name, bool mode) {
+    if(!name.size() || (name == "<none>"))
+        return;
+
+    QStringList pieces = QString(name.c_str()).split( "." );
+    std::string subName;
+    for(int i=0; i<pieces.size(); i++) {
+        subName = subName + pieces[i].toStdString();
+        QGVSubGraph* sgraph = getParent(subName);
+        if(sgraph != NULL) {
+            sgraph->setActive(mode);
+            sgraph->update();
+        }
+        subName += ".";
+    }
+    QGVNode* node = getNode(name);
+    if(node == NULL)
+        node = getNode(name+".initial");
+    Q_ASSERT(node != NULL);
+    node->setActive(mode);
+    node->update();
+    if(mode)
+        ui->graphicsView->centerOn(node);
+}
+
 
 void MainWindow::showStatusBarMessage(const QString& message,
                                       QColor color) {
