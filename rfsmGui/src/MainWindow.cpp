@@ -357,6 +357,8 @@ void MainWindow::drawStateMachine() {
 
 bool MainWindow::loadrFSM(const std::string filename) {
 
+    ui->nodesTreeWidgetLog->clear();
+
     // loading the source code
     QString source;
     if(!loadrFSMSourceCode(filename, source))
