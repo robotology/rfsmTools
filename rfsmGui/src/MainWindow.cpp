@@ -590,7 +590,10 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         reply = QMessageBox::question(this, "Quit", "State machine is running.\n Do you want to stop it and exit?",
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
+        {
+            event->ignore();
             return;
+        }
     }
     // save setting
     saveSetting();
