@@ -17,7 +17,7 @@ NewRFSMDialog::NewRFSMDialog(QWidget *parent) :
     ui->setupUi(this);
 
     ui->filenameEdit->setPlaceholderText("File name");
-    ui->descriptionEdit->setPlaceholderText("Created using rFSM Gui");
+    ui->descriptionEdit->setPlaceholderText("Created using rFSMGui");
     QString authors=qgetenv("USERNAME");
     if(!authors.size())
         authors=qgetenv("USER");

@@ -908,9 +908,12 @@ void MainWindow::onQuit() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    string message="State machine is running.\nDo you want to stop it and exit?";
+    if(machineMode==BUILDER)
+        message="Changes has not been saved.\nDo you want to close and discard them?";
     if(machineMode != IDLE && machineMode != UNLOADED) {
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Quit", "State machine is running.\n Do you want to stop it and exit?",
+        reply = QMessageBox::question(this, "Quit", message.c_str(),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
         {
@@ -928,7 +931,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 
 void MainWindow::onAbout() {
-    QMessageBox::about(this, "rFSM Gui (version 1.0.0)",
+    QMessageBox::about(this, "rFSMGui (version 1.0.0)",
                        "A graphical tool for running and debuging rFSM state machines\n\nAuthors:\n\t-Ali Paikan <ali.paikan@iit.it>\n\t-Nicolò Genesio <nicolo.genesio@iit.it>");
 }
 
