@@ -499,7 +499,8 @@ void MainWindow::onRunStoprFSM() {
 }
 
 void MainWindow::onFsmStopped() {
-    switchMachineMode(IDLE);
+    if(machineMode!=PAUSE)
+        switchMachineMode(IDLE);
 }
 
 void MainWindow::onRunPauserFSM() {    
