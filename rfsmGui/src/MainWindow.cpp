@@ -494,18 +494,24 @@ void MainWindow::onRunStoprFSM() {
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
         return;
-
-    rfsm.stop();
+	if(machineMode == PAUSE)
+		switchMachineMode(IDLE);
+	else {
+		switchMachineMode(ASK_STOP);
+		rfsm.stop();
+	}
 }
 
 void MainWindow::onFsmStopped() {
-    if(machineMode!=PAUSE)
+    if(machineMode == ASK_STOP)
         switchMachineMode(IDLE);
+	else if(machineMode == ASK_PAUSE)
+		switchMachineMode(PAUSE);
 }
 
 void MainWindow::onRunPauserFSM() {    
-    rfsm.stop();
-    switchMachineMode(PAUSE);
+	switchMachineMode(ASK_PAUSE);
+    rfsm.stop();    
     showStatusBarMessage("Paused!", Qt::darkYellow);
 }
 
