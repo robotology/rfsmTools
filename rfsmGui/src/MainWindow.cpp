@@ -1323,9 +1323,9 @@ void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
     sourceCode.push_back("--");
     sourceCode.push_back("\n\n--States");
     sourceCode.push_back("return rfsm.state {");
+    //writing states
     for(int i=0; i<graph.states.size();i++)
     {
-        //writing states
         QGVSubGraph *sgraphParent = getParent(graph.states[i].name);
         if(sgraphParent == NULL)
         {
