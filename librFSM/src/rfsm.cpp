@@ -479,7 +479,6 @@ bool StateMachine::setStateCallback(const string &state, rfsm::StateCallback& ca
 
 const std::string StateMachine::getCurrentState() {
     if(!mPriv->isrFSMLoaded()) {
-        yError()<<"StateMachine has not been initialized. call StateMachine::load()"<<ENDL;
         return "";
     }
 
