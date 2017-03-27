@@ -767,8 +767,8 @@ void MainWindow::onError(const string message, const string currentState) {
         }
     }
 
-    if(sourceWindow->isVisible())
-        return;
+//    if(sourceWindow->isVisible())
+//        return;
 
     if(machineMode == MainWindow::RUN)
         switchMachineMode(MainWindow::PAUSE);
