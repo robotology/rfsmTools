@@ -47,6 +47,7 @@ signals:
 public slots:
     void execute();
     void onThreadFinished();
+    void onThreadStarted();
 
 public:
     void start();

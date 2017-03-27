@@ -47,20 +47,19 @@ MyStateMachine::MyStateMachine(MainWindow* mainWnd)
 
     thread = new QThread();    
     this->moveToThread(thread);
-    timer = new QTimer();
-    connect(timer, SIGNAL(timeout()), this, SLOT(execute()));
+
     connect(thread, SIGNAL(finished()), this, SLOT(onThreadFinished()));
+    connect(thread, SIGNAL(started()), this, SLOT(onThreadStarted()));
 }
 
 MyStateMachine::~MyStateMachine() {
-    delete timer;
-    delete thread;
+    if(thread)
+        delete thread;
 }
 
 
 void MyStateMachine::execute() {
-    if(stopped) {        
-        timer->stop();
+    if(stopped) {
         thread->quit();
         return;
     }
@@ -74,18 +73,27 @@ void MyStateMachine::execute() {
 
 void MyStateMachine::onThreadFinished() {
     emit fsmStopped();
+    timer->stop();
+    if(timer)
+        delete timer;
+}
+
+void MyStateMachine::onThreadStarted(){
+    timer = new QTimer();
+    connect(timer, SIGNAL(timeout()), this, SLOT(execute()));
+    timer->start(runPeriod);
 }
 
 void MyStateMachine::start() {
     stopped = false;
     mutex.lock();
     thread->start();
-    timer->start(runPeriod);
     mutex.unlock();
 }
 
 void MyStateMachine::stop() {
     stopped = true;
+    return;
 }
 
 void MyStateMachine::close() {
