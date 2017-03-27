@@ -111,6 +111,8 @@ private:
     std::string getPureStateName(const std::string& name);
     void saveSetting();    
     void setNodeActiveMode(const std::string &name, bool mode);
+    void writeLuaFile(std::vector<std::string> &sourceCode);
+    std::string writeChild(std::string stateName);
 
 private slots:
     void nodeContextMenu(QGVNode* node);

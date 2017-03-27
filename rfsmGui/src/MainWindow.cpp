@@ -27,6 +27,7 @@
 #include "newrfsmdialog.h"
 #include <QActionGroup>
 #include <QMutexLocker>
+#include <QTextStream>
 
 #ifdef USE_YARP
     #include <yarp/os/ResourceFinder.h>
@@ -452,7 +453,7 @@ bool MainWindow::loadrFSM(const std::string fname) {
         return false;
     }
 
-    // enablng hooks
+    // enabling hooks
     rfsm.enablePostStepHook();
     rfsm.catchPrintOutput();
 
@@ -527,6 +528,22 @@ void MainWindow::onSaverFSM(){
     switchMachineMode(IDLE);
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
+    QFile file(this->fileName);
+    vector<string> sourceCode;
+    writeLuaFile(sourceCode);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + this->fileName.toStdString()).c_str()));
+        return;
+    }
+    QTextStream outStream(&file);
+    for(size_t i=0; i<sourceCode.size(); i++){
+        outStream<<QString(sourceCode[i].c_str())+"\n";
+    }
+    file.close();
+    initScene();
+    rfsm.close();
+    loadrFSM(this->fileName.toStdString());
+
     ui->statusBar->showMessage((fileName.toStdString()+" saved successfully").c_str());
     //remember to set the stato to UNLOADED if the saving fails
 }
@@ -993,6 +1010,9 @@ void MainWindow::onSceneMouseReleased(QPointF pos) {
             bool shouldConnect = (source != target);
             shouldConnect &= (target.find(".end") == string::npos);
 
+            if(target == "initial")
+                shouldConnect=false;
+
             if(target.find(".initial") != string::npos)
                 shouldConnect &= (getParent(target) != getParent(source));
 
@@ -1023,7 +1043,17 @@ void MainWindow::onSceneMouseMove(QPointF pos) {
         line->setLine(newLine);
         QGraphicsItem *item = scene->itemAt(pos, QTransform());
         if(item && (item->type() == QGVSubGraph::Type || item->type() == QGVNode::Type))
+        {
+            if(item->type() == QGVNode::Type)
+            {
+                QGVNode* node = qgraphicsitem_cast<QGVNode*>(item);
+                if(node->getAttribute("rawname").toStdString()=="initial")
+                {
+                    QApplication::setOverrideCursor(Qt::ForbiddenCursor);
+                }
+            }
             QApplication::setOverrideCursor(Qt::CrossCursor);
+        }
         else
             QApplication::setOverrideCursor(Qt::ForbiddenCursor);
     }
@@ -1257,6 +1287,96 @@ void MainWindow::setNodeActiveMode(const std::string &name, bool mode) {
     node->update();
     if(mode)
         ui->graphicsView->centerOn(node);
+}
+
+string MainWindow::writeChild(std::string stateName)
+{
+    string res="";
+    for(int i=0;i<graph.states.size();i++)
+        if(graph.states[i].name==stateName+"."+getPureStateName(graph.states[i].name)){
+//            cout<<graph.states[i].name<<" "<<graph.states[i].type<<endl;
+            if(graph.states[i].type=="single"){
+                res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{ },\n\t";
+            }
+            else if(graph.states[i].type=="connector"
+                    && graph.states[i].name.find("initial") == string::npos
+                    && graph.states[i].name.find("end") == string::npos)
+                res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.conn{ },\n\t";
+            else if(graph.states[i].type == "composit")
+            {
+                res +=  "\t" + getPureStateName(graph.states[i].name) +" = rfsm.csta{\n\t";
+                res += "\tinitial = rfsm.conn{},\n";
+                res += "\t" + writeChild(graph.states[i].name);
+                res += "\t },\n";
+            }
+        }
+    return res;
+}
+
+void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
+    //writing the header
+    sourceCode.clear();
+    sourceCode.push_back("--");
+    sourceCode.push_back("-- Authors: " + authors.toStdString());
+    sourceCode.push_back("-- Version: " + version.toStdString());
+    sourceCode.push_back("-- " + description.toStdString());
+    sourceCode.push_back("--");
+    sourceCode.push_back("\n\n--States");
+    sourceCode.push_back("return rfsm.state {");
+    for(int i=0; i<graph.states.size();i++)
+    {
+        //writing states
+        QGVSubGraph *sgraphParent = getParent(graph.states[i].name);
+        if(sgraphParent == NULL)
+        {
+            if(graph.states[i].type == "single")
+                sourceCode.push_back("  " + getPureStateName(graph.states[i].name) + " = rfsm.sista{ },");
+            else if(graph.states[i].type == "connector"
+                    && graph.states[i].name.find("initial") == string::npos
+                    && graph.states[i].name.find("end") == string::npos)
+                sourceCode.push_back("  " + getPureStateName(graph.states[i].name) + " = rfsm.conn{ },");
+            else if(graph.states[i].type == "composit")
+            {
+                sourceCode.push_back("  " + getPureStateName(graph.states[i].name) + " = rfsm.csta{");
+                sourceCode.push_back("  initial = rfsm.conn{},");
+                sourceCode.push_back("\t" + writeChild(graph.states[i].name));
+                sourceCode.push_back("  },");
+            }
+
+        }
+
+    }
+    sourceCode.push_back("\n\n--Transitions");
+    //writing transitions
+    for(int i=0;i<graph.transitions.size();i++)
+    {
+        string source=graph.transitions[i].source;
+        string target=graph.transitions[i].target;
+        size_t pos=source.find_first_of(".end");
+        if(pos != string::npos)
+            source.substr(0,pos);
+        pos=target.find_first_of(".end");
+        if(pos != string::npos)
+            target.substr(0,pos);
+        string line="  rfsm.trans{ src = '" + source + "', tgt = '" + target + "'";
+        if(graph.transitions[i].events.size()!=0)
+        {
+            line += ", events = {";
+            for(int j=0;j<graph.transitions[i].events.size();j++)
+            {
+                line += "\""+ graph.transitions[i].events[j] + "\"";
+                if(j != graph.transitions[i].events.size()-1)
+                    line += ",";
+            }
+            line += "}";
+
+        }
+        line += " },";
+        sourceCode.push_back(line);
+    }
+
+    sourceCode.push_back("}");
+
 }
 
 
