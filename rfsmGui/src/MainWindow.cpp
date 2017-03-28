@@ -136,7 +136,7 @@ void MyStateMachine::onInfo(const string message) {
 /************************************************/
 MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     parser(prsr), QMainWindow(parent),
-    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED), line(NULL)
+    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED), line(NULL), isNew(false)
 {
     ui->setupUi(this);
 
@@ -305,6 +305,7 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
     scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
     scene->setGraphAttribute("remincross", "true");
     scene->setGraphAttribute("rankdir", "TD");
+    scene->setGraphAttribute("fixedsize","false");
     scene->setGraphAttribute("bgcolor", "#2e3e56");
     //scene->setGraphAttribute("concentrate", "true"); //Error !
     scene->setGraphAttribute("nodesep", "0.7");
@@ -436,6 +437,7 @@ bool MainWindow::loadrFSM(const std::string fname) {
     std::string filename = finfo.absoluteFilePath().toStdString();
 
     // loading the source code
+    watcher->addPath(filename.c_str());
     QString source;
     if(!loadrFSMSourceCode(filename, source))
         return false;
@@ -473,9 +475,9 @@ bool MainWindow::loadrFSM(const std::string fname) {
     graph = rfsm.getStateGraph();
     graphEditor.setGraph(graph);
     drawStateMachine(graph);
-    switchMachineMode(IDLE);    
+    switchMachineMode(IDLE);
+    fileName=QString(filename.c_str());
     showStatusBarMessage(("Loaded " + filename).c_str());
-    watcher->addPath(filename.c_str());
     return true;
 }
 
@@ -505,6 +507,7 @@ void MainWindow::onNewrFSM() {
     }
     if(!dialog.exec())
         return;
+    isNew=true;
     fileName = dialog.getFileName();
     authors = dialog.getAuthors();
     description = dialog.getDescription();
@@ -530,21 +533,44 @@ void MainWindow::onSaverFSM(){
     ui->action_LoadrFSM->setEnabled(true);
     QFile file(this->fileName);
     vector<string> sourceCode;
+    if(!isNew){
+    // if it is not a new rfsm it doesn't add the default header, it keeps everything is before "return rfsm.state{"
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + this->fileName.toStdString()).c_str()));
+            return;
+        }
+        QTextStream inputStream(&file);
+        while(!inputStream.atEnd()){
+            QString line=inputStream.readLine();
+            QString tmp=line.simplified();
+            tmp.replace(" ","");
+            if(tmp.contains("returnrfsm.state"))
+                break;
+            sourceCode.push_back(line.toStdString());
+        }
+        file.close();
+    }
+
     writeLuaFile(sourceCode);
+
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + this->fileName.toStdString()).c_str()));
         return;
     }
+
+
     QTextStream outStream(&file);
     for(size_t i=0; i<sourceCode.size(); i++){
         outStream<<QString(sourceCode[i].c_str())+"\n";
     }
+    watcher->removePath(this->fileName);
     file.close();
     initScene();
     rfsm.close();
     loadrFSM(this->fileName.toStdString());
 
     ui->statusBar->showMessage((fileName.toStdString()+" saved successfully").c_str());
+    isNew=false;
     //remember to set the stato to UNLOADED if the saving fails
 }
 
@@ -617,12 +643,12 @@ void MainWindow::onRunStoprFSM() {
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
         return;
-	if(machineMode == PAUSE)
-		switchMachineMode(IDLE);
-	else {
-		switchMachineMode(ASK_STOP);
-		rfsm.stop();
-	}
+    if(machineMode == PAUSE)
+        switchMachineMode(IDLE);
+    else {
+        switchMachineMode(ASK_STOP);
+        rfsm.stop();
+    }
 }
 
 void MainWindow::onFsmStopped() {
@@ -1019,8 +1045,13 @@ void MainWindow::onSceneMouseReleased(QPointF pos) {
             if(target.find(".initial") != string::npos)
                 shouldConnect &= (getParent(target) != getParent(source));
 
-            if(source.find(".initial") != string::npos)
-                shouldConnect &= (getParent(target) == getParent(source));
+            size_t pos = source.find(".initial");
+
+            if(pos != string::npos){
+                string tmp = source.substr(0,pos);
+                shouldConnect &= (getParent(target) == getParent(source))
+                        || getParent(target)->getAttribute("rawname").contains(QString((tmp+".").c_str())); //it means that target is child of source
+            }
 
             if(shouldConnect) {
                 size_t idx = source.find(".end");
@@ -1292,14 +1323,60 @@ void MainWindow::setNodeActiveMode(const std::string &name, bool mode) {
         ui->graphicsView->centerOn(node);
 }
 
-string MainWindow::writeChild(std::string stateName)
+std::string MainWindow::readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode &func)
 {
-    string res="";
+    string res = "\t";
+    if(func.startLine != -1
+            && func.endLine != -1
+            && func.fileName != "")
+    {
+        QFile file(QString(func.fileName.c_str()));
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            return "";
+        }
+        QTextStream inStream(&file);
+        int line=1;
+        while(!inStream.atEnd()) {
+            QString tmp = inStream.readLine();
+            if(line >= func.startLine
+                    && line <= func.endLine){
+                res += "\t";
+                res += tmp.trimmed().toStdString() + "\n\t";
+            }
+            line++;
+        }
+        file.close();
+    }
+    return res;
+}
+
+string MainWindow::getStateFunctionsCode(const rfsm::StateGraph::State& st){
+    string entry="", doo="", exit="";
+
+    entry = readLuaFuncCode(st.entry);
+    entry += ((entry=="\t") ?  "" : "\n");
+
+    doo = readLuaFuncCode(st.doo);
+    doo += ((doo=="\t") ?  "" : "\n");
+
+    exit = readLuaFuncCode(st.exit);
+    exit += ((exit=="\t") ?  "" : "\n");
+
+    return entry + doo + exit;
+
+
+}
+
+string MainWindow::writeChild(const std::string stateName)
+{
+    string res="\t";
     for(int i=0;i<graph.states.size();i++)
         if(graph.states[i].name==stateName+"."+getPureStateName(graph.states[i].name)){
 //            cout<<graph.states[i].name<<" "<<graph.states[i].type<<endl;
             if(graph.states[i].type=="single"){
-                res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{ },\n\t";
+                res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{\n";
+                res += getStateFunctionsCode(graph.states[i]) + "\n\t";
+                res += "\t},\n\t";
             }
             else if(graph.states[i].type=="connector"
                     && graph.states[i].name.find("initial") == string::npos
@@ -1309,6 +1386,7 @@ string MainWindow::writeChild(std::string stateName)
             {
                 res +=  "\t" + getPureStateName(graph.states[i].name) +" = rfsm.csta{\n\t";
                 res += "\tinitial = rfsm.conn{},\n";
+                res += "\t" + getStateFunctionsCode(graph.states[i]) + "\n\t";
                 res += "\t" + writeChild(graph.states[i].name);
                 res += "\t },\n";
             }
@@ -1318,32 +1396,38 @@ string MainWindow::writeChild(std::string stateName)
 
 void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
     //writing the header
-    sourceCode.clear();
-    sourceCode.push_back("--");
-    sourceCode.push_back("-- Authors: " + authors.toStdString());
-    sourceCode.push_back("-- Version: " + version.toStdString());
-    sourceCode.push_back("-- " + description.toStdString());
-    sourceCode.push_back("--");
-    sourceCode.push_back("\n\n--States");
+    if(isNew){
+        sourceCode.push_back("--");
+        sourceCode.push_back("-- Authors: " + authors.toStdString());
+        sourceCode.push_back("-- Version: " + version.toStdString());
+        sourceCode.push_back("-- " + description.toStdString());
+        sourceCode.push_back("--");
+    }
     sourceCode.push_back("return rfsm.state {");
     //writing states
+    sourceCode.push_back("\n\n--States");
     for(int i=0; i<graph.states.size();i++)
     {
         QGVSubGraph *sgraphParent = getParent(graph.states[i].name);
         if(sgraphParent == NULL)
         {
             if(graph.states[i].type == "single")
-                sourceCode.push_back("  " + getPureStateName(graph.states[i].name) + " = rfsm.sista{ },");
+            {
+                sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{");
+                sourceCode.push_back(getStateFunctionsCode(graph.states[i]));
+                sourceCode.push_back("\t},");
+            }
             else if(graph.states[i].type == "connector"
                     && graph.states[i].name.find("initial") == string::npos
                     && graph.states[i].name.find("end") == string::npos)
-                sourceCode.push_back("  " + getPureStateName(graph.states[i].name) + " = rfsm.conn{ },");
+                sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.conn{ },");
             else if(graph.states[i].type == "composit")
             {
-                sourceCode.push_back("  " + getPureStateName(graph.states[i].name) + " = rfsm.csta{");
-                sourceCode.push_back("  initial = rfsm.conn{},");
-                sourceCode.push_back("\t" + writeChild(graph.states[i].name));
-                sourceCode.push_back("  },");
+                sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.csta{");
+                sourceCode.push_back("\tinitial = rfsm.conn{},");
+                sourceCode.push_back(getStateFunctionsCode(graph.states[i]));
+                sourceCode.push_back(writeChild(graph.states[i].name));
+                sourceCode.push_back("\t},");
             }
 
         }

@@ -111,8 +111,10 @@ private:
     std::string getPureStateName(const std::string& name);
     void saveSetting();    
     void setNodeActiveMode(const std::string &name, bool mode);
+    std::string readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode& func);
+    std::string getStateFunctionsCode(const rfsm::StateGraph::State& st);
+    std::string writeChild(const std::string stateName);
     void writeLuaFile(std::vector<std::string> &sourceCode);
-    std::string writeChild(std::string stateName);
 
 private slots:
     void nodeContextMenu(QGVNode* node);
@@ -177,6 +179,7 @@ private:
     QGraphicsLineItem *line;
     rfsm::StateGraph graph;
     StateGraphEditor graphEditor;
+    bool isNew;
 
 };
 
