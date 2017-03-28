@@ -416,6 +416,9 @@
    <property name="text">
     <string>&amp;Save project</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionOrthogonal">
    <property name="checkable">
@@ -550,6 +553,9 @@
    </property>
    <property name="text">
     <string>&amp;New rFSM...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="action_Single_State">
