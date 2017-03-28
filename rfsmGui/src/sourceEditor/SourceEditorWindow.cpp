@@ -3,7 +3,6 @@
 #include "SourceEditorWindow.h"
 #include "ui_SourceEditorWindow.h"
 #include <QMessageBox>
-#include <QShortcut>
 #include <QCloseEvent>
 #include <QFontDialog>
 #include <QSettings>
@@ -30,10 +29,6 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
     connect(ui->textEdit, SIGNAL(textChanged()),this,SLOT(onTextChanged()));
     connect(ui->action_Font, SIGNAL(triggered()),this,SLOT(onFontChanged()));
 
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this, SLOT(onSave()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(onClose()));
-
-
 }
 
 SourceEditorWindow::~SourceEditorWindow()
@@ -57,13 +52,6 @@ void SourceEditorWindow::setSourceCode(const QString& sourceCode){
 
 void SourceEditorWindow::closeEvent(QCloseEvent *event)
 {
-    onClose();
-    QWidget::closeEvent(event);
-}
-
-void SourceEditorWindow::onClose() {
-
-    //if((sourceCode != ui->textEdit->toPlainText())) {
     if(ui->action_Save->isEnabled()) {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Close", "The source code has been changed.\n Do you want to save it?",
@@ -72,7 +60,14 @@ void SourceEditorWindow::onClose() {
             onSave();
         }
     }
+
+    QWidget::closeEvent(event);
+}
+
+void SourceEditorWindow::onClose() {
+
     SourceEditorWindow::close();
+
 }
 
 
@@ -134,6 +129,5 @@ void SourceEditorWindow::onFontChanged() {
         settings.setValue("editor-font-size", font.pointSize());
     }
 }
-
 
 

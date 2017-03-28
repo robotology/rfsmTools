@@ -39,6 +39,7 @@ private:
     Ui::SourceEditorWindow *ui;
     Highlighter *highlighter;
 
+
 };
 
 #endif // SOURCEEDITORWINDOW_H
