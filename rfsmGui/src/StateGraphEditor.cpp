@@ -38,14 +38,18 @@ void StateGraphEditor::addState(const string name, const string type)
     StateGraph::State state;
     state.type = type;
     state.name = name;
+    if(find(graph->states.begin(),graph->states.end(),state) != graph->states.end())
+        return;
     if(graph->states.size() == 0){
         StateGraph::State initial;
         initial.name="initial";
         initial.type="connector";
         graph->states.push_back(initial);
+        if(state.type == "composit")
+            addTransition(initial.name, state.name + ".initial");
+        else if (state.type == "single")
+            addTransition(initial.name, state.name);
     }
-    if(find(graph->states.begin(),graph->states.end(),state) != graph->states.end())
-        return;
     graph->states.push_back(state);
     if(state.type == "composit")
         addState(name + ".initial", "connector");
