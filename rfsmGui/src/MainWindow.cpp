@@ -1384,11 +1384,22 @@ string MainWindow::writeChild(const std::string stateName)
                 res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.conn{ },\n\t";
             else if(graph.states[i].type == "composit")
             {
-                res +=  "\t" + getPureStateName(graph.states[i].name) +" = rfsm.csta{\n\t";
-                res += "\tinitial = rfsm.conn{},\n";
-                res += "\t" + getStateFunctionsCode(graph.states[i]) + "\n\t";
-                res += "\t" + writeChild(graph.states[i].name);
-                res += "\t },\n";
+                string childCode = writeChild(graph.states[i].name);
+                if(childCode != "\t")
+                {
+                    res +=  "\t" + getPureStateName(graph.states[i].name) +" = rfsm.csta{\n\t";
+                    res += "\tinitial = rfsm.conn{},\n";
+                    res += "\t" + getStateFunctionsCode(graph.states[i]) + "\n\t";
+                    res += "\t" + childCode;
+                    res += "\t },\n";
+                }
+                else // the composite state is empty, it becomes a single state for avoiding rfsm errors.
+                {
+                    res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{\n";
+                    res += getStateFunctionsCode(graph.states[i]) + "\n\t";
+                    res += "\t},\n\t";
+                    graphEditor.updateTransitions(graph.states[i].name + ".initial", graph.states[i].name);
+                }
             }
         }
     return res;
@@ -1423,11 +1434,21 @@ void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
                 sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.conn{ },");
             else if(graph.states[i].type == "composit")
             {
-                sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.csta{");
-                sourceCode.push_back("\tinitial = rfsm.conn{},");
-                sourceCode.push_back(getStateFunctionsCode(graph.states[i]));
-                sourceCode.push_back(writeChild(graph.states[i].name));
-                sourceCode.push_back("\t},");
+                string childCode = writeChild(graph.states[i].name);
+                if(childCode != "\t"){
+                    sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.csta{");
+                    sourceCode.push_back("\tinitial = rfsm.conn{},");
+                    sourceCode.push_back(getStateFunctionsCode(graph.states[i]));
+                    sourceCode.push_back(childCode);
+                    sourceCode.push_back("\t},");
+                }
+                else // the composite state is empty, it becomes a single state for avoiding rfsm errors.
+                {
+                    sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{");
+                    sourceCode.push_back(getStateFunctionsCode(graph.states[i]));
+                    sourceCode.push_back("\t},");
+                    graphEditor.updateTransitions(graph.states[i].name + ".initial", graph.states[i].name);
+                }
             }
 
         }

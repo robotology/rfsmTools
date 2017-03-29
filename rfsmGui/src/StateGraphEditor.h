@@ -72,6 +72,13 @@ public:
                           const std::string target,
                           std::vector<std::string> events=std::vector<std::string>());
     /**
+     * @brief updateTransitions, updates all the transitions linked to a state that changed name
+     * @param oldName, old name of the state
+     * @param newName, new name of the state
+     */
+    void updateTransitions(const std::string oldName, const std::string newName);
+
+    /**
      * @brief addEvent, add a single event or more events separated by ',' for a transition defined
      * by source and target state name and events(optional)
      * @param source
@@ -97,10 +104,4 @@ private:
      */
     rfsm::StateGraph::TransitionItr getTransition(const std::string stateName, bool from,
                           std::vector<std::string> events=std::vector<std::string>());
-    /**
-     * @brief updateTransitions, updates all the transitions linked to a state that changed name
-     * @param oldName, old name of the state
-     * @param newName, new name of the state
-     */
-    void updateTransitions(const std::string oldName, const std::string newName);
 };
