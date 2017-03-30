@@ -7,6 +7,13 @@
 
 return rfsm.state {
     Configure = rfsm.csta {
+        entry = function()
+            print("entry() of Configure (hello from Lua)")
+        end,
+
+        exit  = function()
+            print("exit() of Configure (hello from Lua)")
+        end,
         Software = rfsm.csta{
 			Initialize = rfsm.sista{},
 			Run = rfsm.sista{ },

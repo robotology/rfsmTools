@@ -283,6 +283,10 @@ void MainWindow::drawStateMachine() {
             sgraph->setAttribute("fillcolor", "#2e3e56");
             sgraph->setAttribute("style", "filled");
             sgraph->setAttribute("color", "#edad56");
+            sgraph->setAttribute("rawname", graph.states[i].name.c_str());
+            sgraph->setAttribute("entry", graph.states[i].entry.fileName.c_str());
+            sgraph->setAttribute("doo", graph.states[i].doo.fileName.c_str());
+            sgraph->setAttribute("exit", graph.states[i].exit.fileName.c_str());
             sceneSubGraphMap[graph.states[i].name] = sgraph;
             // adding end node
             std::string endNodeName = graph.states[i].name + ".end";

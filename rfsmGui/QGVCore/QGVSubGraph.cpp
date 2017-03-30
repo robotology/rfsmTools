@@ -109,6 +109,18 @@ void QGVSubGraph::paint(QPainter * painter, const QStyleOptionGraphicsItem * opt
     font.setBold(true);
     painter->setFont(font);
     painter->drawText(_label_rect, Qt::AlignCenter, _label);
+    QString callbacks;
+    if(getAttribute("entry").size())
+        callbacks += "+ entry()";
+    if(getAttribute("doo").size())
+        callbacks += "\n+ doo()";
+    if(getAttribute("exit").size())
+        callbacks += "\n+ exit()";
+    QRectF rect;
+    rect= boundingRect().adjusted(2,45,-2,-2); //Margin
+    font.setBold(false);
+    painter->setFont(font);
+    painter->drawText(rect, Qt::AlignTop | Qt::AlignLeft , callbacks);
     painter->drawLine(QPointF(0, 25), QPointF(_width, 25));
     painter->restore();
 }
