@@ -94,18 +94,30 @@ void SourceEditorWindow::showStatusBarMessage(const QString& message,
     statusBar()->setPalette(palette);
 }
 
-void SourceEditorWindow::setErrorMessage(const QString& message, const int line) {
-    showStatusBarMessage(message, Qt::darkRed);    
+void SourceEditorWindow::goToLine(const int line, bool errored)
+{
     QTextEdit::ExtraSelection highlight;
     highlight.cursor = ui->textEdit->textCursor();
     highlight.cursor.setPosition(0);
     highlight.cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, line);
     ui->textEdit->setTextCursor(highlight.cursor);
     highlight.format.setProperty(QTextFormat::FullWidthSelection, true);
-    highlight.format.setBackground( QColor("#FA8072") );
+    QColor lineColor;
+    if(errored)
+        lineColor = QColor("#FA8072");
+    else
+        lineColor = QColor(Qt::yellow).lighter(160);
+    highlight.format.setBackground(lineColor);
     QList<QTextEdit::ExtraSelection> extras;
     extras << highlight;
     ui->textEdit->setExtraSelections( extras );
+
+}
+
+void SourceEditorWindow::setErrorMessage(const QString& message, const int line) {
+    showStatusBarMessage(message, Qt::darkRed);
+    goToLine(line,true);
+
 }
 
 void SourceEditorWindow::setReadOnly(bool flag) {

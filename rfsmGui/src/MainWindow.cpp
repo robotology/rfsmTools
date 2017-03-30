@@ -337,6 +337,9 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
             sgraph->setAttribute("entry", graph.states[i].entry.fileName.c_str());
             sgraph->setAttribute("doo", graph.states[i].doo.fileName.c_str());
             sgraph->setAttribute("exit", graph.states[i].exit.fileName.c_str());
+            sgraph->setAttribute("lineEntry",QString::number(graph.states[i].entry.startLine));
+            sgraph->setAttribute("lineDoo",QString::number(graph.states[i].doo.startLine));
+            sgraph->setAttribute("lineExit",QString::number(graph.states[i].exit.startLine));
             sceneSubGraphMap[graph.states[i].name] = sgraph;
             // adding end node
             std::string endNodeName = graph.states[i].name + ".end";
@@ -382,6 +385,9 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
                 node->setAttribute("entry", graph.states[i].entry.fileName.c_str());
                 node->setAttribute("doo", graph.states[i].doo.fileName.c_str());
                 node->setAttribute("exit", graph.states[i].exit.fileName.c_str());
+                node->setAttribute("lineEntry",QString::number(graph.states[i].entry.startLine));
+                node->setAttribute("lineDoo",QString::number(graph.states[i].doo.startLine));
+                node->setAttribute("lineExit",QString::number(graph.states[i].exit.startLine));
             }
             // use this for error : #FA8072     
             node->setAttribute("rawname", graph.states[i].name.c_str());
@@ -774,9 +780,28 @@ void MainWindow::nodeContextMenu(QGVNode *node)
     menu.addAction(tr("Rename"));
     menu.addSeparator();
     menu.addAction(tr("Delete"));
+    if(node->getAttribute("entry").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit entry()"));
+    }
+    if(node->getAttribute("doo").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit doo()"));
+    }
+    if(node->getAttribute("exit").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit exit()"));
+    }
+
     QAction *action = menu.exec(QCursor::pos());
     if(action == 0)
         return;
+
+    //delete
+
     if(action->text().toStdString() == "Delete") {
         graphEditor.removeState(node->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
@@ -784,6 +809,9 @@ void MainWindow::nodeContextMenu(QGVNode *node)
         return;
 
     }
+
+    //rename
+
     if(action->text().toStdString() == "Rename")
     {
         bool ok;
@@ -829,6 +857,44 @@ void MainWindow::nodeContextMenu(QGVNode *node)
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
+    //edit entry
+    if(action->text().toStdString() == "Edit entry()")
+    {
+        int line=(node->getAttribute("lineEntry")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(node->getAttribute("entry").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source);
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
+    }
+
+    //edit doo
+    if(action->text().toStdString() == "Edit doo()")
+    {
+        int line=(node->getAttribute("lineDoo")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(node->getAttribute("doo").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source);
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
+    }
+
+    //edit exit
+    if(action->text().toStdString() == "Edit exit()")
+    {
+        int line=(node->getAttribute("lineExit")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(node->getAttribute("exit").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source);
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
+    }
 }
 
 void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
@@ -840,14 +906,35 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
     menu.addAction(tr("Rename"));
     menu.addSeparator();
     menu.addAction(tr("Delete"));
+    if(sgraph->getAttribute("entry").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit entry()"));
+    }
+    if(sgraph->getAttribute("doo").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit doo()"));
+    }
+    if(sgraph->getAttribute("exit").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit exit()"));
+    }
     QAction *action = menu.exec(QCursor::pos());
     if(action == 0)
         return;
+
+    //delete
+
     if(action->text().toStdString() == "Delete") {
         graphEditor.removeState(sgraph->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
+
+    //rename
+
     if(action->text().toStdString() == "Rename")
     {
         bool ok;
@@ -888,6 +975,45 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
         graphEditor.renameState(sgraph->getAttribute("rawname").toStdString(), newName.toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
+    }
+
+    //edit entry
+    if(action->text().toStdString() == "Edit entry()")
+    {
+        int line=(sgraph->getAttribute("lineEntry")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(sgraph->getAttribute("entry").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source);
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
+    }
+
+    //edit doo
+    if(action->text().toStdString() == "Edit doo()")
+    {
+        int line=(sgraph->getAttribute("lineDoo")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(sgraph->getAttribute("doo").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source);
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
+    }
+
+    //edit exit
+    if(action->text().toStdString() == "Edit exit()")
+    {
+        int line=(sgraph->getAttribute("lineExit")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(sgraph->getAttribute("exit").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source);
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
     }
 
 }
