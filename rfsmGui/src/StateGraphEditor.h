@@ -94,6 +94,14 @@ public:
      */
     void clearEvents(const std::string source,
                      const std::string target);
+    /**
+     * @brief getEvents get all the events related to a rfsm::StateGraph::Transition
+     * @param source, name of the source state
+     * @param target, name of the target state
+     * @return the vector containing the events that trigger the rfsm::StateGraph::Transition tr
+     */
+    std::vector<std::string> getEvents(const std::string source,
+                                       const std::string target);
 private:
     /**
      * @brief getTransition, return the first transition from/to a given state

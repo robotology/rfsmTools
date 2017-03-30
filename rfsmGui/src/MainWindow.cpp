@@ -534,6 +534,11 @@ void MainWindow::onNewrFSM() {
 }
 
 void MainWindow::onSaverFSM(){
+    if(!isInitialConnected())
+    {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Initial state is not connected.\nPlease connect it before saving").c_str()));
+        return;
+    }
     switchMachineMode(IDLE);
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
@@ -714,9 +719,8 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
     menu.addSeparator();
     menu.addAction(tr("Delete"));
     menu.addSeparator();
-    menu.addAction(tr("Add events"));
+    menu.addAction(tr("Edit events"));
     menu.addSeparator();
-    menu.addAction(tr("Clear events"));
     QAction *action = menu.exec(QCursor::pos());
     if(action == 0)
         return;
@@ -726,24 +730,43 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
-    if(action->text().toStdString() == "Add events") {
+    if(action->text().toStdString() == "Edit events") {
         bool ok;
         QInputDialog* inputDialog = new QInputDialog();
         inputDialog->setOptions(QInputDialog::NoButtons);
-
-        QString event =  inputDialog->getText(NULL,"Add new event",
-                                          "Name:", QLineEdit::Normal,
-                                           "", &ok);
-
-        event=event.trimmed();
-        if (!ok || !event.size()) {
-            QMessageBox msgBox;
-            msgBox.setText("Event name empty");
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.exec();
-            return;
+        string events="";
+        vector<string> listOfEvents = graphEditor.getEvents(edge->getAttribute("sourcename").toStdString(),
+                                                            edge->getAttribute("targetname").toStdString());
+        for(int i=0; i< listOfEvents.size(); i++){
+            events += listOfEvents[i];
+            if(i != listOfEvents.size()-1)
+                events += ", ";
         }
 
+
+
+        QString event =  inputDialog->getText(NULL,"Edit events",
+                                          "Name:", QLineEdit::Normal,
+                                           events.c_str(), &ok);
+
+        if(!ok)
+            return;
+
+        event=event.trimmed();
+        if (ok && !event.size()) {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Edit events", "The events of this transition will be erased.\n Are you sure?",
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::No)
+                return;
+            graphEditor.clearEvents(edge->getAttribute("sourcename").toStdString(),
+                                    edge->getAttribute("targetname").toStdString());
+            drawStateMachine(graph);
+            switchMachineMode(BUILDER);
+            return;
+        }
+        graphEditor.clearEvents(edge->getAttribute("sourcename").toStdString(),
+                                edge->getAttribute("targetname").toStdString());
         //add multiple events once
         QStringList pieces = event.split(",");
         if(pieces.size()!=0){
@@ -756,12 +779,6 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
         else
             graphEditor.addEvent(edge->getAttribute("sourcename").toStdString(),
                           edge->getAttribute("targetname").toStdString(), event.toStdString());
-        drawStateMachine(graph);
-        switchMachineMode(BUILDER);
-    }
-    if(action->text().toStdString() == "Clear events"){
-        graphEditor.clearEvents(edge->getAttribute("sourcename").toStdString(),
-                          edge->getAttribute("targetname").toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
@@ -1611,6 +1628,14 @@ void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
 
     sourceCode.push_back("}");
 
+}
+bool MainWindow::isInitialConnected(){
+    for(int i=0;i<graph.transitions.size();i++)
+    {
+        if(graph.transitions[i].source=="initial")
+            return true;
+    }
+    return false;
 }
 
 

@@ -15,7 +15,7 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
 
     QSettings settings;
     QFont font;
-    font.setFixedPitch(true);    
+    font.setFixedPitch(true);
     font.setFamily(settings.value("editor-font-name", "Courier").toString());
     font.setPointSize(settings.value("editor-font-size", 10).toInt());
     ui->textEdit->setFont(font);

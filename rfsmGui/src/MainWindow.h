@@ -115,6 +115,7 @@ private:
     std::string getStateFunctionsCode(const rfsm::StateGraph::State& st);
     std::string writeChild(const std::string stateName);
     void writeLuaFile(std::vector<std::string> &sourceCode);
+    bool isInitialConnected();
 
 private slots:
     void nodeContextMenu(QGVNode* node);

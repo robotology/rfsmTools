@@ -184,6 +184,17 @@ void StateGraphEditor::clearEvents(const std::string source,
 
 }
 
+std::vector<std::string> StateGraphEditor::getEvents(const string source, const string target)
+{
+    StateGraph::TransitionItr it;
+    for(it = graph->transitions.begin(); it<graph->transitions.end();it++) {
+        StateGraph::Transition &tr = *it;
+        if((tr.source == source) && (tr.target == target)){
+            return tr.events;
+        }
+    }
+}
+
 StateGraph::TransitionItr StateGraphEditor::getTransition(const std::string stateName,
                                                     bool from,
                                                     std::vector<std::string> events) {
