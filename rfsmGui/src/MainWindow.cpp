@@ -1520,6 +1520,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionExport_scene->setEnabled(true);
         actionGroup->setEnabled(true);
         ui->buildToolBar->setEnabled(true);
+        ui->action_Arrow->setChecked(true);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(false);
@@ -1535,7 +1536,6 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         ui->action_Save_project->setEnabled(true);
-        actionGroup->setEnabled(true);
         ui->buildToolBar->setEnabled(true);
         ui->actionSourceCode->setEnabled(false);
         // debug
