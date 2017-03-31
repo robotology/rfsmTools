@@ -102,6 +102,30 @@ public:
      */
     std::vector<std::string> getEvents(const std::string source,
                                        const std::string target);
+
+    /**
+     * @brief getChilds, get the "first" childs of a state
+     * @param state, name of the parent state
+     * @param childs, vector of string containing the names of the childs
+     * @return
+     */
+    void getChilds(const std::string state,
+                   std::vector<std::string> &childs);
+
+    /**
+     * @brief getStateByName, it returns the rfsm::StateGraph::State given the name, assertion if not found
+     * @param stateName, name of the state
+     * @return
+     */
+    rfsm::StateGraph::State getStateByName(const std::string stateName);
+
+    /**
+     * @brief getParent, get the closest parent of a state
+     * @param stateName, noame of the state
+     * @return
+     */
+    std::string getParent(const std::string& stateName);
+
 private:
     /**
      * @brief getTransition, return the first transition from/to a given state

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <sstream>
+#include <iostream>
 
 using namespace rfsm;
 using namespace std;
@@ -194,6 +195,41 @@ std::vector<std::string> StateGraphEditor::getEvents(const string source, const 
         }
     }
 }
+
+
+void StateGraphEditor::getChilds(const std::string state, std::vector<std::string> &childs) {
+    childs.clear();
+    string name  = (state.size() == 0) ? "" : state+".";
+    for(size_t i=0; i<graph->states.size(); i++) {
+        if(name.size()) {
+             string st = graph->states[i].name;
+             if(st.find(name) != string::npos && getParent(st)==state)
+                 childs.push_back(st);
+        }
+        else {
+            string st = graph->states[i].name;
+            if(st.find(".") == string::npos)
+                childs.push_back(st);
+        }
+    }
+}
+
+StateGraph::State StateGraphEditor::getStateByName(const string stateName)
+{
+    StateGraph::State st;
+    StateGraph::StateItr it;
+    st.name = stateName;
+    it = find(graph->states.begin(), graph->states.end(), st);
+    assert(it != graph->states.end());
+    return *it;
+}
+
+string StateGraphEditor::getParent(const string &stateName)
+{
+    size_t pos=stateName.find_last_of(".");
+    return stateName.substr(0,pos);
+}
+
 
 StateGraph::TransitionItr StateGraphEditor::getTransition(const std::string stateName,
                                                     bool from,

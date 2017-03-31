@@ -320,8 +320,8 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
 
     // adding composit states
     for(size_t i=0; i<graph.states.size(); i++) {
+        //std::cout<<graph.states[i].name<<std::endl;
         if(graph.states[i].type == "composit") {
-            //std::cout<<graph.states[i].name<<std::endl;
             QGVSubGraph *sgraph;
             QGVSubGraph *sgraphParent = getParent(graph.states[i].name);
             if(sgraphParent != NULL)
@@ -1466,16 +1466,18 @@ void MainWindow::setNodeActiveMode(const std::string &name, bool mode) {
         ui->graphicsView->centerOn(node);
 }
 
-std::string MainWindow::readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode &func)
+void MainWindow::readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode &func,
+                                 std::vector<std::string> &functionCode, int idenLength)
 {
-    string res = "\t";
+    functionCode.clear();
     if(func.startLine != -1
             && func.endLine != -1
             && func.fileName != "")
     {
         QFile file(QString(func.fileName.c_str()));
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            return "";
+            onError("readLuaFuncCode: unable to open the file retreiving funcion code","<none>");
+            return;
         }
         QTextStream inStream(&file);
         int line=1;
@@ -1483,69 +1485,61 @@ std::string MainWindow::readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode &fun
             QString tmp = inStream.readLine();
             if(line >= func.startLine
                     && line <= func.endLine){
-                res += "\t";
-                res += tmp.trimmed().toStdString() + "\n\t";
+                string lineCode = tmp.toStdString();
+                string trim = lineCode.substr(0, idenLength);
+                if(QString(trim.c_str()).trimmed().size() == 0)
+                    lineCode = lineCode.substr(idenLength, lineCode.size());
+                functionCode.push_back(lineCode);
             }
             line++;
         }
         file.close();
     }
-    return res;
 }
 
-string MainWindow::getStateFunctionsCode(const rfsm::StateGraph::State& st){
-    string entry="", doo="", exit="";
-
-    entry = readLuaFuncCode(st.entry);
-    entry += ((entry=="\t") ?  "" : "\n");
-
-    doo = readLuaFuncCode(st.doo);
-    doo += ((doo=="\t") ?  "" : "\n");
-
-    exit = readLuaFuncCode(st.exit);
-    exit += ((exit=="\t") ?  "" : "\n");
-
-    return entry + doo + exit;
-
-
-}
-
-string MainWindow::writeChild(const std::string stateName)
+void MainWindow::writeState(const rfsm::StateGraph::State state, std::vector<std::string> &sourceCode)
 {
-    string res="\t";
-    for(int i=0;i<graph.states.size();i++)
-        if(graph.states[i].name==stateName+"."+getPureStateName(graph.states[i].name)){
-//            cout<<graph.states[i].name<<" "<<graph.states[i].type<<endl;
-            if(graph.states[i].type=="single"){
-                res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{\n";
-                res += getStateFunctionsCode(graph.states[i]) + "\n\t";
-                res += "\t},\n\t";
-            }
-            else if(graph.states[i].type=="connector"
-                    && graph.states[i].name.find("initial") == string::npos
-                    && graph.states[i].name.find("end") == string::npos)
-                res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.conn{ },\n\t";
-            else if(graph.states[i].type == "composit")
-            {
-                string childCode = writeChild(graph.states[i].name);
-                if(childCode != "\t")
-                {
-                    res +=  "\t" + getPureStateName(graph.states[i].name) +" = rfsm.csta{\n\t";
-                    res += "\tinitial = rfsm.conn{},\n";
-                    res += "\t" + getStateFunctionsCode(graph.states[i]) + "\n\t";
-                    res += "\t" + childCode;
-                    res += "\t },\n";
-                }
-                else // the composite state is empty, it becomes a single state for avoiding rfsm errors.
-                {
-                    res +=  "\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{\n";
-                    res += getStateFunctionsCode(graph.states[i]) + "\n\t";
-                    res += "\t},\n\t";
-                    graphEditor.updateTransitions(graph.states[i].name + ".initial", graph.states[i].name);
-                }
-            }
+    string identation=getIdentation(state.name);
+    sourceCode.push_back("");
+    if(state.type == "connector")
+        sourceCode.push_back(identation + getPureStateName(state.name) + " = rfsm.conn{ },");
+    else
+    {   vector<string> funcCode;
+        sourceCode.push_back(identation + "--"+ getPureStateName(state.name));
+        sourceCode.push_back(identation + getPureStateName(state.name) + " = rfsm.state{");
+        string identationFunc = identation + string(settings.value("editor-tab-size", 4).toInt(), ' ');
+        // generating entry code
+        readLuaFuncCode(state.entry, funcCode, identationFunc.size());
+        for(int i=0; i<funcCode.size(); i++)
+            sourceCode.push_back(identationFunc + funcCode[i]);
+        // generating doo code
+        readLuaFuncCode(state.doo, funcCode, identationFunc.size());
+        for(int i=0; i<funcCode.size(); i++)
+            sourceCode.push_back(identationFunc + funcCode[i]);
+        // generating exit code
+        readLuaFuncCode(state.exit, funcCode, identationFunc.size());
+        for(int i=0; i<funcCode.size(); i++)
+            sourceCode.push_back(identationFunc + funcCode[i]);
+
+        // writing child states
+        vector<string> childStates;
+        graphEditor.getChilds(state.name, childStates);
+        if(childStates.size()==1 && childStates[0]== state.name+".initial")
+        {
+            //eventually remove the inital connector from empty composite states
+            graphEditor.updateTransitions(state.name+".initial",state.name);
+            graphEditor.removeState(state.name+".initial");
+            sourceCode.push_back(identation + "}, --end of "+ getPureStateName(state.name));
+            sourceCode.push_back("");
+            return;
         }
-    return res;
+        for(int i=0; i<childStates.size(); i++)
+            writeState(graphEditor.getStateByName(childStates[i]),sourceCode);
+
+        // closing state
+        sourceCode.push_back(identation + "}, --end of "+ getPureStateName(state.name));
+        sourceCode.push_back("");
+    }
 }
 
 void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
@@ -1558,46 +1552,20 @@ void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
         sourceCode.push_back("--");
     }
     sourceCode.push_back("return rfsm.state {");
-    //writing states
-    sourceCode.push_back("\n\n--States");
-    for(int i=0; i<graph.states.size();i++)
-    {
-        QGVSubGraph *sgraphParent = getParent(graph.states[i].name);
-        if(sgraphParent == NULL)
-        {
-            if(graph.states[i].type == "single")
-            {
-                sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{");
-                sourceCode.push_back(getStateFunctionsCode(graph.states[i]));
-                sourceCode.push_back("\t},");
-            }
-            else if(graph.states[i].type == "connector"
-                    && graph.states[i].name.find("initial") == string::npos
-                    && graph.states[i].name.find("end") == string::npos)
-                sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.conn{ },");
-            else if(graph.states[i].type == "composit")
-            {
-                string childCode = writeChild(graph.states[i].name);
-                if(childCode != "\t"){
-                    sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.csta{");
-                    sourceCode.push_back("\tinitial = rfsm.conn{},");
-                    sourceCode.push_back(getStateFunctionsCode(graph.states[i]));
-                    sourceCode.push_back(childCode);
-                    sourceCode.push_back("\t},");
-                }
-                else // the composite state is empty, it becomes a single state for avoiding rfsm errors.
-                {
-                    sourceCode.push_back("\t" + getPureStateName(graph.states[i].name) + " = rfsm.sista{");
-                    sourceCode.push_back(getStateFunctionsCode(graph.states[i]));
-                    sourceCode.push_back("\t},");
-                    graphEditor.updateTransitions(graph.states[i].name + ".initial", graph.states[i].name);
-                }
-            }
+    // writing states
+    string identation=string(settings.value("editor-tab-size", 4).toInt(), ' ');
+    sourceCode.push_back("");
+    sourceCode.push_back("");
+    sourceCode.push_back(identation + "--States");
+    vector<string> rootStates;
+    graphEditor.getChilds("", rootStates);
+    for(int i=0; i<rootStates.size(); i++)
+        writeState(graphEditor.getStateByName(rootStates[i]), sourceCode);
 
-        }
+    sourceCode.push_back("");
+    sourceCode.push_back("");
+    sourceCode.push_back(identation + "--Transitions");
 
-    }
-    sourceCode.push_back("\n\n--Transitions");
     //writing transitions
     for(int i=0;i<graph.transitions.size();i++)
     {
@@ -1609,7 +1577,7 @@ void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
         pos=target.find_first_of(".end");
         if(pos != string::npos)
             target.substr(0,pos);
-        string line="  rfsm.trans{ src = '" + source + "', tgt = '" + target + "'";
+        string line="rfsm.trans{ src = '" + source + "', tgt = '" + target + "'";
         if(graph.transitions[i].events.size()!=0)
         {
             line += ", events = {";
@@ -1623,12 +1591,19 @@ void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
 
         }
         line += " },";
-        sourceCode.push_back(line);
+        sourceCode.push_back(identation + line);
     }
 
     sourceCode.push_back("}");
 
 }
+
+std::string MainWindow::getIdentation(std::string name){
+    size_t n = std::count(name.begin(), name.end(), '.') + 1;
+    int tabSize = settings.value("editor-tab-size", 4).toInt();
+    return string(n*tabSize, ' ');
+}
+
 bool MainWindow::isInitialConnected(){
     for(int i=0;i<graph.transitions.size();i++)
     {

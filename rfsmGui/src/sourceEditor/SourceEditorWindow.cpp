@@ -20,7 +20,7 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
     font.setPointSize(settings.value("editor-font-size", 10).toInt());
     ui->textEdit->setFont(font);
     QFontMetrics metrics(font);
-    ui->textEdit->setTabStopWidth(4 * metrics.width(' '));
+    ui->textEdit->setTabStopWidth(settings.value("editor-tab-size", 4).toInt() * metrics.width(' '));
     ui->action_Save->setEnabled(false);
     highlighter = new Highlighter(ui->textEdit->document());    
 
@@ -52,6 +52,8 @@ void SourceEditorWindow::setSourceCode(const QString& sourceCode){
 
 void SourceEditorWindow::closeEvent(QCloseEvent *event)
 {
+    QSettings settings;
+    settings.setValue("editor-tab-size", settings.value("editor-tab-size", 4).toInt());
     if(ui->action_Save->isEnabled()) {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Close", "The source code has been changed.\n Do you want to save it?",

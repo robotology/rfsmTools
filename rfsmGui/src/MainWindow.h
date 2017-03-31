@@ -111,10 +111,11 @@ private:
     std::string getPureStateName(const std::string& name);
     void saveSetting();    
     void setNodeActiveMode(const std::string &name, bool mode);
-    std::string readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode& func);
-    std::string getStateFunctionsCode(const rfsm::StateGraph::State& st);
-    std::string writeChild(const std::string stateName);
+    void readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode &func,
+                         std::vector<std::string> &functionCode, int idenLength = 0);
+    void writeState(const rfsm::StateGraph::State state, std::vector<std::string> &sourceCode);
     void writeLuaFile(std::vector<std::string> &sourceCode);
+    std::string getIdentation(std::string name);
     bool isInitialConnected();
 
 private slots:
