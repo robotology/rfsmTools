@@ -244,7 +244,7 @@ void MainWindow::initScene() {
 
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
-    QApplication::setOverrideCursor(Qt::ArrowCursor);
+   // QApplication::setOverrideCursor(Qt::ArrowCursor);
 
     scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
     scene->setGraphAttribute("remincross", "true");
@@ -1123,7 +1123,7 @@ void MainWindow::onExportScene() {
 }
 
 void MainWindow::onSceneLeftClicked(QPointF pos) {
-    QApplication::setOverrideCursor(Qt::OpenHandCursor);
+    ui->graphicsView->viewport()->setCursor(Qt::OpenHandCursor);
     QGraphicsItem *item = scene->itemAt(pos, QTransform());
     //add states
     if(ui->action_Single_State->isChecked() || ui->action_Composite_State->isChecked()
@@ -1147,7 +1147,7 @@ void MainWindow::onSceneLeftClicked(QPointF pos) {
             graphEditor.addState(name, type);
             drawStateMachine(graph);
         }
-        QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+        ui->graphicsView->viewport()->setCursor(Qt::ClosedHandCursor);
         ui->action_Save_project->setEnabled(true);
         switchMachineMode(BUILDER);
         return;
@@ -1165,7 +1165,7 @@ void MainWindow::onSceneLeftClicked(QPointF pos) {
 
 void MainWindow::onSceneMouseReleased(QPointF pos) {
     if(ui->action_Transition->isChecked() && line) {
-        QApplication::setOverrideCursor(Qt::OpenHandCursor);
+        ui->graphicsView->viewport()->setCursor(Qt::OpenHandCursor);
         QGraphicsItem *item = scene->itemAt(pos, QTransform());
         if(item && (item->type() == QGVNode::Type)) {
             std::string source, target;
@@ -1226,17 +1226,18 @@ void MainWindow::onSceneMouseMove(QPointF pos) {
                 QGVNode* node = qgraphicsitem_cast<QGVNode*>(item);
                 if(node->getAttribute("rawname").toStdString()=="initial")
                 {
-                    QApplication::setOverrideCursor(Qt::ForbiddenCursor);
+                    ui->graphicsView->viewport()->setCursor(Qt::ForbiddenCursor);
                 }
             }
-            QApplication::setOverrideCursor(Qt::CrossCursor);
+            ui->graphicsView->viewport()->setCursor(Qt::CrossCursor);
+
         }
         else
-            QApplication::setOverrideCursor(Qt::ForbiddenCursor);
+            ui->graphicsView->viewport()->setCursor(Qt::ForbiddenCursor);
     }
 
     if(ui->action_Arrow->isChecked()){
-        QApplication::setOverrideCursor(Qt::ArrowCursor);
+        ui->graphicsView->viewport()->setCursor(Qt::ArrowCursor);
     }
 
 }
