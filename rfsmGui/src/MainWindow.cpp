@@ -353,6 +353,9 @@ void MainWindow::drawStateMachine() {
         QGVNode* to = getNode(graph.transitions[i].target);
         Q_ASSERT(from != NULL);
         Q_ASSERT(to != NULL);
+        if(graph.transitions[i].priority != 0)
+            events += "\npn: " + QString::number(graph.transitions[i].priority).toStdString();
+
         QGVEdge* gve = scene->addEdge(from, to, events.c_str());
         gve->setAttribute("color", "white");
         //gve->setAttribute("ltail", graph.transitions[i].source.c_str());

@@ -91,6 +91,7 @@ public:
         std::string source;
         std::string target;
         std::vector<std::string> events;
+        int priority;
         bool operator==(const Transition& s) const {
             return (s.source == source) && (s.target == target) && (s.events == events);
         }

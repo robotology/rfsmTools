@@ -758,6 +758,7 @@ bool StateMachine::Private::getAllStateGraph() {
             string s;
             while (getline(ss, s, ','))
                 trans.events.push_back(s);
+            trans.priority = Utils::getTableNumberField(L, "pn");
             graph.transitions.push_back(trans);
         }
         else

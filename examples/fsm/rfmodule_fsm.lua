@@ -6,79 +6,91 @@
 
 
 return rfsm.state {
-    Configure = rfsm.csta {
-        entry = function()
-            print("entry() of Configure (hello from Lua)")
-        end,
 
-        exit  = function()
-            print("exit() of Configure (hello from Lua)")
-        end,
-        Software = rfsm.csta{
-			Initialize = rfsm.sista{},
-			Run = rfsm.sista{ },
 
-			rfsm.transition { src='initial', tgt='Initialize'},
-			rfsm.transition { src='Initialize', tgt='Run'},
-		},
+    --States
 
-        Hardware = rfsm.sista{ },
-        rfsm.transition { src='initial', tgt='Software'},
-        rfsm.transition { src='Software', tgt='Hardware', events={'e_software_done'} },
-    },
-
-    UpdateModule = rfsm.sista{
+    --UpdateModule
+    UpdateModule = rfsm.state{
         entry = function()
             print("entry() of UpdateModule (hello from Lua)")
         end,
-
         doo  = function()
             print("doo() of UpdateModule (hello from Lua)")
         end,
-
         exit = function()
             print("exit() of UpdateModule (hello from Lua)")
         end,
-    },
+    }, --end of UpdateModule
 
-	Phase = rfsm.csta{
-                Phase1 = rfsm.sista{
+
+    initial = rfsm.conn{ },
+
+    --Configure
+    Configure = rfsm.state{
+        entry = function()
+            print("entry() of Configure (hello from Lua)")
+        end,
+        exit  = function()
+            print("exit() of Configure (hello from Lua)")
+        end,
+
+        initial = rfsm.conn{ },
+
+        --Hardware
+        Hardware = rfsm.state{
+        }, --end of Hardware
+
+
+        --Software
+        Software = rfsm.state{
+
+            initial = rfsm.conn{ },
+
+            --Run
+            Run = rfsm.state{
+            }, --end of Run
+
+
+            --Initialize
+            Initialize = rfsm.state{
+            }, --end of Initialize
+
+        }, --end of Software
+
+    }, --end of Configure
+
+
+    --Phase
+    Phase = rfsm.state{
+
+        initial = rfsm.conn{ },
+
+        --Phase1
+        Phase1 = rfsm.state{
                 entry = function()
                     print("entry() of Phase1 (hello from Lua)")
                 end,
-
-                },
-		Phase2 = rfsm.sista{ },
-		rfsm.transition { src='initial', tgt='Phase1'},
-		rfsm.transition { src='Phase1', tgt='Phase2'},
-	},
-
---[[
-    Close = rfsm.sista{
-        entry = function()
-            print("entry() of Close (hello from Lua)")
-        end,
-    },
-
-    InterruptModule = rfsm.sista{
-        entry = function()
-            print("entry() of InterruptModule (hello from Lua)")
-        end,
-    },
+        }, --end of Phase1
 
 
-    rfsm.transition { src='initial', tgt='Configure' },
-    rfsm.transition { src='Configure', tgt='UpdateModule', events={ 'e_true' } },
-    rfsm.transition { src='Configure', tgt='Close', events={ 'e_false' } },
-    rfsm.transition { src='Configure', tgt='InterruptModule', events={ 'e_stopModule','e_interrupt' } },
-    rfsm.transition { src='UpdateModule', tgt='UpdateModule', events={ 'e_true' } },
-    rfsm.transition { src='UpdateModule', tgt='Close', events={ 'e_false' } },
-    rfsm.transition { src='UpdateModule', tgt='InterruptModule', events={ 'e_stopModule','e_interrupt' } },
-    rfsm.transition { src='InterruptModule', tgt='Close' },
-	--]]
+        --Phase2
+        Phase2 = rfsm.state{
+        }, --end of Phase2
 
-	rfsm.transition { src='initial', tgt='Configure' },
-    rfsm.transition { src='Configure', tgt='UpdateModule', events={ 'e_true' } },
-	rfsm.transition { src='Configure', tgt='Phase', events={ 'e_phase' } },
+    }, --end of Phase
+
+
+
+    --Transitions
+    rfsm.trans{ src = 'initial', tgt = 'Configure.initial' },
+    rfsm.trans{ src = 'Configure', tgt = 'UpdateModule', events = {"e_true"}, pn = 10 },
+    rfsm.trans{ src = 'Configure', tgt = 'Phase.initial', events = {"e_true"} },
+    rfsm.trans{ src = 'Configure.initial', tgt = 'Configure.Software.initial' },
+    rfsm.trans{ src = 'Configure.Software', tgt = 'Configure.Hardware', events = {"e_software_done"} },
+    rfsm.trans{ src = 'Configure.Software.initial', tgt = 'Configure.Software.Initialize' },
+    rfsm.trans{ src = 'Configure.Software.Initialize', tgt = 'Configure.Software.Run' },
+    rfsm.trans{ src = 'Phase.initial', tgt = 'Phase.Phase1' },
+    rfsm.trans{ src = 'Phase.Phase1', tgt = 'Phase.Phase2', pn =5
+ },
 }
-

@@ -121,7 +121,8 @@ namespace rfsm {
 "       else\n"\
 "          local str_events = ''\n"\
 "          if t.events then str_events = table.concat(t.events, ',') end\n"\
-"          table.insert(trans, {source=t.src._fqn, target=t.tgt._fqn, events=str_events})\n"\
+"          if t.pn == nil then t.pn = 0 end\n"\
+"          table.insert(trans, {source=t.src._fqn, target=t.tgt._fqn, events=str_events, pn = t.pn})\n"\
 "       end\n"\
 "    end\n"\
 "    rfsm.mapfsm(function (t, p) proc_trans(t, p) end, fsm, rfsm.is_trans)\n"\
