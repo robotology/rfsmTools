@@ -1237,13 +1237,13 @@ void MainWindow::onSceneMouseMove(QPointF pos) {
     else if(ui->action_Arrow->isChecked())
         ui->graphicsView->viewport()->setCursor(Qt::ArrowCursor);    
     else if(ui->action_Single_State->isChecked())
-        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/state.svg").scaled(32,32)));
+        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/stateCursor.svg").scaled(32,32),28,28));
     else if(ui->action_Composite_State->isChecked())
-        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/cstate.svg").scaled(32,32)));
+        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/cstateCursor.svg").scaled(32,32),28,28));
     else if(ui->action_Transition->isChecked())
-        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/transition.svg").scaled(32,32)));
+        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/transitionCursor.svg").scaled(32,32),28,28));
     else if(ui->action_Connector->isChecked())
-        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/connector.svg").scaled(32,32)));
+        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/connectorCursor.svg").scaled(32,32),28,28));
 }
 
 

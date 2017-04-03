@@ -19,5 +19,9 @@
         <file>resources/connector.svg</file>
         <file>resources/arrow.svg</file>
         <file>resources/source-edit.svg</file>
+        <file>resources/stateCursor.svg</file>
+        <file>resources/cstateCursor.svg</file>
+        <file>resources/transitionCursor.svg</file>
+        <file>resources/connectorCursor.svg</file>
     </qresource>
 </RCC>
