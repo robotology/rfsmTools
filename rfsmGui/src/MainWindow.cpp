@@ -160,6 +160,7 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(ui->action_Save_project, SIGNAL(triggered()),this,SLOT(onSaverFSM()));
     connect(ui->pushButtonSendEvent, SIGNAL(clicked()),this, SLOT(onSendEvent()));
     connect(ui->actionChangeRunPeriod, SIGNAL(triggered()),this,SLOT(onChangeRunPeriod()));
+    connect(ui->actionClose_rFSM, SIGNAL(triggered()),this,SLOT(onCloserFSM()));
 
 
     connect(ui->actionDebugStart, SIGNAL(triggered()),this,SLOT(onDebugStartrFSM()));
@@ -510,14 +511,10 @@ void MainWindow::onLoadrFSM() {
 
 void MainWindow::onNewrFSM() {
     NewRFSMDialog dialog;
-    if(machineMode!=UNLOADED)
-    {
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "New rFSM", "Closing this state machine.\n Are you sure?",
-                                      QMessageBox::Yes|QMessageBox::No);
-        if (reply == QMessageBox::No)
-            return;
-    }
+
+    if(!onCloserFSM())
+        return;
+
     if(!dialog.exec())
         return;
     isNew=true;
@@ -526,19 +523,10 @@ void MainWindow::onNewrFSM() {
     description = dialog.getDescription();
     version = dialog.getVersion();
     canModify=true;
-    switchMachineMode(BUILDER);
     ui->statusBar->showMessage(("Building "+fileName.toStdString()+" | author: "+authors.toStdString()
                                +" | version "+version.toStdString()).c_str());
     //cleaning everithing for buinding a new state machine.
-    rfsm.stop();
-    initScene();
-    sceneNodeMap.clear();
-    sceneSubGraphMap.clear();
-    ui->comboBoxEvents->clear();
-    ui->nodesTreeWidgetEvent->clear();
-    ui->nodesTreeWidgetLog->clear();
-    rfsm.close();
-    graph=rfsm.getStateGraph();
+    switchMachineMode(BUILDER);
 }
 
 void MainWindow::onSaverFSM(){
@@ -1139,6 +1127,33 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 }
 
+bool MainWindow::onCloserFSM()
+{
+    string message="State machine is running.\nDo you want to stop it and close?";
+    if(machineMode==BUILDER)
+        message="Changes has not been saved.\nDo you want to close and discard them?";
+    if(machineMode != IDLE && machineMode != UNLOADED) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Quit", message.c_str(),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+        {
+            return false;
+        }
+    }
+        rfsm.stop();
+        initScene();
+        sceneNodeMap.clear();
+        sceneSubGraphMap.clear();
+        ui->comboBoxEvents->clear();
+        ui->nodesTreeWidgetEvent->clear();
+        ui->nodesTreeWidgetLog->clear();
+        rfsm.close();
+        graph=rfsm.getStateGraph();
+        switchMachineMode(UNLOADED);
+        return true;
+}
+
 
 void MainWindow::onAbout() {
     QMessageBox::about(this, "rFSMGui (version 1.0.0)",
@@ -1674,9 +1689,13 @@ void MainWindow::switchMachineMode(MachineMode mode) {
     machineMode = mode;
     switch (machineMode) {
     case UNLOADED:
-        actionGroup->setEnabled(canModify);
+        ui->action_LoadrFSM->setEnabled(true);
+        ui->action_New_rFSM->setEnabled(true);
+        ui->action_Save_project->setEnabled(false);
+        actionGroup->setEnabled(false);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
+        ui->actionClose_rFSM->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -1695,6 +1714,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         actionGroup->setEnabled(canModify);
         ui->buildToolBar->setEnabled(true);
         ui->action_Arrow->setChecked(true);
+        ui->actionClose_rFSM->setEnabled(true);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(false);
@@ -1712,6 +1732,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(true);
         actionGroup->setEnabled(canModify);
         ui->actionSourceCode->setEnabled(false);
+        ui->actionClose_rFSM->setEnabled(true);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);

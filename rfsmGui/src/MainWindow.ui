@@ -250,6 +250,7 @@
     <addaction name="action_New_rFSM"/>
     <addaction name="action_LoadrFSM"/>
     <addaction name="action_Save_project"/>
+    <addaction name="actionClose_rFSM"/>
     <addaction name="separator"/>
     <addaction name="actionExport_scene"/>
     <addaction name="separator"/>
@@ -646,6 +647,15 @@
    </property>
    <property name="toolTip">
     <string>Select objects</string>
+   </property>
+  </action>
+  <action name="actionClose_rFSM">
+   <property name="icon">
+    <iconset resource="ress.qrc">
+     <normaloff>:/icons/resources/actions-close.svg</normaloff>:/icons/resources/actions-close.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Close rFSM...</string>
    </property>
   </action>
  </widget>

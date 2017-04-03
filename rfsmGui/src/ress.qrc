@@ -23,5 +23,6 @@
         <file>resources/cstateCursor.svg</file>
         <file>resources/transitionCursor.svg</file>
         <file>resources/connectorCursor.svg</file>
+        <file>resources/actions-close.svg</file>
     </qresource>
 </RCC>

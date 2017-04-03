@@ -149,6 +149,7 @@ private slots:
     void onSourceCodeSaved();
     void onFileChanged(const QString & path);
     void closeEvent(QCloseEvent *event);
+    bool onCloserFSM();
 
     void onUpdateEventQueue(const std::vector<std::string> equeue);
     void onWarning(const std::string message);
