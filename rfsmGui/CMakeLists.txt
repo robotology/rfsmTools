@@ -9,6 +9,9 @@ if(ENABLE_SIMRFSM)
     find_package(Graphviz)
     find_package(Qt5Widgets)
 
+    # Find YARP (optional)
+    find_package(YARP)
+
     #########################################################################
     # Control where libraries and executables are placed during the build
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")

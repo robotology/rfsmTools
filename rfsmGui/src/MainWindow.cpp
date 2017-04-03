@@ -24,6 +24,11 @@
 #include <QtPrintSupport/QPrinter>
 #include <QMutexLocker>
 
+#ifdef USE_YARP
+    #include <yarp/os/ResourceFinder.h>
+#endif
+
+
 using namespace std;
 
 class DefaultCallback : public rfsm::StateCallback {
@@ -680,7 +685,16 @@ void MainWindow::onSourceCodeSaved() {
 void MainWindow::showEvent(QShowEvent *ev) {
     QMainWindow::showEvent(ev);
     if(parser->value("rfsm").size()) {
-       bool ok = loadrFSM(parser->value("rfsm").toStdString());
+        std::string filename = parser->value("rfsm").toStdString();
+#ifdef USE_YARP
+    yarp::os::ResourceFinder rf;
+    rf.setDefaultContext("iol/lua");
+    rf.setVerbose(true);
+    char* argv[] = {"rfsmGui"};
+    rf.configure(1, argv);
+    filename = rf.findFile(parser->value("rfsm").toStdString().c_str());
+#endif
+       bool ok = loadrFSM(filename);
        if (ok && parser->isSet("run")) {
            QTimer::singleShot(10, this, SLOT(onRunStartrFSM()));
        }
