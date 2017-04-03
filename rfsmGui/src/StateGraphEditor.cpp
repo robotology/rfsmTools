@@ -253,6 +253,18 @@ string StateGraphEditor::getParent(const string &stateName)
     return stateName.substr(0,pos);
 }
 
+bool StateGraphEditor::canModify(std::string fileName){
+    for(StateGraph::StateItr i=graph->states.begin(); i<graph->states.end();i++)
+    {
+        StateGraph::State& s=*i;
+        if((s.entry.fileName.size() && s.entry.fileName != fileName)
+          || (s.doo.fileName.size() && s.doo.fileName != fileName)
+          || (s.exit.fileName.size() && s.exit.fileName != fileName))
+            return false;
+    }
+    return true;
+}
+
 
 StateGraph::TransitionItr StateGraphEditor::getTransition(const std::string stateName,
                                                     bool from,

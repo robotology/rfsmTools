@@ -182,6 +182,7 @@ private:
     rfsm::StateGraph graph;
     StateGraphEditor graphEditor;
     bool isNew;
+    bool canModify;
 
 };
 

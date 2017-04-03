@@ -136,7 +136,7 @@ void MyStateMachine::onInfo(const string message) {
 /************************************************/
 MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     parser(prsr), QMainWindow(parent),
-    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED), line(NULL), isNew(false)
+    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED), line(NULL), isNew(false), canModify(false)
 {
     ui->setupUi(this);
 
@@ -480,8 +480,15 @@ bool MainWindow::loadrFSM(const std::string fname) {
     onUpdateEventQueue(equeue);
     graph = rfsm.getStateGraph();
     graphEditor.setGraph(graph);
+    canModify = graphEditor.canModify(rfsm.getFileName());
     drawStateMachine(graph);
     switchMachineMode(IDLE);
+    if(!canModify)
+    {
+        actionGroup->setEnabled(canModify);
+        onWarning("The state machine loaded has references to multiple file, the editor for this kind of fsm is not supported yet");
+    }
+
     fileName=QString(filename.c_str());
     showStatusBarMessage(("Loaded " + filename).c_str());
     return true;
@@ -518,6 +525,7 @@ void MainWindow::onNewrFSM() {
     authors = dialog.getAuthors();
     description = dialog.getDescription();
     version = dialog.getVersion();
+    canModify=true;
     switchMachineMode(BUILDER);
     ui->statusBar->showMessage(("Building "+fileName.toStdString()+" | author: "+authors.toStdString()
                                +" | version "+version.toStdString()).c_str());
@@ -713,6 +721,9 @@ void MainWindow::onUpdateEventQueue(const std::vector<string> equeue) {
 
 void MainWindow::edgeContextMenu(QGVEdge* edge) {
 
+    if(!canModify)
+        return;
+
     if(!ui->action_Arrow->isChecked())
         return;
     QMenu menu(edge->label());
@@ -812,6 +823,8 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
 
 void MainWindow::nodeContextMenu(QGVNode *node)
 {
+    if(!canModify)
+        return;
 
     if(!ui->action_Arrow->isChecked()
             || node->getAttribute("rawname").toStdString().find("initial") != string::npos
@@ -940,6 +953,9 @@ void MainWindow::nodeContextMenu(QGVNode *node)
 }
 
 void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
+
+    if(!canModify)
+        return;
 
     if(!ui->action_Arrow->isChecked())
         return;
@@ -1658,7 +1674,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
     machineMode = mode;
     switch (machineMode) {
     case UNLOADED:
-        ui->buildToolBar->setEnabled(false);
+        actionGroup->setEnabled(canModify);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
         // debug
@@ -1676,7 +1692,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(true);
         ui->action_New_rFSM->setEnabled(true);
         ui->actionExport_scene->setEnabled(true);
-        actionGroup->setEnabled(true);
+        actionGroup->setEnabled(canModify);
         ui->buildToolBar->setEnabled(true);
         ui->action_Arrow->setChecked(true);
         // debug
@@ -1694,7 +1710,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         ui->action_Save_project->setEnabled(true);
-        ui->buildToolBar->setEnabled(true);
+        actionGroup->setEnabled(canModify);
         ui->actionSourceCode->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
@@ -1710,7 +1726,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
-        ui->buildToolBar->setEnabled(false);
+        actionGroup->setEnabled(canModify);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
         // debug
@@ -1728,7 +1744,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
-        ui->buildToolBar->setEnabled(false);
+        actionGroup->setEnabled(canModify);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
         // debug
@@ -1746,7 +1762,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_Save_project->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
-        ui->buildToolBar->setEnabled(false);
+        actionGroup->setEnabled(canModify);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
         // debug

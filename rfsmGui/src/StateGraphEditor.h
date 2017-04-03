@@ -130,9 +130,9 @@ public:
                    std::vector<std::string> &childs);
 
     /**
-     * @brief getStateByName, it returns the rfsm::StateGraph::State given the name, assertion if not found
+     * @brief getStateByName, search a state by name
      * @param stateName, name of the state
-     * @return
+     * @return the rfsm::StateGraph::State given the name, assertion if not found
      */
     rfsm::StateGraph::State getStateByName(const std::string stateName);
 
@@ -142,6 +142,12 @@ public:
      * @return
      */
     std::string getParent(const std::string& stateName);
+    /**
+     * @brief canModify,
+     * @param fileName, root fsm fileName
+     * @return true if all the states are defined in fileName, false otherwise
+     */
+    bool canModify(std::string fileName);
 
 private:
     /**
