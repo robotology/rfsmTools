@@ -133,6 +133,7 @@ void StateGraphEditor::addTransition(const std::string source,
 
     transition.source=source;
     transition.target=target;
+    transition.priority=0;
     std::stringstream ss;
     transition.events=events;
     if(find(graph->transitions.begin(),graph->transitions.end(),transition) != graph->transitions.end())
@@ -194,6 +195,28 @@ std::vector<std::string> StateGraphEditor::getEvents(const string source, const 
             return tr.events;
         }
     }
+}
+
+int StateGraphEditor::getPriority(const string source, const string target){
+    StateGraph::TransitionItr it;
+    for(it = graph->transitions.begin(); it<graph->transitions.end();it++) {
+        StateGraph::Transition &tr = *it;
+        if((tr.source == source) && (tr.target == target)){
+            return tr.priority;
+        }
+    }
+    return 0;
+}
+
+void StateGraphEditor::setPriority(const string source, const string target, int priority){
+    StateGraph::TransitionItr it;
+    for(it = graph->transitions.begin(); it<graph->transitions.end();it++) {
+        StateGraph::Transition &tr = *it;
+        if((tr.source == source) && (tr.target == target)){
+            tr.priority = priority;
+        }
+    }
+
 }
 
 

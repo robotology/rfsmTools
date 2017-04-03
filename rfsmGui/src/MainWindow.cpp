@@ -721,15 +721,23 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
     menu.addSeparator();
     menu.addAction(tr("Edit events"));
     menu.addSeparator();
+    menu.addAction(tr("Change priority"));
+    menu.addSeparator();
     QAction *action = menu.exec(QCursor::pos());
     if(action == 0)
         return;
+
+    // delete
+
     if(action->text().toStdString() == "Delete") {
         graphEditor.removeTransition(edge->getAttribute("sourcename").toStdString(),
                                edge->getAttribute("targetname").toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
+
+    // edit events
+
     if(action->text().toStdString() == "Edit events") {
         bool ok;
         QInputDialog* inputDialog = new QInputDialog();
@@ -783,6 +791,23 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
         switchMachineMode(BUILDER);
     }
 
+    // change priority
+
+    if(action->text().toStdString() == "Change priority"){
+        bool ok;
+        QInputDialog* inputDialog = new QInputDialog(this);
+        inputDialog->setOptions(QInputDialog::NoButtons);
+        int oldPriority=graphEditor.getPriority(edge->getAttribute("sourcename").toStdString(),
+                                                edge->getAttribute("targetname").toStdString());
+        int priority =  inputDialog->getInt(NULL ,"Change transition priority bumber",
+                                              "Priority number:",oldPriority , 0, 2147483647, 100, &ok);
+         if (ok && (priority > 0)) {
+            graphEditor.setPriority(edge->getAttribute("sourcename").toStdString(),
+                                    edge->getAttribute("targetname").toStdString(), priority);
+            drawStateMachine(graph);
+            switchMachineMode(BUILDER);
+         }
+    }
 }
 
 void MainWindow::nodeContextMenu(QGVNode *node)
@@ -1583,7 +1608,8 @@ void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
         pos=target.find_first_of(".end");
         if(pos != string::npos)
             target.substr(0,pos);
-        string line="rfsm.trans{ src = '" + source + "', tgt = '" + target + "'";
+        string line="rfsm.trans{ src = '" + source + "', tgt = '" + target + "', pn = "
+                +QString::number(graph.transitions[i].priority).toStdString();
         if(graph.transitions[i].events.size()!=0)
         {
             line += ", events = {";

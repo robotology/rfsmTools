@@ -102,6 +102,23 @@ public:
      */
     std::vector<std::string> getEvents(const std::string source,
                                        const std::string target);
+    /**
+     * @brief getPriority, get the priority related to a rfsm::StateGraph::Transition
+     * @param source, name of the source state
+     * @param target, name of the target state
+     * @return the priority number
+     */
+    int getPriority(const std::string source,
+                    const std::string target);
+    /**
+     * @brief setPriority, set the priority related to a rfsm::StateGraph::Transition
+     * @param source, name of the source state
+     * @param target, name of the target state
+     * @param priority, priority to be assigned
+     */
+    void setPriority(const std::string source,
+                     const std::string target,
+                     int priority);
 
     /**
      * @brief getChilds, get the "first" childs of a state
