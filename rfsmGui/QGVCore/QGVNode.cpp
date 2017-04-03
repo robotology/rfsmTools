@@ -141,12 +141,12 @@ void QGVNode::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
 
 void QGVNode::setAttribute(const QString &name, const QString &value)
 {
-		agsafeset(_node->node(), name.toLocal8Bit().data(), value.toLocal8Bit().data(), "");
+    agsafeset(_node->node(), name.toLocal8Bit().data(), value.toLocal8Bit().data(), (char *)"");
 }
 
 QString QGVNode::getAttribute(const QString &name) const
 {
-		char* value = agget(_node->node(), name.toLocal8Bit().data());
+    char* value = agget(_node->node(), name.toLocal8Bit().data());
     if(value)
         return value;
     return QString();

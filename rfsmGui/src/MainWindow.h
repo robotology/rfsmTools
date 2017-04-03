@@ -81,8 +81,8 @@ public:
         IDLE,
         RUN,
         PAUSE,
-		ASK_PAUSE,
-		ASK_STOP,
+        ASK_PAUSE,
+        ASK_STOP,
         DEBUG
     };
 

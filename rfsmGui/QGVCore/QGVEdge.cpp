@@ -102,7 +102,7 @@ void QGVEdge::paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
 
 void QGVEdge::setAttribute(const QString &name, const QString &value)
 {
-    agsafeset(_edge->edge(), name.toLocal8Bit().data(), value.toLocal8Bit().data(), "");
+    agsafeset(_edge->edge(), name.toLocal8Bit().data(), value.toLocal8Bit().data(), (char *)"");
 }
 
 QString QGVEdge::getAttribute(const QString &name) const

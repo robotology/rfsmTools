@@ -690,7 +690,7 @@ void MainWindow::showEvent(QShowEvent *ev) {
     yarp::os::ResourceFinder rf;
     rf.setDefaultContext("iol/lua");
     rf.setVerbose(true);
-    char* argv[] = {"rfsmGui"};
+    char* argv[] = {(char *) "rfsmGui"};
     rf.configure(1, argv);
     filename = rf.findFile(parser->value("rfsm").toStdString().c_str());
 #endif
