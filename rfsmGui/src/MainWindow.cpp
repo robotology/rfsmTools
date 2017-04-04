@@ -691,7 +691,7 @@ void MainWindow::showEvent(QShowEvent *ev) {
         std::string filename = parser->value("rfsm").toStdString();
 #ifdef USE_YARP
         yarp::os::ResourceFinder rf;
-        rf.setDefaultContext("iol/lua");
+        rf.setDefaultContext(parser->value("context").toStdString().c_str());
         rf.setVerbose(true);
         char* argv[] = {(char *) "rfsmGui"};
         rf.configure(1, argv);

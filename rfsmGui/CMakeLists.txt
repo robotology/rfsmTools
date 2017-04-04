@@ -6,11 +6,13 @@ project(${PROJECTNAME})
 if(ENABLE_SIMRFSM)
     include(GNUInstallDirs)
 
-    find_package(Graphviz)
-    find_package(Qt5Widgets)
+    find_package(Graphviz REQUIRED)
+    find_package(Qt5Widgets REQUIRED)
 
-    # Find YARP (optional)
-    find_package(YARP)
+    if(USE_YARP)
+        # Find YARP (optional)
+        find_package(YARP)
+    endif()
 
     #########################################################################
     # Control where libraries and executables are placed during the build

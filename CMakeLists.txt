@@ -11,9 +11,10 @@ PROJECT(${PROJECTNAME})
 enable_testing()
 
 #add some options
-option (EMBED_RFSM  "Embed rfsm lua file into the librFSM" TRUE)
+option (EMBED_RFSM  "Embed rfsm lua file into the librFSM (optional)" TRUE)
 option (ENABLE_SIMRFSM  "build rfsm simulator" TRUE)
 option (BUILD_TESTING   "build tests" FALSE)
+option (USE_YARP "Use YARP (optional)" FALSE)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 

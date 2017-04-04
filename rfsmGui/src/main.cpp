@@ -38,6 +38,13 @@ int main(int argc, char *argv[])
             QCoreApplication::translate("main", "run the state machine at startup"));
     parser.addOption(forceOption);
 
+#ifdef USE_YARP
+    QCommandLineOption contextOption(QStringList() << "context",
+            QCoreApplication::translate("main", "set YARP application context name"),
+            QCoreApplication::translate("main", "context name"));
+    parser.addOption(contextOption);
+#endif
+
     // Process the actual command line arguments given by the user
     parser.process(app);
 
