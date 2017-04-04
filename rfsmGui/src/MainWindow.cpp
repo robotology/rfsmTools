@@ -1130,9 +1130,11 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 bool MainWindow::onCloserFSM()
 {
     string message="State machine is running.\nDo you want to stop it and close?";
+    if(machineMode==IDLE)
+        message="Do you want to close the current state machine?";
     if(machineMode==BUILDER)
         message="Changes has not been saved.\nDo you want to close and discard them?";
-    if(machineMode != IDLE && machineMode != UNLOADED) {
+    if(machineMode != UNLOADED) {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Quit", message.c_str(),
                                       QMessageBox::Yes|QMessageBox::No);
