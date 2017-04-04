@@ -811,18 +811,19 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
 
 void MainWindow::nodeContextMenu(QGVNode *node)
 {
-    if(!canModify)
-        return;
 
     if(!ui->action_Arrow->isChecked()
             || node->getAttribute("rawname").toStdString().find("initial") != string::npos
             || node->getAttribute("rawname").toStdString().find("end") != string::npos )
         return;
     QMenu menu(node->label());
-    menu.addSeparator();
-    menu.addAction(tr("Rename"));
-    menu.addSeparator();
-    menu.addAction(tr("Delete"));
+    if(canModify)
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Rename"));
+        menu.addSeparator();
+        menu.addAction(tr("Delete"));
+    }
     if(node->getAttribute("entry").size())
     {
         menu.addSeparator();
@@ -942,16 +943,16 @@ void MainWindow::nodeContextMenu(QGVNode *node)
 
 void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
 
-    if(!canModify)
-        return;
-
     if(!ui->action_Arrow->isChecked())
         return;
     QMenu menu(sgraph->name());
-    menu.addSeparator();
-    menu.addAction(tr("Rename"));
-    menu.addSeparator();
-    menu.addAction(tr("Delete"));
+    if(canModify)
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Rename"));
+        menu.addSeparator();
+        menu.addAction(tr("Delete"));
+    }
     if(sgraph->getAttribute("entry").size())
     {
         menu.addSeparator();
@@ -1321,7 +1322,7 @@ void MainWindow::onSourceCode() {
 }
 
 void MainWindow::onSourceCodeSaved() {
-    std::string filename = rfsm.getFileName();
+    std::string filename = sourceWindow->getFileName();
     QFile file(filename.c_str());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + filename).c_str()));
@@ -1333,7 +1334,7 @@ void MainWindow::onSourceCodeSaved() {
     file.close();
     initScene();
     rfsm.close();
-    loadrFSM(filename);
+    loadrFSM(rfsm.getFileName());
 }
 
 void MainWindow::showEvent(QShowEvent *ev) {
@@ -1361,6 +1362,7 @@ bool MainWindow::loadrFSMSourceCode(const std::string filename, QString& source)
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + rfsm.getFileName()).c_str()));
         return false;
     }
+    sourceWindow->setFileName(filename);
     source = file.readAll();
     file.close();
     return true;

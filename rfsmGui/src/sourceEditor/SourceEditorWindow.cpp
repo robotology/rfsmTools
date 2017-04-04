@@ -127,6 +127,13 @@ void SourceEditorWindow::setReadOnly(bool flag) {
     //ui->action_Save->setEnabled(!flag);
 }
 
+void SourceEditorWindow::setFileName(const std::string _fileName){
+    fileName=_fileName;
+}
+
+std::string SourceEditorWindow::getFileName(){
+    return fileName;
+}
 
 void SourceEditorWindow::onFontChanged() {
     bool ok;
