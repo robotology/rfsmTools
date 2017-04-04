@@ -375,9 +375,13 @@ void MainWindow::drawStateMachine() {
     ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 }
 
-bool MainWindow::loadrFSM(const std::string filename) {
+bool MainWindow::loadrFSM(const std::string fname) {
 
     ui->nodesTreeWidgetLog->clear();
+
+    QFileInfo finfo(fname.c_str());
+    QDir path = finfo.absoluteDir();
+    std::string filename = finfo.absoluteFilePath().toStdString();
 
     // loading the source code
     QString source;
@@ -387,13 +391,12 @@ bool MainWindow::loadrFSM(const std::string filename) {
     sourceWindow->setSourceCode(source);
 
     // setting lua extra paths
-    QDir path = QFileInfo(filename.c_str()).absoluteDir();
     rfsm.addLuaPackagePath((path.absolutePath()+"/?.lua").toStdString());
     QDir::setCurrent(path.absolutePath());
 
     // loading the state machine using rfsm
     if(!rfsm.load(filename)) {
-        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename).c_str()));        
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot load " + filename).c_str()));
         sourceWindow->show();
         return false;
     }
@@ -687,17 +690,17 @@ void MainWindow::showEvent(QShowEvent *ev) {
     if(parser->value("rfsm").size()) {
         std::string filename = parser->value("rfsm").toStdString();
 #ifdef USE_YARP
-    yarp::os::ResourceFinder rf;
-    rf.setDefaultContext("iol/lua");
-    rf.setVerbose(true);
-    char* argv[] = {(char *) "rfsmGui"};
-    rf.configure(1, argv);
-    filename = rf.findFile(parser->value("rfsm").toStdString().c_str());
+        yarp::os::ResourceFinder rf;
+        rf.setDefaultContext("iol/lua");
+        rf.setVerbose(true);
+        char* argv[] = {(char *) "rfsmGui"};
+        rf.configure(1, argv);
+        filename = rf.findFile(parser->value("rfsm").toStdString().c_str());
 #endif
-       bool ok = loadrFSM(filename);
-       if (ok && parser->isSet("run")) {
-           QTimer::singleShot(10, this, SLOT(onRunStartrFSM()));
-       }
+        bool ok = loadrFSM(filename);
+        if (ok && parser->isSet("run")) {
+            QTimer::singleShot(10, this, SLOT(onRunStartrFSM()));
+        }
     }
 }
 
