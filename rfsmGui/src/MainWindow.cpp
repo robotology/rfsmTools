@@ -872,9 +872,19 @@ void MainWindow::onQGVItemContextMenu(QGVAbstractItem* item) {
                                            item->getAttribute("label"), &ok);
 
         newName=newName.trimmed();
-         if (!ok || !newName.size()) {
+        if (!ok || !newName.size()) {
             return;
-         }
+        }
+
+        if(newName.contains(" "))
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Please remove spaces in the state name.");
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+            return;
+        }
+
         string parentName = item->getAttribute("rawname").toStdString();
         size_t idx=parentName.find_last_of('.');
 
