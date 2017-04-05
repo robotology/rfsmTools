@@ -250,6 +250,7 @@
     <addaction name="action_New_rFSM"/>
     <addaction name="action_LoadrFSM"/>
     <addaction name="action_Save_project"/>
+    <addaction name="action_Save_as"/>
     <addaction name="actionClose_rFSM"/>
     <addaction name="separator"/>
     <addaction name="actionExport_scene"/>
@@ -320,6 +321,9 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="windowTitle">
+    <string>Show Main Toolbar</string>
+   </property>
    <property name="movable">
     <bool>false</bool>
    </property>
@@ -351,7 +355,7 @@
     </sizepolicy>
    </property>
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Show Build Toolbar</string>
    </property>
    <property name="movable">
     <bool>false</bool>
@@ -665,6 +669,14 @@
    </property>
    <property name="text">
     <string>Close rFSM...</string>
+   </property>
+  </action>
+  <action name="action_Save_as">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
  </widget>

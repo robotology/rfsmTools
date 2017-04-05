@@ -132,6 +132,7 @@ private slots:
     void onLoadrFSM();
     void onNewrFSM();
     void onSaverFSM();
+    void onSaveAs();
     void onDebugStartrFSM();
     void onDebugSteprFSM();
     void onDebugResetrFSM();
@@ -185,6 +186,7 @@ private:
     StateGraphEditor graphEditor;
     bool isNew;
     bool canModify;
+    bool saveAs;
 
 };
 

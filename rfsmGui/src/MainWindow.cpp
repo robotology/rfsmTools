@@ -135,7 +135,8 @@ void MyStateMachine::onInfo(const string message) {
 /************************************************/
 MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     parser(prsr), QMainWindow(parent),
-    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED), line(NULL), isNew(false), canModify(false)
+    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED),
+    line(NULL), isNew(false), canModify(false), saveAs(false)
 {
     ui->setupUi(this);
 
@@ -157,6 +158,7 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(ui->action_LoadrFSM, SIGNAL(triggered()),this,SLOT(onLoadrFSM()));
     connect(ui->action_New_rFSM, SIGNAL(triggered()),this,SLOT(onNewrFSM()));
     connect(ui->action_Save_project, SIGNAL(triggered()),this,SLOT(onSaverFSM()));
+    connect(ui->action_Save_as, SIGNAL(triggered()),this,SLOT(onSaveAs()));
     connect(ui->pushButtonSendEvent, SIGNAL(clicked()),this, SLOT(onSendEvent()));
     connect(ui->actionChangeRunPeriod, SIGNAL(triggered()),this,SLOT(onChangeRunPeriod()));
     connect(ui->actionClose_rFSM, SIGNAL(triggered()),this,SLOT(onCloserFSM()));
@@ -196,6 +198,7 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     version="";
     ui->actionCurved->setChecked(true);
     ui->action_Save_project->setEnabled(false);
+    ui->action_Save_as->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
     ui->actionDocumentaion->setEnabled(false);
     ui->actionDryrun->setChecked(true);
@@ -536,6 +539,7 @@ void MainWindow::onSaverFSM(){
     }
     switchMachineMode(IDLE);
     ui->action_Save_project->setEnabled(false);
+    ui->action_Save_as->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
     QFile file(this->fileName);
     vector<string> sourceCode;
@@ -559,6 +563,24 @@ void MainWindow::onSaverFSM(){
 
     writeLuaFile(sourceCode);
 
+    if(saveAs)
+    {
+        QString filters("rFSM state machine (*.lua)");
+        QString defaultFilter("rFSM state machine (*.lua)");
+        QString filename = QFileDialog::getSaveFileName(0, "Save File As",
+                                                        QDir::currentPath(),
+                                                        filters, &defaultFilter);
+        if(filename.trimmed().size() == 0 || filename.contains(" ")){
+            QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Invalid file name " + filename.toStdString()).c_str()));
+            saveAs = false;
+            switchMachineMode(BUILDER);
+            return;
+        }
+        fileName = filename;
+        file.setFileName(fileName);
+        saveAs = false;
+    }
+
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + this->fileName.toStdString()).c_str()));
         return;
@@ -579,6 +601,14 @@ void MainWindow::onSaverFSM(){
     isNew=false;
     //remember to set the stato to UNLOADED if the saving fails
 }
+
+void MainWindow::onSaveAs()
+{
+    saveAs=true;
+    onSaverFSM();
+
+}
+
 
 void MainWindow::onDebugStartrFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {        
@@ -1093,6 +1123,7 @@ void MainWindow::onSceneLeftClicked(QPointF pos) {
         }
         ui->graphicsView->viewport()->setCursor(Qt::ClosedHandCursor);
         ui->action_Save_project->setEnabled(true);
+        ui->action_Save_as->setEnabled(true);
         switchMachineMode(BUILDER);
         return;
     }
@@ -1594,6 +1625,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(true);
         ui->action_New_rFSM->setEnabled(true);
         ui->action_Save_project->setEnabled(false);
+        ui->action_Save_as->setEnabled(false);
         actionGroup->setEnabled(false);
         if(actionGroup->checkedAction())
             actionGroup->checkedAction()->setChecked(false);
@@ -1632,6 +1664,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         ui->action_Save_project->setEnabled(true);
+        ui->action_Save_as->setEnabled(true);
         actionGroup->setEnabled(canModify);
         ui->actionSourceCode->setEnabled(false);
         ui->actionClose_rFSM->setEnabled(true);
@@ -1647,6 +1680,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         break;
     case DEBUG:
         ui->action_Save_project->setEnabled(false);
+        ui->action_Save_as->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         actionGroup->setEnabled(canModify);
@@ -1665,6 +1699,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         break;
     case RUN:
         ui->action_Save_project->setEnabled(false);
+        ui->action_Save_as->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         actionGroup->setEnabled(canModify);
@@ -1683,6 +1718,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         break;
     case PAUSE:
         ui->action_Save_project->setEnabled(false);
+        ui->action_Save_as->setEnabled(false);
         ui->action_LoadrFSM->setEnabled(false);
         ui->action_New_rFSM->setEnabled(false);
         actionGroup->setEnabled(canModify);
