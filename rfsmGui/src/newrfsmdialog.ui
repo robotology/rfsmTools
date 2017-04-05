@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>611</width>
-    <height>340</height>
+    <height>370</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,67 +34,69 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_5">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <widget class="QLabel" name="label_5">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>50</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="pixmap">
-           <pixmap resource="ress.qrc">:/icons/resources/rfsmGui.svg</pixmap>
-          </property>
-          <property name="scaledContents">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_6">
-          <property name="autoFillBackground">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Create a new rFSM, please specify &quot;File Name&quot;.</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::PlainText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QLabel" name="label_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>190</width>
+          <height>280</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="ress.qrc">:/image/resources/new_state.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>9</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_6">
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Create a new rFSM, please specify &quot;File Name&quot;.</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::PlainText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -218,8 +220,6 @@
     </layout>
    </item>
   </layout>
-  <zorder>buttonBox</zorder>
-  <zorder></zorder>
   <zorder>horizontalSpacer</zorder>
   <zorder>frame</zorder>
  </widget>

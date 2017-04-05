@@ -25,4 +25,7 @@
         <file>resources/connectorCursor.svg</file>
         <file>resources/actions-close.svg</file>
     </qresource>
+    <qresource prefix="/image">
+        <file>resources/new_state.png</file>
+    </qresource>
 </RCC>
