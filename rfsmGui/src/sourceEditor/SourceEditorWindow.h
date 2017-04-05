@@ -16,12 +16,11 @@ class SourceEditorWindow : public QMainWindow
 public:
     explicit SourceEditorWindow(QWidget *parent = 0);
     ~SourceEditorWindow();
-    void setSourceCode(const QString& sourceCode);
+    void setSourceCode(const QString& sourceCode, const std::string filename, bool readOnly=false);
     QString& getSourceCode();
     void goToLine(const int line, bool errored=false);
     void setErrorMessage(const QString& message, const int line=0);
     void setReadOnly(bool flag);
-    void setFileName(const std::string _fileName);
     std::string getFileName();
 
 signals:

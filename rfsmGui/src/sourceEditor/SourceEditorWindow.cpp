@@ -22,7 +22,7 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
     QFontMetrics metrics(font);
     ui->textEdit->setTabStopWidth(settings.value("editor-tab-size", 4).toInt() * metrics.width(' '));
     ui->action_Save->setEnabled(false);
-    highlighter = new Highlighter(ui->textEdit->document());    
+    highlighter = new Highlighter(ui->textEdit->document());
 
     connect(ui->action_Save, SIGNAL(triggered()),this,SLOT(onSave()));
     connect(ui->action_Close, SIGNAL(triggered()),this,SLOT(onClose()));
@@ -42,12 +42,15 @@ void SourceEditorWindow::onTextChanged() {
 }
 
 
-void SourceEditorWindow::setSourceCode(const QString& sourceCode){
+void SourceEditorWindow::setSourceCode(const QString& sourceCode, const std::string filename, bool readOnly){
     SourceEditorWindow::sourceCode = sourceCode;
+    SourceEditorWindow::fileName = filename;
     ui->textEdit->clear();
     ui->textEdit->setPlainText(sourceCode);
-    showStatusBarMessage("");    
+    showStatusBarMessage("");
     ui->action_Save->setEnabled(false);
+    setReadOnly(readOnly);
+
 }
 
 void SourceEditorWindow::closeEvent(QCloseEvent *event)
@@ -124,12 +127,8 @@ void SourceEditorWindow::setErrorMessage(const QString& message, const int line)
 
 void SourceEditorWindow::setReadOnly(bool flag) {
     ui->textEdit->setReadOnly(flag);
-    //ui->action_Save->setEnabled(!flag);
 }
 
-void SourceEditorWindow::setFileName(const std::string _fileName){
-    fileName=_fileName;
-}
 
 std::string SourceEditorWindow::getFileName(){
     return fileName;

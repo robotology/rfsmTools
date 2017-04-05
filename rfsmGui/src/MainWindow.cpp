@@ -449,7 +449,7 @@ bool MainWindow::loadrFSM(const std::string fname) {
     if(!loadrFSMSourceCode(filename, source))
         return false;
 
-    sourceWindow->setSourceCode(source);
+    sourceWindow->setSourceCode(source, filename);
 
     // setting lua extra paths
     rfsm.addLuaPackagePath((path.absolutePath()+"/?.lua").toStdString());
@@ -750,12 +750,9 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
                 events += ", ";
         }
 
-
-
         QString event =  inputDialog->getText(NULL,"Edit events",
                                           "Name:", QLineEdit::Normal,
                                            events.c_str(), &ok);
-
         if(!ok)
             return;
 
@@ -791,7 +788,6 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
     }
 
     // change priority
-
     if(action->text().toStdString() == "Change priority"){
         bool ok;
         QInputDialog* inputDialog = new QInputDialog(this);
@@ -799,7 +795,7 @@ void MainWindow::edgeContextMenu(QGVEdge* edge) {
         int oldPriority=graphEditor.getPriority(edge->getAttribute("sourcename").toStdString(),
                                                 edge->getAttribute("targetname").toStdString());
         int priority =  inputDialog->getInt(NULL ,"Change transition priority bumber",
-                                              "Priority number:",oldPriority , 0, 2147483647, 100, &ok);
+                                              "Priority number:",oldPriority , 0, 2147483647, 1, &ok);
          if (ok && (priority > 0)) {
             graphEditor.setPriority(edge->getAttribute("sourcename").toStdString(),
                                     edge->getAttribute("targetname").toStdString(), priority);
@@ -816,136 +812,19 @@ void MainWindow::nodeContextMenu(QGVNode *node)
             || node->getAttribute("rawname").toStdString().find("initial") != string::npos
             || node->getAttribute("rawname").toStdString().find("end") != string::npos )
         return;
-    QMenu menu(node->label());
-    if(canModify)
-    {
-        menu.addSeparator();
-        menu.addAction(tr("Rename"));
-        menu.addSeparator();
-        menu.addAction(tr("Delete"));
-    }
-    if(node->getAttribute("entry").size())
-    {
-        menu.addSeparator();
-        menu.addAction(tr("Edit entry()"));
-    }
-    if(node->getAttribute("doo").size())
-    {
-        menu.addSeparator();
-        menu.addAction(tr("Edit doo()"));
-    }
-    if(node->getAttribute("exit").size())
-    {
-        menu.addSeparator();
-        menu.addAction(tr("Edit exit()"));
-    }
 
-    QAction *action = menu.exec(QCursor::pos());
-    if(action == 0)
-        return;
-
-    //delete
-
-    if(action->text().toStdString() == "Delete") {
-        graphEditor.removeState(node->getAttribute("rawname").toStdString());
-        drawStateMachine(graph);
-        switchMachineMode(BUILDER);
-        return;
-
-    }
-
-    //rename
-
-    if(action->text().toStdString() == "Rename")
-    {
-        bool ok;
-        QInputDialog* inputDialog = new QInputDialog();
-        inputDialog->setOptions(QInputDialog::NoButtons);
-
-        QString newName =  inputDialog->getText(NULL,"Set state name",
-                                          "Name:", QLineEdit::Normal,
-                                           node->getAttribute("label"), &ok);
-
-        newName=newName.trimmed();
-        if (!ok || !newName.size()) {
-            QMessageBox msgBox;
-            msgBox.setText("State name empty");
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.exec();
-            return;
-        }
-        string parentName = node->getAttribute("rawname").toStdString();
-        size_t idx=parentName.find_last_of('.');
-
-        if(idx != string::npos)
-        {
-            parentName.erase(parentName.begin()+idx, parentName.end());
-            newName =QString(parentName.c_str()) + "." + newName;
-        }
-
-        //Checking if the state is already present
-        rfsm::StateGraph::State st;
-        st.name = newName.toStdString();
-        rfsm::StateGraph::StateItr it;
-        it= std::find(graph.states.begin(), graph.states.end(), st);
-        if(it != graph.states.end())
-        {
-            QMessageBox msgBox;
-            msgBox.setText("This state is already present.");
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.exec();
-            return;
-        }
-
-        graphEditor.renameState(node->getAttribute("rawname").toStdString(), newName.toStdString());
-        drawStateMachine(graph);
-        switchMachineMode(BUILDER);
-    }
-    //edit entry
-    if(action->text().toStdString() == "Edit entry()")
-    {
-        int line=(node->getAttribute("lineEntry")).toInt();
-        QString source;
-        if(!loadrFSMSourceCode(node->getAttribute("entry").toStdString(), source))
-            return;
-        sourceWindow->setSourceCode(source);
-
-        sourceWindow->goToLine(line-1);
-        sourceWindow->show();
-    }
-
-    //edit doo
-    if(action->text().toStdString() == "Edit doo()")
-    {
-        int line=(node->getAttribute("lineDoo")).toInt();
-        QString source;
-        if(!loadrFSMSourceCode(node->getAttribute("doo").toStdString(), source))
-            return;
-        sourceWindow->setSourceCode(source);
-
-        sourceWindow->goToLine(line-1);
-        sourceWindow->show();
-    }
-
-    //edit exit
-    if(action->text().toStdString() == "Edit exit()")
-    {
-        int line=(node->getAttribute("lineExit")).toInt();
-        QString source;
-        if(!loadrFSMSourceCode(node->getAttribute("exit").toStdString(), source))
-            return;
-        sourceWindow->setSourceCode(source);
-
-        sourceWindow->goToLine(line-1);
-        sourceWindow->show();
-    }
+    onQGVItemContextMenu(node);
 }
 
 void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
 
     if(!ui->action_Arrow->isChecked())
         return;
-    QMenu menu(sgraph->name());
+    onQGVItemContextMenu(sgraph);
+}
+
+void MainWindow::onQGVItemContextMenu(QGVAbstractItem* item) {
+    QMenu menu("");
     if(canModify)
     {
         menu.addSeparator();
@@ -953,17 +832,17 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
         menu.addSeparator();
         menu.addAction(tr("Delete"));
     }
-    if(sgraph->getAttribute("entry").size())
+    if(item->getAttribute("entry").size())
     {
         menu.addSeparator();
         menu.addAction(tr("Edit entry()"));
     }
-    if(sgraph->getAttribute("doo").size())
+    if(item->getAttribute("doo").size())
     {
         menu.addSeparator();
         menu.addAction(tr("Edit doo()"));
     }
-    if(sgraph->getAttribute("exit").size())
+    if(item->getAttribute("exit").size())
     {
         menu.addSeparator();
         menu.addAction(tr("Edit exit()"));
@@ -975,7 +854,7 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
     //delete
 
     if(action->text().toStdString() == "Delete") {
-        graphEditor.removeState(sgraph->getAttribute("rawname").toStdString());
+        graphEditor.removeState(item->getAttribute("rawname").toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
@@ -990,13 +869,13 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
 
         QString newName =  inputDialog->getText(NULL,"Set state name",
                                           "Name:", QLineEdit::Normal,
-                                           sgraph->getAttribute("label"), &ok);
+                                           item->getAttribute("label"), &ok);
 
         newName=newName.trimmed();
          if (!ok || !newName.size()) {
             return;
          }
-        string parentName = sgraph->getAttribute("rawname").toStdString();
+        string parentName = item->getAttribute("rawname").toStdString();
         size_t idx=parentName.find_last_of('.');
 
         if(idx != string::npos)
@@ -1019,7 +898,7 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
             return;
         }
 
-        graphEditor.renameState(sgraph->getAttribute("rawname").toStdString(), newName.toStdString());
+        graphEditor.renameState(item->getAttribute("rawname").toStdString(), newName.toStdString());
         drawStateMachine(graph);
         switchMachineMode(BUILDER);
     }
@@ -1027,42 +906,39 @@ void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
     //edit entry
     if(action->text().toStdString() == "Edit entry()")
     {
-        int line=(sgraph->getAttribute("lineEntry")).toInt();
+        int line=(item->getAttribute("lineEntry")).toInt();
         QString source;
-        if(!loadrFSMSourceCode(sgraph->getAttribute("entry").toStdString(), source))
+        if(!loadrFSMSourceCode(item->getAttribute("entry").toStdString(), source))
             return;
-        sourceWindow->setSourceCode(source);
+        sourceWindow->setSourceCode(source, item->getAttribute("entry").toStdString());
 
         sourceWindow->goToLine(line-1);
         sourceWindow->show();
     }
-
     //edit doo
-    if(action->text().toStdString() == "Edit doo()")
+    else if(action->text().toStdString() == "Edit doo()")
     {
-        int line=(sgraph->getAttribute("lineDoo")).toInt();
+        int line=(item->getAttribute("lineDoo")).toInt();
         QString source;
-        if(!loadrFSMSourceCode(sgraph->getAttribute("doo").toStdString(), source))
+        if(!loadrFSMSourceCode(item->getAttribute("doo").toStdString(), source))
             return;
-        sourceWindow->setSourceCode(source);
+        sourceWindow->setSourceCode(source, item->getAttribute("doo").toStdString());
 
         sourceWindow->goToLine(line-1);
         sourceWindow->show();
     }
-
     //edit exit
-    if(action->text().toStdString() == "Edit exit()")
+    else if(action->text().toStdString() == "Edit exit()")
     {
-        int line=(sgraph->getAttribute("lineExit")).toInt();
+        int line=(item->getAttribute("lineExit")).toInt();
         QString source;
-        if(!loadrFSMSourceCode(sgraph->getAttribute("exit").toStdString(), source))
+        if(!loadrFSMSourceCode(item->getAttribute("exit").toStdString(), source))
             return;
-        sourceWindow->setSourceCode(source);
+        sourceWindow->setSourceCode(source, item->getAttribute("exit").toStdString());
 
         sourceWindow->goToLine(line-1);
         sourceWindow->show();
     }
-
 }
 
 void MainWindow::nodeDoubleClick(QGVNode *node)
@@ -1251,8 +1127,8 @@ void MainWindow::onSceneMouseReleased(QPointF pos) {
 
             if(pos != string::npos){
                 string tmp = source.substr(0,pos);
-                shouldConnect &= (getParent(target) == getParent(source))
-                        || getParent(target)->getAttribute("rawname").contains(QString((tmp+".").c_str())); //it means that target is child of source
+                shouldConnect &= (getParent(target) == getParent(source)) ||
+                        (getParent(target) && getParent(target)->getAttribute("rawname").contains(QString((tmp+".").c_str()))); //it means that target is child of source
             }
 
             if(shouldConnect) {
@@ -1316,9 +1192,9 @@ void MainWindow::onSourceCode() {
     QString source;
     if(!loadrFSMSourceCode(rfsm.getFileName(), source))
         return;
-    sourceWindow->setSourceCode(source);
+    sourceWindow->setSourceCode(source, rfsm.getFileName());
     sourceWindow->setReadOnly(false);
-    sourceWindow->show();    
+    sourceWindow->show();
 }
 
 void MainWindow::onSourceCodeSaved() {
@@ -1335,6 +1211,12 @@ void MainWindow::onSourceCodeSaved() {
     initScene();
     rfsm.close();
     loadrFSM(rfsm.getFileName());
+
+    QString source;
+    if(!loadrFSMSourceCode(filename, source))
+        return;
+    sourceWindow->setSourceCode(source, filename);
+
 }
 
 void MainWindow::showEvent(QShowEvent *ev) {
@@ -1362,7 +1244,6 @@ bool MainWindow::loadrFSMSourceCode(const std::string filename, QString& source)
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + rfsm.getFileName()).c_str()));
         return false;
     }
-    sourceWindow->setFileName(filename);
     source = file.readAll();
     file.close();
     return true;
@@ -1382,7 +1263,7 @@ void MainWindow::onFileChanged(const QString &path){
         if(sourceWindow->isActiveWindow()) {
             QString source;
             if(loadrFSMSourceCode(path.toStdString(), source))
-                sourceWindow->setSourceCode(source);
+                sourceWindow->setSourceCode(source, path.toStdString());
         }
         else
             loadrFSM(path.toStdString());
@@ -1472,7 +1353,7 @@ void MainWindow::onError(const string message, const string currentState) {
     if(rfsm.getFileName() != filename.toStdString()) {
         QString source;
         loadrFSMSourceCode(filename.toStdString(), source);
-        sourceWindow->setSourceCode(source);
+        sourceWindow->setSourceCode(source, filename.toStdString());
     }
 
     filename = QFileInfo(filename).fileName();
@@ -1580,8 +1461,16 @@ void MainWindow::writeState(const rfsm::StateGraph::State state, std::vector<std
             sourceCode.push_back(identationFunc + funcCode[i]);
         // generating doo code
         readLuaFuncCode(state.doo, funcCode, identationFunc.size());
-        for(int i=0; i<funcCode.size(); i++)
-            sourceCode.push_back(identationFunc + funcCode[i]);
+        if(funcCode.size()) {
+            for(int i=0; i<funcCode.size(); i++)
+                sourceCode.push_back(identationFunc + funcCode[i]);
+        }
+        else if(state.type == "single") // generate doo() function
+        {
+            sourceCode.push_back(identationFunc + "doo = function()   end,");
+            sourceCode.push_back("");
+        }
+
         // generating exit code
         readLuaFuncCode(state.exit, funcCode, identationFunc.size());
         for(int i=0; i<funcCode.size(); i++)

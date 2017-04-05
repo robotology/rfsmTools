@@ -18,6 +18,7 @@ License along with this library.
 #ifndef QGVSUBGRAPH_H
 #define QGVSUBGRAPH_H
 
+#include <QGVAbstractItem.h>
 #include <qgv.h>
 #include <QGraphicsItem>
 #include <QPen>
@@ -31,7 +32,7 @@ class QGVGraphPrivate;
  * @brief SubGraph item
  *
  */
-class QGVCORE_EXPORT QGVSubGraph : public QGraphicsItem
+class QGVCORE_EXPORT QGVSubGraph : public QGraphicsItem, public QGVAbstractItem
 {
 public:
     ~QGVSubGraph();
@@ -43,11 +44,12 @@ public:
 
     QRectF boundingRect() const;
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
-    void setAttribute(const QString &name, const QString &value);
-    QString getAttribute(const QString &name) const;
     void updateLayout();
     void setActive(bool activeMode);
     void setError(const std::string& errorMessage);
+
+    virtual void setAttribute(const QString &name, const QString &value);
+    virtual QString getAttribute(const QString &name) const;
 
     enum { Type = UserType + 4 };
     int type() const

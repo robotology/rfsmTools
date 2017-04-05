@@ -473,6 +473,9 @@
    <property name="toolTip">
     <string>Dubug Step</string>
    </property>
+   <property name="shortcut">
+    <string>F11</string>
+   </property>
   </action>
   <action name="actionDebugStart">
    <property name="icon">
@@ -484,6 +487,9 @@
    </property>
    <property name="toolTip">
     <string>Dubug Run</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
    </property>
   </action>
   <action name="actionDebugReset">
@@ -513,6 +519,9 @@
    </property>
    <property name="text">
     <string>&amp;Start</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
   <action name="actionRunPause">

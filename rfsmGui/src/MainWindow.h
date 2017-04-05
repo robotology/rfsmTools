@@ -10,6 +10,7 @@
 
 #include <QMainWindow>
 #include <QCommandLineParser>
+#include <QGVAbstractItem.h>
 #include <QGVScene.h>
 #include <QStringList>
 #include <QStringListModel>
@@ -117,6 +118,7 @@ private:
     void writeLuaFile(std::vector<std::string> &sourceCode);
     std::string getIdentation(std::string name);
     bool isInitialConnected();
+    void onQGVItemContextMenu(QGVAbstractItem* item);
 
 private slots:
     void nodeContextMenu(QGVNode* node);

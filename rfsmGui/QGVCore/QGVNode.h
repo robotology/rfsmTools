@@ -18,6 +18,7 @@ License along with this library.
 #ifndef QGVNODE_H
 #define QGVNODE_H
 
+#include <QGVAbstractItem.h>
 #include <qgv.h>
 #include <QGraphicsItem>
 #include <QPen>
@@ -30,7 +31,7 @@ class QGVNodePrivate;
  * @brief Node item
  *
  */
-class QGVCORE_EXPORT QGVNode : public QGraphicsItem
+class QGVCORE_EXPORT QGVNode : public QGraphicsItem, public QGVAbstractItem
 {
 public:
     ~QGVNode();
@@ -40,14 +41,15 @@ public:
 
     QRectF boundingRect() const;
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
-    void setAttribute(const QString &label, const QString &value);
-    QString getAttribute(const QString &name) const;
-
     void setIcon(const QImage &icon);
     void setVertex(void* v);
     void* getVertex();
     void setActive(bool activeMode);
     void setError(const std::string &errorMessage);
+
+    virtual void setAttribute(const QString &label, const QString &value);
+    virtual QString getAttribute(const QString &name) const;
+
 
     enum { Type = UserType + 2 };
     int type() const
