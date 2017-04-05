@@ -16,7 +16,7 @@ NewRFSMDialog::NewRFSMDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->filenameEdit->setPlaceholderText("File name");
+    ui->filenameEdit->setPlaceholderText(QDir::currentPath());
     ui->descriptionEdit->setPlaceholderText("Created using rFSMGui");
     QString authors=qgetenv("USERNAME");
     if(!authors.size())
@@ -38,7 +38,7 @@ void NewRFSMDialog::onBrowseFile()
     QString filters("rFSM state machine (*.lua);;All files (*.*)");
     QString defaultFilter("rFSM state machine (*.lua)");
     QString filename = QFileDialog::getSaveFileName(0, "Load rFSM state machine",
-                                                    QDir::homePath(),
+                                                    QDir::currentPath(),
                                                     filters, &defaultFilter);
     if(filename.size() == 0)
         return;
