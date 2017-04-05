@@ -52,9 +52,10 @@ Highlighter::Highlighter(QTextDocument *parent)
     keywordRFSMFormat.setFontItalic(true);
     QStringList keywordRFSMPatterns;
     keywordRFSMPatterns << "\\brfsm.state\\b" << "\\brfsm.csta\\b" << "\\brfsm.sista\\b"
-                        << "\\brfsm.transition\\b" << "\\bsrc\\b" << "\\btgt\\b"
+                        << "\\brfsm.transition\\b"<< "\\brfsm.conn\\b"<< "\\brfsm.connector\\b"
+                        << "\\bsrc\\b" << "\\btgt\\b" << "\\brfsm.trans\\b"
                         << "\\bevents\\b" << "\\bguard\\b" << "\\beffect\\b"
-                        << "\\bentry\\b" << "\\bdoo\\b" << "\\bexit\\b" ;
+                        << "\\bentry\\b" << "\\bdoo\\b" << "\\bexit\\b" << "\\bpn\\b" ;
     foreach (const QString &pattern, keywordRFSMPatterns) {
         rule.pattern = QRegExp(pattern);
         rule.format = keywordRFSMFormat;

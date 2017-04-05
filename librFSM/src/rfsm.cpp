@@ -20,6 +20,11 @@ extern "C" const char gen_rfsm_utils_res[];
 
 
 
+void StateGraph::clear() {
+    states.clear();
+    transitions.clear();
+}
+
 class StateMachine::Private {
 public:
 	Private() : L(NULL) { } 

@@ -16,10 +16,12 @@ class SourceEditorWindow : public QMainWindow
 public:
     explicit SourceEditorWindow(QWidget *parent = 0);
     ~SourceEditorWindow();
-    void setSourceCode(const QString& sourceCode);
+    void setSourceCode(const QString& sourceCode, const std::string filename, bool readOnly=false);
     QString& getSourceCode();
+    void goToLine(const int line, bool errored=false);
     void setErrorMessage(const QString& message, const int line=0);
     void setReadOnly(bool flag);
+    std::string getFileName();
 
 signals:
     void sourceCodeSaved();
@@ -34,7 +36,8 @@ private slots:
 private:
     void showStatusBarMessage(const QString& message,
                               QColor color = Qt::black);
-private:    
+private:
+    std::string fileName;
     QString sourceCode;
     Ui::SourceEditorWindow *ui;
     Highlighter *highlighter;

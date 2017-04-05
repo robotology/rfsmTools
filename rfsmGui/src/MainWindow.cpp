@@ -19,10 +19,15 @@
 #include "QGVSubGraph.h"
 #include <QTime>
 #include <QMessageBox>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QtPrintSupport/QPrinter>
+#include <QMenu>
+#include "newrfsmdialog.h"
+#include <QActionGroup>
 #include <QMutexLocker>
+#include <QTextStream>
 
 #ifdef USE_YARP
     #include <yarp/os/ResourceFinder.h>
@@ -126,13 +131,12 @@ void MyStateMachine::onInfo(const string message) {
 }
 
 
-
 /************************************************/
 /* MainWindow                                   */
 /************************************************/
 MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     parser(prsr), QMainWindow(parent),
-    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED)
+    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED), line(NULL), isNew(false), canModify(false)
 {
     ui->setupUi(this);
 
@@ -140,14 +144,24 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     initScene();
 
     watcher = new QFileSystemWatcher(this);
-
+    actionGroup = new QActionGroup(this) ;
+    actionGroup->addAction(ui->action_Single_State);
+    actionGroup->addAction(ui->action_Composite_State);
+    actionGroup->addAction(ui->action_Transition);
+    actionGroup->addAction(ui->action_Connector);
+    actionGroup->addAction(ui->action_Arrow);
+    actionGroup->setExclusive(true);
 
     connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(onFileChanged(const QString &)));
     connect(ui->actionQuit, SIGNAL(triggered()),this,SLOT(onQuit()));
     connect(ui->actionAbout, SIGNAL(triggered()),this,SLOT(onAbout()));
     connect(ui->action_LoadrFSM, SIGNAL(triggered()),this,SLOT(onLoadrFSM()));
+    connect(ui->action_New_rFSM, SIGNAL(triggered()),this,SLOT(onNewrFSM()));
+    connect(ui->action_Save_project, SIGNAL(triggered()),this,SLOT(onSaverFSM()));
     connect(ui->pushButtonSendEvent, SIGNAL(clicked()),this, SLOT(onSendEvent()));
     connect(ui->actionChangeRunPeriod, SIGNAL(triggered()),this,SLOT(onChangeRunPeriod()));
+    connect(ui->actionClose_rFSM, SIGNAL(triggered()),this,SLOT(onCloserFSM()));
+
 
     connect(ui->actionDebugStart, SIGNAL(triggered()),this,SLOT(onDebugStartrFSM()));
     connect(ui->actionDebugStep, SIGNAL(triggered()),this,SLOT(onDebugSteprFSM()));
@@ -177,6 +191,10 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(sourceWindow, SIGNAL(sourceCodeSaved()), SLOT(onSourceCodeSaved()));
 
     layoutStyle = "spline";
+    fileName="";
+    authors="";
+    description="";
+    version="";
     ui->actionCurved->setChecked(true);
     ui->action_Save_project->setEnabled(false);
     ui->action_LoadrFSM->setEnabled(true);
@@ -210,12 +228,40 @@ void MainWindow::initScene() {
         scene->clear();
         delete scene;
     }
+    graphEditor.setGraph(graph);
     scene = new QGVScene("rFSM", this);
     ui->graphicsView->setBackgroundBrush(QBrush(QColor("#2e3e56"), Qt::SolidPattern));
     ui->graphicsView->setScene(scene);
     connect(scene, SIGNAL(nodeContextMenu(QGVNode*)), SLOT(nodeContextMenu(QGVNode*)));
     connect(scene, SIGNAL(nodeDoubleClick(QGVNode*)), SLOT(nodeDoubleClick(QGVNode*)));
     connect(scene, SIGNAL(edgeContextMenu(QGVEdge*)), SLOT(edgeContextMenu(QGVEdge*)));
+    connect(scene, SIGNAL(subGraphContextMenu(QGVSubGraph*)), SLOT(subGraphContextMenu(QGVSubGraph*)));
+
+
+    connect(scene, SIGNAL(sceneLeftClicked(QPointF)), SLOT(onSceneLeftClicked(QPointF)));
+    connect(scene, SIGNAL(sceneRightClicked(QPointF)), SLOT(onSceneRightClicked(QPointF)));
+    connect(scene, SIGNAL(sceneMouseMove(QPointF)), SLOT(onSceneMouseMove(QPointF)));
+    connect(scene, SIGNAL(sceneMouseReleased(QPointF)), SLOT(onSceneMouseReleased(QPointF)));
+
+    sceneNodeMap.clear();
+    sceneSubGraphMap.clear();
+    ui->graphicsView->viewport()->setCursor(Qt::ArrowCursor);
+
+    scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
+    scene->setGraphAttribute("remincross", "true");
+    scene->setGraphAttribute("rankdir", "TD");
+    scene->setGraphAttribute("bgcolor", "#2e3e56");
+    //scene->setGraphAttribute("concentrate", "true"); //Error !
+    scene->setGraphAttribute("nodesep", "0.7");
+    scene->setGraphAttribute("ranksep", "0.4");
+    //scene->setGraphAttribute("sep", "0.4");
+    //scene->setNodeAttribute("shape", "box");
+    scene->setNodeAttribute("style", "filled");
+    scene->setNodeAttribute("fillcolor", "gray");
+    scene->setNodeAttribute("height", "1.0");
+    scene->setEdgeAttribute("minlen", "2.0");
+    //scene->setEdgeAttribute("dir", "both");
+
 }
 
 
@@ -252,7 +298,7 @@ QGVSubGraph* MainWindow::getSubGraph(const std::string& name) {
 }
 
 
-void MainWindow::drawStateMachine() {
+void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
     initScene();
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
@@ -260,6 +306,7 @@ void MainWindow::drawStateMachine() {
     scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
     scene->setGraphAttribute("remincross", "true");
     scene->setGraphAttribute("rankdir", "TD");
+    scene->setGraphAttribute("fixedsize","false");
     scene->setGraphAttribute("bgcolor", "#2e3e56");
     //scene->setGraphAttribute("concentrate", "true"); //Error !
     scene->setGraphAttribute("nodesep", "0.7");
@@ -273,10 +320,9 @@ void MainWindow::drawStateMachine() {
     //scene->setEdgeAttribute("dir", "both");
 
     // adding composit states
-    const rfsm::StateGraph& graph = rfsm.getStateGraph();
     for(size_t i=0; i<graph.states.size(); i++) {
+        //std::cout<<graph.states[i].name<<std::endl;
         if(graph.states[i].type == "composit") {
-            //std::cout<<graph.states[i].name<<std::endl;
             QGVSubGraph *sgraph;
             QGVSubGraph *sgraphParent = getParent(graph.states[i].name);
             if(sgraphParent != NULL)
@@ -292,6 +338,9 @@ void MainWindow::drawStateMachine() {
             sgraph->setAttribute("entry", graph.states[i].entry.fileName.c_str());
             sgraph->setAttribute("doo", graph.states[i].doo.fileName.c_str());
             sgraph->setAttribute("exit", graph.states[i].exit.fileName.c_str());
+            sgraph->setAttribute("lineEntry",QString::number(graph.states[i].entry.startLine));
+            sgraph->setAttribute("lineDoo",QString::number(graph.states[i].doo.startLine));
+            sgraph->setAttribute("lineExit",QString::number(graph.states[i].exit.startLine));
             sceneSubGraphMap[graph.states[i].name] = sgraph;
             // adding end node
             std::string endNodeName = graph.states[i].name + ".end";
@@ -303,6 +352,7 @@ void MainWindow::drawStateMachine() {
             node->setAttribute("fillcolor", "#edad56");
             node->setAttribute("color", "#edad56");
             node->setAttribute("node_type", "end");
+            node->setAttribute("rawname", endNodeName.c_str());
             sceneNodeMap[endNodeName] = node;
         }
     }
@@ -320,9 +370,13 @@ void MainWindow::drawStateMachine() {
 
             if(graph.states[i].type == "connector") {
                 node->setAttribute("shape", "circle");
-                node->setAttribute("height", "0.1");
+                node->setAttribute("height", "0.15");
                 node->setAttribute("fixedsize", "true");
-                node->setAttribute("label", "");
+                node->setAttribute("color", "#edad56");
+                if(graph.states[i].name.find("initial") != string::npos)
+                    node->setLabel("I");
+                else
+                    node->setLabel("");
                 node->setAttribute("fillcolor", "#edad56");
             }
             else {
@@ -331,9 +385,13 @@ void MainWindow::drawStateMachine() {
                 node->setAttribute("fillcolor", "#2e3e56");
                 node->setAttribute("entry", graph.states[i].entry.fileName.c_str());
                 node->setAttribute("doo", graph.states[i].doo.fileName.c_str());
-                node->setAttribute("exit", graph.states[i].exit.fileName.c_str());                
+                node->setAttribute("exit", graph.states[i].exit.fileName.c_str());
+                node->setAttribute("lineEntry",QString::number(graph.states[i].entry.startLine));
+                node->setAttribute("lineDoo",QString::number(graph.states[i].doo.startLine));
+                node->setAttribute("lineExit",QString::number(graph.states[i].exit.startLine));
             }
-            // use this for error : #FA8072
+            // use this for error : #FA8072     
+            node->setAttribute("rawname", graph.states[i].name.c_str());
             node->setAttribute("color", "#edad56");
             node->setAttribute("labelfontcolor", "#edad56");
             sceneNodeMap[graph.states[i].name] = node;
@@ -362,6 +420,8 @@ void MainWindow::drawStateMachine() {
             events += "\npn: " + QString::number(graph.transitions[i].priority).toStdString();
 
         QGVEdge* gve = scene->addEdge(from, to, events.c_str());
+        gve->setAttribute("sourcename", graph.transitions[i].source.c_str());
+        gve->setAttribute("targetname", graph.transitions[i].target.c_str());
         gve->setAttribute("color", "white");
         //gve->setAttribute("ltail", graph.transitions[i].source.c_str());
         //gve->setAttribute("lhead", graph.transitions[i].target.c_str());
@@ -384,11 +444,12 @@ bool MainWindow::loadrFSM(const std::string fname) {
     std::string filename = finfo.absoluteFilePath().toStdString();
 
     // loading the source code
+    watcher->addPath(filename.c_str());
     QString source;
     if(!loadrFSMSourceCode(filename, source))
         return false;
 
-    sourceWindow->setSourceCode(source);
+    sourceWindow->setSourceCode(source, filename);
 
     // setting lua extra paths
     rfsm.addLuaPackagePath((path.absolutePath()+"/?.lua").toStdString());
@@ -401,7 +462,7 @@ bool MainWindow::loadrFSM(const std::string fname) {
         return false;
     }
 
-    // enablng hooks
+    // enabling hooks
     rfsm.enablePostStepHook();
     rfsm.catchPrintOutput();
 
@@ -418,12 +479,19 @@ bool MainWindow::loadrFSM(const std::string fname) {
     std::vector<std::string> equeue;
     rfsm.getEventQueue(equeue);
     onUpdateEventQueue(equeue);
+    graph = rfsm.getStateGraph();
+    graphEditor.setGraph(graph);
+    canModify = graphEditor.canModify(rfsm.getFileName());
+    drawStateMachine(graph);
+    switchMachineMode(IDLE);
+    if(!canModify)
+    {
+        actionGroup->setEnabled(canModify);
+        onWarning("The state machine loaded has references to multiple file, the editor for this kind of fsm is not supported yet");
+    }
 
-    // drawing state machine
-    drawStateMachine();
-    switchMachineMode(IDLE);    
+    fileName=QString(filename.c_str());
     showStatusBarMessage(("Loaded " + filename).c_str());
-    watcher->addPath(filename.c_str());
     return true;
 }
 
@@ -434,13 +502,88 @@ void MainWindow::onLoadrFSM() {
                                                     QDir::homePath(),
                                                     filters, &defaultFilter);
     if(filename.size() == 0)
-        return;    
+        return;
+    fileName=filename;
+    watcher->addPath(filename);
+
     loadrFSM(filename.toStdString());
+}
+
+void MainWindow::onNewrFSM() {
+    NewRFSMDialog dialog;
+
+    if(!onCloserFSM())
+        return;
+
+    if(!dialog.exec())
+        return;
+    isNew=true;
+    fileName = dialog.getFileName();
+    authors = dialog.getAuthors();
+    description = dialog.getDescription();
+    version = dialog.getVersion();
+    canModify=true;
+    ui->statusBar->showMessage(("Building "+fileName.toStdString()+" | author: "+authors.toStdString()
+                               +" | version "+version.toStdString()).c_str());
+    //cleaning everithing for buinding a new state machine.
+    switchMachineMode(BUILDER);
+}
+
+void MainWindow::onSaverFSM(){
+    if(!isInitialConnected())
+    {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Initial state is not connected.\nPlease connect it before saving").c_str()));
+        return;
+    }
+    switchMachineMode(IDLE);
+    ui->action_Save_project->setEnabled(false);
+    ui->action_LoadrFSM->setEnabled(true);
+    QFile file(this->fileName);
+    vector<string> sourceCode;
+    if(!isNew){
+    // if it is not a new rfsm it doesn't add the default header, it keeps everything is before "return rfsm.state{"
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + this->fileName.toStdString()).c_str()));
+            return;
+        }
+        QTextStream inputStream(&file);
+        while(!inputStream.atEnd()){
+            QString line=inputStream.readLine();
+            QString tmp=line.simplified();
+            tmp.replace(" ","");
+            if(tmp.contains("returnrfsm.state"))
+                break;
+            sourceCode.push_back(line.toStdString());
+        }
+        file.close();
+    }
+
+    writeLuaFile(sourceCode);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + this->fileName.toStdString()).c_str()));
+        return;
+    }
+
+
+    QTextStream outStream(&file);
+    for(size_t i=0; i<sourceCode.size(); i++){
+        outStream<<QString(sourceCode[i].c_str())+"\n";
+    }
+    watcher->removePath(this->fileName);
+    file.close();
+    initScene();
+    rfsm.close();
+    loadrFSM(this->fileName.toStdString());
+
+    ui->statusBar->showMessage((fileName.toStdString()+" saved successfully").c_str());
+    isNew=false;
+    //remember to set the stato to UNLOADED if the saving fails
 }
 
 void MainWindow::onDebugStartrFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {        
-        const rfsm::StateGraph& graph = rfsm.getStateGraph();
+        const rfsm::StateGraph& graph = this->graph;
         for(size_t i=0; i<graph.states.size(); i++) {
             if(graph.states[i].type != "connector")
                 rfsm.setStateCallback(graph.states[i].name, defaultCallback);
@@ -456,10 +599,8 @@ void MainWindow::onDebugStartrFSM() {
 
 void MainWindow::onDebugSteprFSM() {
     if(machineMode != DEBUG && ui->actionDryrun->isChecked()) {
-        //rfsm.setStateCallback("Configure", defaultCallback);
-        const rfsm::StateGraph& graph = rfsm.getStateGraph();
+        const rfsm::StateGraph& graph = this->graph;
         for(size_t i=0; i<graph.states.size(); i++) {
-            //std::cout<<graph.states[i].name<<", "<<graph.states[i].type<<std::endl;
             if(graph.states[i].type != "connector")
                 rfsm.setStateCallback(graph.states[i].name, defaultCallback);
         }
@@ -495,7 +636,7 @@ void MainWindow::onRunStartrFSM() {
         initScene();
         std::string filename = rfsm.getFileName();
         rfsm.close();
-        if( loadrFSM(filename) ) {            
+        if( loadrFSM(filename) ) {
             rfsm.start();
             switchMachineMode(RUN);
         }
@@ -509,12 +650,12 @@ void MainWindow::onRunStoprFSM() {
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
         return;
-	if(machineMode == PAUSE)
-		switchMachineMode(IDLE);
-	else {
-		switchMachineMode(ASK_STOP);
-		rfsm.stop();
-	}
+    if(machineMode == PAUSE)
+        switchMachineMode(IDLE);
+    else {
+        switchMachineMode(ASK_STOP);
+        rfsm.stop();
+    }
 }
 
 void MainWindow::onFsmStopped() {
@@ -568,11 +709,236 @@ void MainWindow::onUpdateEventQueue(const std::vector<string> equeue) {
 
 void MainWindow::edgeContextMenu(QGVEdge* edge) {
 
+    if(!canModify)
+        return;
+
+    if(!ui->action_Arrow->isChecked())
+        return;
+    QMenu menu(edge->label());
+    menu.addSeparator();
+    menu.addAction(tr("Delete"));
+    menu.addSeparator();
+    menu.addAction(tr("Edit events"));
+    menu.addSeparator();
+    menu.addAction(tr("Change priority"));
+    menu.addSeparator();
+    QAction *action = menu.exec(QCursor::pos());
+    if(action == 0)
+        return;
+
+    // delete
+
+    if(action->text().toStdString() == "Delete") {
+        graphEditor.removeTransition(edge->getAttribute("sourcename").toStdString(),
+                               edge->getAttribute("targetname").toStdString());
+        drawStateMachine(graph);
+        switchMachineMode(BUILDER);
+    }
+
+    // edit events
+
+    if(action->text().toStdString() == "Edit events") {
+        bool ok;
+        QInputDialog* inputDialog = new QInputDialog();
+        inputDialog->setOptions(QInputDialog::NoButtons);
+        string events="";
+        vector<string> listOfEvents = graphEditor.getEvents(edge->getAttribute("sourcename").toStdString(),
+                                                            edge->getAttribute("targetname").toStdString());
+        for(int i=0; i< listOfEvents.size(); i++){
+            events += listOfEvents[i];
+            if(i != listOfEvents.size()-1)
+                events += ", ";
+        }
+
+        QString event =  inputDialog->getText(NULL,"Edit events",
+                                          "Name:", QLineEdit::Normal,
+                                           events.c_str(), &ok);
+        if(!ok)
+            return;
+
+        event=event.trimmed();
+        if (ok && !event.size()) {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Edit events", "The events of this transition will be erased.\n Are you sure?",
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::No)
+                return;
+            graphEditor.clearEvents(edge->getAttribute("sourcename").toStdString(),
+                                    edge->getAttribute("targetname").toStdString());
+            drawStateMachine(graph);
+            switchMachineMode(BUILDER);
+            return;
+        }
+        graphEditor.clearEvents(edge->getAttribute("sourcename").toStdString(),
+                                edge->getAttribute("targetname").toStdString());
+        //add multiple events once
+        QStringList pieces = event.split(",");
+        if(pieces.size()!=0){
+            for(int i=0; i<pieces.size();i++)
+            {
+                graphEditor.addEvent(edge->getAttribute("sourcename").toStdString(),
+                                  edge->getAttribute("targetname").toStdString(), pieces[i].trimmed().toStdString());
+            }
+        }
+        else
+            graphEditor.addEvent(edge->getAttribute("sourcename").toStdString(),
+                          edge->getAttribute("targetname").toStdString(), event.toStdString());
+        drawStateMachine(graph);
+        switchMachineMode(BUILDER);
+    }
+
+    // change priority
+    if(action->text().toStdString() == "Change priority"){
+        bool ok;
+        QInputDialog* inputDialog = new QInputDialog(this);
+        inputDialog->setOptions(QInputDialog::NoButtons);
+        int oldPriority=graphEditor.getPriority(edge->getAttribute("sourcename").toStdString(),
+                                                edge->getAttribute("targetname").toStdString());
+        int priority =  inputDialog->getInt(NULL ,"Change transition priority bumber",
+                                              "Priority number:",oldPriority , 0, 2147483647, 1, &ok);
+         if (ok && (priority > 0)) {
+            graphEditor.setPriority(edge->getAttribute("sourcename").toStdString(),
+                                    edge->getAttribute("targetname").toStdString(), priority);
+            drawStateMachine(graph);
+            switchMachineMode(BUILDER);
+         }
+    }
 }
 
 void MainWindow::nodeContextMenu(QGVNode *node)
 {
 
+    if(!ui->action_Arrow->isChecked()
+            || node->getAttribute("rawname").toStdString().find("initial") != string::npos
+            || node->getAttribute("rawname").toStdString().find("end") != string::npos )
+        return;
+
+    onQGVItemContextMenu(node);
+}
+
+void MainWindow::subGraphContextMenu(QGVSubGraph* sgraph) {
+
+    if(!ui->action_Arrow->isChecked())
+        return;
+    onQGVItemContextMenu(sgraph);
+}
+
+void MainWindow::onQGVItemContextMenu(QGVAbstractItem* item) {
+    QMenu menu("");
+    if(canModify)
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Rename"));
+        menu.addSeparator();
+        menu.addAction(tr("Delete"));
+    }
+    if(item->getAttribute("entry").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit entry()"));
+    }
+    if(item->getAttribute("doo").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit doo()"));
+    }
+    if(item->getAttribute("exit").size())
+    {
+        menu.addSeparator();
+        menu.addAction(tr("Edit exit()"));
+    }
+    QAction *action = menu.exec(QCursor::pos());
+    if(action == 0)
+        return;
+
+    //delete
+
+    if(action->text().toStdString() == "Delete") {
+        graphEditor.removeState(item->getAttribute("rawname").toStdString());
+        drawStateMachine(graph);
+        switchMachineMode(BUILDER);
+    }
+
+    //rename
+
+    if(action->text().toStdString() == "Rename")
+    {
+        bool ok;
+        QInputDialog* inputDialog = new QInputDialog();
+        inputDialog->setOptions(QInputDialog::NoButtons);
+
+        QString newName =  inputDialog->getText(NULL,"Set state name",
+                                          "Name:", QLineEdit::Normal,
+                                           item->getAttribute("label"), &ok);
+
+        newName=newName.trimmed();
+         if (!ok || !newName.size()) {
+            return;
+         }
+        string parentName = item->getAttribute("rawname").toStdString();
+        size_t idx=parentName.find_last_of('.');
+
+        if(idx != string::npos)
+        {
+            parentName.erase(parentName.begin()+idx, parentName.end());
+            newName =QString(parentName.c_str()) + "." + newName;
+        }
+
+        //Checking if the state is already present
+        rfsm::StateGraph::State st;
+        st.name = newName.toStdString();
+        rfsm::StateGraph::StateItr it;
+        it= std::find(graph.states.begin(), graph.states.end(), st);
+        if(it != graph.states.end())
+        {
+            QMessageBox msgBox;
+            msgBox.setText("This state is already present.");
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+            return;
+        }
+
+        graphEditor.renameState(item->getAttribute("rawname").toStdString(), newName.toStdString());
+        drawStateMachine(graph);
+        switchMachineMode(BUILDER);
+    }
+
+    //edit entry
+    if(action->text().toStdString() == "Edit entry()")
+    {
+        int line=(item->getAttribute("lineEntry")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(item->getAttribute("entry").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source, item->getAttribute("entry").toStdString());
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
+    }
+    //edit doo
+    else if(action->text().toStdString() == "Edit doo()")
+    {
+        int line=(item->getAttribute("lineDoo")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(item->getAttribute("doo").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source, item->getAttribute("doo").toStdString());
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
+    }
+    //edit exit
+    else if(action->text().toStdString() == "Edit exit()")
+    {
+        int line=(item->getAttribute("lineExit")).toInt();
+        QString source;
+        if(!loadrFSMSourceCode(item->getAttribute("exit").toStdString(), source))
+            return;
+        sourceWindow->setSourceCode(source, item->getAttribute("exit").toStdString());
+
+        sourceWindow->goToLine(line-1);
+        sourceWindow->show();
+    }
 }
 
 void MainWindow::nodeDoubleClick(QGVNode *node)
@@ -585,7 +951,7 @@ void MainWindow::onLayoutOrthogonal() {
     ui->actionLine->setChecked(false);
     ui->actionCurved->setChecked(false);
     layoutStyle = "ortho";
-    drawStateMachine();
+    drawStateMachine(graph);
 }
 
 void MainWindow::onLayoutPolyline() {
@@ -593,7 +959,7 @@ void MainWindow::onLayoutPolyline() {
     ui->actionLine->setChecked(false);
     ui->actionCurved->setChecked(false);
     layoutStyle = "polyline";
-    drawStateMachine();
+    drawStateMachine(graph);
 }
 
 void MainWindow::onLayoutLine() {
@@ -601,7 +967,7 @@ void MainWindow::onLayoutLine() {
     ui->actionPolyline->setChecked(false);
     ui->actionCurved->setChecked(false);
     layoutStyle = "line";
-    drawStateMachine();
+    drawStateMachine(graph);
 }
 
 void MainWindow::onLayoutCurved() {
@@ -609,7 +975,7 @@ void MainWindow::onLayoutCurved() {
     ui->actionPolyline->setChecked(false);
     ui->actionLine->setChecked(false);
     layoutStyle = "spline";
-    drawStateMachine();
+    drawStateMachine(graph);
 }
 
 void MainWindow::onQuit() {
@@ -617,9 +983,12 @@ void MainWindow::onQuit() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    string message="State machine is running.\nDo you want to stop it and exit?";
+    if(machineMode==BUILDER)
+        message="Changes has not been saved.\nDo you want to close and discard them?";
     if(machineMode != IDLE && machineMode != UNLOADED) {
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Quit", "State machine is running.\n Do you want to stop it and exit?",
+        reply = QMessageBox::question(this, "Quit", message.c_str(),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
         {
@@ -635,9 +1004,38 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 }
 
+bool MainWindow::onCloserFSM()
+{
+    string message="State machine is running.\nDo you want to stop it and close?";
+    if(machineMode==IDLE)
+        message="Do you want to close the current state machine?";
+    if(machineMode==BUILDER)
+        message="Changes has not been saved.\nDo you want to close and discard them?";
+    if(machineMode != UNLOADED) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Quit", message.c_str(),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+        {
+            return false;
+        }
+    }
+        rfsm.stop();
+        initScene();
+        sceneNodeMap.clear();
+        sceneSubGraphMap.clear();
+        ui->comboBoxEvents->clear();
+        ui->nodesTreeWidgetEvent->clear();
+        ui->nodesTreeWidgetLog->clear();
+        rfsm.close();
+        graph=rfsm.getStateGraph();
+        switchMachineMode(UNLOADED);
+        return true;
+}
+
 
 void MainWindow::onAbout() {
-    QMessageBox::about(this, "rFSM Gui (version 1.0.0)",
+    QMessageBox::about(this, "rFSMGui (version 1.0.0)",
                        "A graphical tool for running and debuging rFSM state machines\n\nAuthors:\n\t-Ali Paikan <ali.paikan@iit.it>\n\t-Nicolò Genesio <nicolo.genesio@iit.it>");
 }
 
@@ -659,18 +1057,148 @@ void MainWindow::onExportScene() {
         return;
 }
 
+void MainWindow::onSceneLeftClicked(QPointF pos) {
+    ui->graphicsView->viewport()->setCursor(Qt::ArrowCursor);
+    QGraphicsItem *item = scene->itemAt(pos, QTransform());
+    //add states
+    if(ui->action_Single_State->isChecked() || ui->action_Composite_State->isChecked()
+            || ui->action_Connector->isChecked()){
+        string type;
+        if(ui->action_Single_State->isChecked())
+            type = "single";
+        else if(ui->action_Composite_State->isChecked())
+            type = "composit";
+        else
+            type = "connector";
+        if(!item) {
+            QString name = "State_" + QString::number(graph.states.size());
+            graphEditor.addState(name.toStdString(), type);
+            drawStateMachine(graph);
+        }
+        else if(item->type() == QGVSubGraph::Type) {
+            QGVSubGraph* sgv = qgraphicsitem_cast<QGVSubGraph*>(item);
+            std::string name = sgv->getAttribute("rawname").toStdString();
+            name = name + ".State_" + QString::number(graph.states.size()).toStdString();
+            graphEditor.addState(name, type);
+            drawStateMachine(graph);
+        }
+        ui->graphicsView->viewport()->setCursor(Qt::ClosedHandCursor);
+        ui->action_Save_project->setEnabled(true);
+        switchMachineMode(BUILDER);
+        return;
+    }
+
+    if(!item)
+        return;
+    if(ui->action_Transition->isChecked() && item->type() == QGVNode::Type) {
+        line = new QGraphicsLineItem(QLineF(pos, pos));
+        line->setPen(QPen(QColor(200,200,200), 1));
+        line->setZValue(0);
+        scene->addItem(line);
+    }
+}
+
+void MainWindow::onSceneMouseReleased(QPointF pos) {
+    if(ui->action_Transition->isChecked() && line) {
+        ui->graphicsView->viewport()->setCursor(Qt::ArrowCursor);
+        QGraphicsItem *item = scene->itemAt(pos, QTransform());
+        if(item && (item->type() == QGVNode::Type)) {
+            std::string source, target;
+
+            QGVNode* node = qgraphicsitem_cast<QGVNode*>(item);
+            Q_ASSERT(node);
+            target = node->getAttribute("rawname").toStdString();
+
+            item = scene->itemAt(line->line().p1(), QTransform());
+            node = qgraphicsitem_cast<QGVNode*>(item);
+            Q_ASSERT(node);
+            source = node->getAttribute("rawname").toStdString();
+
+            bool shouldConnect = (source != target);
+            shouldConnect &= (target.find(".end") == string::npos);
+
+            if(target == "initial")
+                shouldConnect=false;
+
+            if(target.find(".initial") != string::npos)
+                shouldConnect &= (getParent(target) != getParent(source));
+
+            size_t pos = source.find(".initial");
+
+            if(pos != string::npos){
+                string tmp = source.substr(0,pos);
+                shouldConnect &= (getParent(target) == getParent(source)) ||
+                        (getParent(target) && getParent(target)->getAttribute("rawname").contains(QString((tmp+".").c_str()))); //it means that target is child of source
+            }
+
+            if(shouldConnect) {
+                size_t idx = source.find(".end");
+                if(idx != string::npos)
+                    source.erase(source.begin()+idx, source.end());
+                graphEditor.addTransition(source, target);
+                scene->removeItem(line);
+                delete line;
+                line = NULL;
+                drawStateMachine(graph);
+                switchMachineMode(BUILDER);
+            }
+        }
+        scene->removeItem(line);
+        delete line;
+        line = NULL;
+    }
+}
+
+void MainWindow::onSceneMouseMove(QPointF pos) {    
+    if(ui->action_Transition->isChecked() && line) {
+        QLineF newLine(line->line().p1(), pos);
+        line->setLine(newLine);
+        QGraphicsItem *item = scene->itemAt(pos, QTransform());
+        if(item && (item->type() == QGVSubGraph::Type || item->type() == QGVNode::Type))
+        {
+            if(item->type() == QGVNode::Type)
+            {
+                QGVNode* node = qgraphicsitem_cast<QGVNode*>(item);
+                if(node->getAttribute("rawname").toStdString()=="initial")
+                {
+                    ui->graphicsView->viewport()->setCursor(Qt::ForbiddenCursor);
+                }
+            }
+            ui->graphicsView->viewport()->setCursor(Qt::CrossCursor);
+        }
+        else
+            ui->graphicsView->viewport()->setCursor(Qt::ForbiddenCursor);
+    }    
+    else if(ui->action_Arrow->isChecked())
+        ui->graphicsView->viewport()->setCursor(Qt::ArrowCursor);    
+    else if(ui->action_Single_State->isChecked())
+        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/stateCursor.svg").scaled(32,32),28,28));
+    else if(ui->action_Composite_State->isChecked())
+        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/cstateCursor.svg").scaled(32,32),28,28));
+    else if(ui->action_Transition->isChecked())
+        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/transitionCursor.svg").scaled(32,32),28,28));
+    else if(ui->action_Connector->isChecked())
+        ui->graphicsView->viewport()->setCursor(QCursor(QPixmap(":/icons/resources/connectorCursor.svg").scaled(32,32),28,28));
+}
+
+
+void MainWindow::onSceneRightClicked(QPointF pos) {
+
+}
+
+
 void MainWindow::onSourceCode() {
 
     QString source;
     if(!loadrFSMSourceCode(rfsm.getFileName(), source))
         return;
-    sourceWindow->setSourceCode(source);
+    sourceWindow->setSourceCode(source, rfsm.getFileName());
     sourceWindow->setReadOnly(false);
-    sourceWindow->show();    
+    sourceWindow->show();
 }
 
 void MainWindow::onSourceCodeSaved() {
-    std::string filename = rfsm.getFileName();
+    std::string filename = sourceWindow->getFileName();
     QFile file(filename.c_str());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Cannot open " + filename).c_str()));
@@ -682,7 +1210,13 @@ void MainWindow::onSourceCodeSaved() {
     file.close();
     initScene();
     rfsm.close();
-    loadrFSM(filename);   
+    loadrFSM(rfsm.getFileName());
+
+    QString source;
+    if(!loadrFSMSourceCode(filename, source))
+        return;
+    sourceWindow->setSourceCode(source, filename);
+
 }
 
 void MainWindow::showEvent(QShowEvent *ev) {
@@ -729,7 +1263,7 @@ void MainWindow::onFileChanged(const QString &path){
         if(sourceWindow->isActiveWindow()) {
             QString source;
             if(loadrFSMSourceCode(path.toStdString(), source))
-                sourceWindow->setSourceCode(source);
+                sourceWindow->setSourceCode(source, path.toStdString());
         }
         else
             loadrFSM(path.toStdString());
@@ -819,7 +1353,7 @@ void MainWindow::onError(const string message, const string currentState) {
     if(rfsm.getFileName() != filename.toStdString()) {
         QString source;
         loadrFSMSourceCode(filename.toStdString(), source);
-        sourceWindow->setSourceCode(source);
+        sourceWindow->setSourceCode(source, filename.toStdString());
     }
 
     filename = QFileInfo(filename).fileName();
@@ -879,6 +1413,162 @@ void MainWindow::setNodeActiveMode(const std::string &name, bool mode) {
         ui->graphicsView->centerOn(node);
 }
 
+void MainWindow::readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode &func,
+                                 std::vector<std::string> &functionCode, int idenLength)
+{
+    functionCode.clear();
+    if(func.startLine != -1
+            && func.endLine != -1
+            && func.fileName != "")
+    {
+        QFile file(QString(func.fileName.c_str()));
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            onError("readLuaFuncCode: unable to open the file retreiving funcion code","<none>");
+            return;
+        }
+        QTextStream inStream(&file);
+        int line=1;
+        while(!inStream.atEnd()) {
+            QString tmp = inStream.readLine();
+            if(line >= func.startLine
+                    && line <= func.endLine){
+                string lineCode = tmp.toStdString();
+                string trim = lineCode.substr(0, idenLength);
+                if(QString(trim.c_str()).trimmed().size() == 0)
+                    lineCode = lineCode.substr(idenLength, lineCode.size());
+                functionCode.push_back(lineCode);
+            }
+            line++;
+        }
+        file.close();
+    }
+}
+
+void MainWindow::writeState(const rfsm::StateGraph::State state, std::vector<std::string> &sourceCode)
+{
+    string identation=getIdentation(state.name);
+    sourceCode.push_back("");
+    if(state.type == "connector")
+        sourceCode.push_back(identation + getPureStateName(state.name) + " = rfsm.conn{ },");
+    else
+    {   vector<string> funcCode;
+        sourceCode.push_back(identation + "--"+ getPureStateName(state.name));
+        sourceCode.push_back(identation + getPureStateName(state.name) + " = rfsm.state{");
+        string identationFunc = identation + string(settings.value("editor-tab-size", 4).toInt(), ' ');
+        // generating entry code
+        readLuaFuncCode(state.entry, funcCode, identationFunc.size());
+        for(int i=0; i<funcCode.size(); i++)
+            sourceCode.push_back(identationFunc + funcCode[i]);
+        // generating doo code
+        readLuaFuncCode(state.doo, funcCode, identationFunc.size());
+        if(funcCode.size()) {
+            for(int i=0; i<funcCode.size(); i++)
+                sourceCode.push_back(identationFunc + funcCode[i]);
+        }
+        else if(state.type == "single") // generate doo() function
+        {
+            sourceCode.push_back(identationFunc + "doo = function()   end,");
+            sourceCode.push_back("");
+        }
+
+        // generating exit code
+        readLuaFuncCode(state.exit, funcCode, identationFunc.size());
+        for(int i=0; i<funcCode.size(); i++)
+            sourceCode.push_back(identationFunc + funcCode[i]);
+
+        // writing child states
+        vector<string> childStates;
+        graphEditor.getChilds(state.name, childStates);
+        if(childStates.size()==1 && childStates[0]== state.name+".initial")
+        {
+            //eventually remove the inital connector from empty composite states
+            graphEditor.updateTransitions(state.name+".initial",state.name);
+            graphEditor.removeState(state.name+".initial");
+            sourceCode.push_back(identation + "}, --end of "+ getPureStateName(state.name));
+            sourceCode.push_back("");
+            return;
+        }
+        for(int i=0; i<childStates.size(); i++)
+            writeState(graphEditor.getStateByName(childStates[i]),sourceCode);
+
+        // closing state
+        sourceCode.push_back(identation + "}, --end of "+ getPureStateName(state.name));
+        sourceCode.push_back("");
+    }
+}
+
+void MainWindow::writeLuaFile(std::vector<std::string>& sourceCode){
+    //writing the header
+    if(isNew){
+        sourceCode.push_back("--");
+        sourceCode.push_back("-- Authors: " + authors.toStdString());
+        sourceCode.push_back("-- Version: " + version.toStdString());
+        sourceCode.push_back("-- " + description.toStdString());
+        sourceCode.push_back("--");
+    }
+    sourceCode.push_back("return rfsm.state {");
+    // writing states
+    string identation=string(settings.value("editor-tab-size", 4).toInt(), ' ');
+    sourceCode.push_back("");
+    sourceCode.push_back("");
+    sourceCode.push_back(identation + "--States");
+    vector<string> rootStates;
+    graphEditor.getChilds("", rootStates);
+    for(int i=0; i<rootStates.size(); i++)
+        writeState(graphEditor.getStateByName(rootStates[i]), sourceCode);
+
+    sourceCode.push_back("");
+    sourceCode.push_back("");
+    sourceCode.push_back(identation + "--Transitions");
+
+    //writing transitions
+    for(int i=0;i<graph.transitions.size();i++)
+    {
+        string source=graph.transitions[i].source;
+        string target=graph.transitions[i].target;
+        size_t pos=source.find_first_of(".end");
+        if(pos != string::npos)
+            source.substr(0,pos);
+        pos=target.find_first_of(".end");
+        if(pos != string::npos)
+            target.substr(0,pos);
+        string line="rfsm.trans{ src = '" + source + "', tgt = '" + target + "', pn = "
+                +QString::number(graph.transitions[i].priority).toStdString();
+        if(graph.transitions[i].events.size()!=0)
+        {
+            line += ", events = {";
+            for(int j=0;j<graph.transitions[i].events.size();j++)
+            {
+                line += "\""+ graph.transitions[i].events[j] + "\"";
+                if(j != graph.transitions[i].events.size()-1)
+                    line += ",";
+            }
+            line += "}";
+
+        }
+        line += " },";
+        sourceCode.push_back(identation + line);
+    }
+
+    sourceCode.push_back("}");
+
+}
+
+std::string MainWindow::getIdentation(std::string name){
+    size_t n = std::count(name.begin(), name.end(), '.') + 1;
+    int tabSize = settings.value("editor-tab-size", 4).toInt();
+    return string(n*tabSize, ' ');
+}
+
+bool MainWindow::isInitialConnected(){
+    for(int i=0;i<graph.transitions.size();i++)
+    {
+        if(graph.transitions[i].source=="initial")
+            return true;
+    }
+    return false;
+}
+
 
 void MainWindow::showStatusBarMessage(const QString& message,
                                       QColor color) {
@@ -892,6 +1582,13 @@ void MainWindow::switchMachineMode(MachineMode mode) {
     machineMode = mode;
     switch (machineMode) {
     case UNLOADED:
+        ui->action_LoadrFSM->setEnabled(true);
+        ui->action_New_rFSM->setEnabled(true);
+        ui->action_Save_project->setEnabled(false);
+        actionGroup->setEnabled(false);
+        if(actionGroup->checkedAction())
+            actionGroup->checkedAction()->setChecked(false);
+        ui->actionClose_rFSM->setEnabled(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -904,7 +1601,13 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionSourceCode->setEnabled(false);
         break;
     case IDLE:
+        ui->action_LoadrFSM->setEnabled(true);
+        ui->action_New_rFSM->setEnabled(true);
         ui->actionExport_scene->setEnabled(true);
+        actionGroup->setEnabled(canModify);
+        ui->buildToolBar->setEnabled(true);
+        ui->action_Arrow->setChecked(true);
+        ui->actionClose_rFSM->setEnabled(true);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(false);
@@ -916,7 +1619,30 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionChangeRunPeriod->setEnabled(true);
         ui->actionSourceCode->setEnabled(true);
         break;
+    case BUILDER:
+        ui->action_LoadrFSM->setEnabled(false);
+        ui->action_New_rFSM->setEnabled(false);
+        ui->action_Save_project->setEnabled(true);
+        actionGroup->setEnabled(canModify);
+        ui->actionSourceCode->setEnabled(false);
+        ui->actionClose_rFSM->setEnabled(true);
+        // debug
+        ui->actionDebugStart->setEnabled(false);
+        ui->actionDebugReset->setEnabled(false);
+        ui->actionDebugStep->setEnabled(false);
+        //run
+        ui->actionRunStart->setEnabled(false);
+        ui->actionRunStop->setEnabled(false);
+        ui->actionRunPause->setEnabled(false);
+        ui->actionChangeRunPeriod->setEnabled(true);
+        break;
     case DEBUG:
+        ui->action_Save_project->setEnabled(false);
+        ui->action_LoadrFSM->setEnabled(false);
+        ui->action_New_rFSM->setEnabled(false);
+        actionGroup->setEnabled(canModify);
+        if(actionGroup->checkedAction())
+            actionGroup->checkedAction()->setChecked(false);
         // debug
         ui->actionDebugStart->setEnabled(true);
         ui->actionDebugReset->setEnabled(true);
@@ -929,6 +1655,12 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionSourceCode->setEnabled(false);
         break;
     case RUN:
+        ui->action_Save_project->setEnabled(false);
+        ui->action_LoadrFSM->setEnabled(false);
+        ui->action_New_rFSM->setEnabled(false);
+        actionGroup->setEnabled(canModify);
+        if(actionGroup->checkedAction())
+            actionGroup->checkedAction()->setChecked(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);
@@ -941,6 +1673,12 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->actionSourceCode->setEnabled(false);
         break;
     case PAUSE:
+        ui->action_Save_project->setEnabled(false);
+        ui->action_LoadrFSM->setEnabled(false);
+        ui->action_New_rFSM->setEnabled(false);
+        actionGroup->setEnabled(canModify);
+        if(actionGroup->checkedAction())
+            actionGroup->checkedAction()->setChecked(false);
         // debug
         ui->actionDebugStart->setEnabled(false);
         ui->actionDebugReset->setEnabled(false);

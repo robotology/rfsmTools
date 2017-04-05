@@ -2,7 +2,7 @@
 set(CMAKE_AUTOMOC ON)
 
 # all files which may be mocced
-set(qgvlib_qt_HDRS
+set(qgvlib_qt_SRCS
   private/QGVCore.cpp
   private/QGVGraphPrivate.cpp
   private/QGVEdgePrivate.cpp
@@ -14,13 +14,17 @@ set(qgvlib_qt_HDRS
   QGVSubGraph.cpp
 )
 
+set(qgvlib_qt_HDRS
+  QGVAbstractItem.h
+)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(
     ${Qt5Widgets_INCLUDE_DIRS}
-	${GRAPHVIZ_INCLUDE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}
+    ${GRAPHVIZ_INCLUDE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/private
     ${CMAKE_CURRENT_BINARY_DIR}/private
 )

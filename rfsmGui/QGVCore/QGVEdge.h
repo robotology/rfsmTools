@@ -18,6 +18,7 @@ License along with this library.
 #ifndef QGVEDGE_H
 #define QGVEDGE_H
 
+#include <QGVAbstractItem.h>
 #include <qgv.h>
 #include <QGraphicsItem>
 #include <QPen>
@@ -30,7 +31,7 @@ class QGVEdgePrivate;
  * @brief Edge item
  *
  */
-class QGVCORE_EXPORT QGVEdge : public QGraphicsItem
+class QGVCORE_EXPORT QGVEdge : public QGraphicsItem, public QGVAbstractItem
 {
 public:
     ~QGVEdge();
@@ -40,16 +41,13 @@ public:
     QPainterPath shape() const;
 
     void setLabel(const QString &label);
-
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
-
-    void setAttribute(const QString &name, const QString &value);
-    QString getAttribute(const QString &name) const;
-
     void updateLayout();
-
     void setEdge(const void *e);
     const void *getEdge(void);
+
+    virtual void setAttribute(const QString &name, const QString &value);
+    virtual QString getAttribute(const QString &name) const;
 
     enum { Type = UserType + 3 };
     int type() const

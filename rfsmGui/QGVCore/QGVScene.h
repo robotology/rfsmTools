@@ -67,12 +67,20 @@ signals:
     void subGraphDoubleClick(QGVSubGraph* graph);
 
     void graphContextMenuEvent();
+    void sceneLeftClicked(QPointF pos);
+    void sceneRightClicked(QPointF pos);
+    void sceneMouseReleased(QPointF pos);
+    void sceneMouseMove(QPointF pos);
     
 public slots:
 
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent * contextMenuEvent);
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent * mouseEvent);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
+
     //virtual void drawBackground(QPainter * painter, const QRectF & rect);
 private:
     friend class QGVNode;

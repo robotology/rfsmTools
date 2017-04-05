@@ -93,14 +93,15 @@ public:
         std::vector<std::string> events;
         int priority;
         bool operator==(const Transition& s) const {
-            return (s.source == source) && (s.target == target) && (s.events == events);
+            //return (s.source == source) && (s.target == target) && (s.events == events);
+            return (s.source == source) && (s.target == target);
         }
     };
 
-    void clear() {
-        states.clear();
-        transitions.clear();
-    }
+    typedef std::vector<Transition>::iterator TransitionItr;
+    typedef std::vector<State>::iterator StateItr;
+
+    void clear();
 
 public:
     /**
@@ -111,6 +112,8 @@ public:
      * @brief transitions is a list of all transitions
      */
     std::vector<Transition> transitions;
+
+
 };
 
 

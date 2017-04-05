@@ -15,14 +15,14 @@ SourceEditorWindow::SourceEditorWindow(QWidget *parent) :
 
     QSettings settings;
     QFont font;
-    font.setFixedPitch(true);    
+    font.setFixedPitch(true);
     font.setFamily(settings.value("editor-font-name", "Courier").toString());
     font.setPointSize(settings.value("editor-font-size", 10).toInt());
     ui->textEdit->setFont(font);
     QFontMetrics metrics(font);
-    ui->textEdit->setTabStopWidth(4 * metrics.width(' '));
+    ui->textEdit->setTabStopWidth(settings.value("editor-tab-size", 4).toInt() * metrics.width(' '));
     ui->action_Save->setEnabled(false);
-    highlighter = new Highlighter(ui->textEdit->document());    
+    highlighter = new Highlighter(ui->textEdit->document());
 
     connect(ui->action_Save, SIGNAL(triggered()),this,SLOT(onSave()));
     connect(ui->action_Close, SIGNAL(triggered()),this,SLOT(onClose()));
@@ -42,16 +42,21 @@ void SourceEditorWindow::onTextChanged() {
 }
 
 
-void SourceEditorWindow::setSourceCode(const QString& sourceCode){
+void SourceEditorWindow::setSourceCode(const QString& sourceCode, const std::string filename, bool readOnly){
     SourceEditorWindow::sourceCode = sourceCode;
+    SourceEditorWindow::fileName = filename;
     ui->textEdit->clear();
     ui->textEdit->setPlainText(sourceCode);
-    showStatusBarMessage("");    
+    showStatusBarMessage("");
     ui->action_Save->setEnabled(false);
+    setReadOnly(readOnly);
+
 }
 
 void SourceEditorWindow::closeEvent(QCloseEvent *event)
 {
+    QSettings settings;
+    settings.setValue("editor-tab-size", settings.value("editor-tab-size", 4).toInt());
     if(ui->action_Save->isEnabled()) {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Close", "The source code has been changed.\n Do you want to save it?",
@@ -94,25 +99,40 @@ void SourceEditorWindow::showStatusBarMessage(const QString& message,
     statusBar()->setPalette(palette);
 }
 
-void SourceEditorWindow::setErrorMessage(const QString& message, const int line) {
-    showStatusBarMessage(message, Qt::darkRed);    
+void SourceEditorWindow::goToLine(const int line, bool errored)
+{
     QTextEdit::ExtraSelection highlight;
     highlight.cursor = ui->textEdit->textCursor();
     highlight.cursor.setPosition(0);
     highlight.cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, line);
     ui->textEdit->setTextCursor(highlight.cursor);
     highlight.format.setProperty(QTextFormat::FullWidthSelection, true);
-    highlight.format.setBackground( QColor("#FA8072") );
+    QColor lineColor;
+    if(errored)
+        lineColor = QColor("#FA8072");
+    else
+        lineColor = QColor(Qt::yellow).lighter(160);
+    highlight.format.setBackground(lineColor);
     QList<QTextEdit::ExtraSelection> extras;
     extras << highlight;
     ui->textEdit->setExtraSelections( extras );
+
+}
+
+void SourceEditorWindow::setErrorMessage(const QString& message, const int line) {
+    showStatusBarMessage(message, Qt::darkRed);
+    goToLine(line,true);
+
 }
 
 void SourceEditorWindow::setReadOnly(bool flag) {
     ui->textEdit->setReadOnly(flag);
-    //ui->action_Save->setEnabled(!flag);
 }
 
+
+std::string SourceEditorWindow::getFileName(){
+    return fileName;
+}
 
 void SourceEditorWindow::onFontChanged() {
     bool ok;

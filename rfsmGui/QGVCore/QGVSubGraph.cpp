@@ -27,7 +27,7 @@ License along with this library.
 QGVSubGraph::QGVSubGraph(QGVGraphPrivate *subGraph, QGVScene *scene): _sgraph(subGraph), _scene(scene)
 {
     activeMode = false;
-    //setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
 QGVSubGraph::~QGVSubGraph()
@@ -97,8 +97,15 @@ void QGVSubGraph::paint(QPainter * painter, const QStyleOptionGraphicsItem * opt
         _brush.setColor(QGVCore::toColor("#FA8072"));
     }
 
+    if(isSelected()) {
+        QBrush tbrush(_brush);
+        tbrush.setColor(tbrush.color().darker(170));
+        painter->setBrush(tbrush);
+    }
+    else
+        painter->setBrush(_brush);
+
     painter->setPen(_pen);
-    painter->setBrush(_brush);
 
     //painter->drawRect(boundingRect());
     QPainterPath path;
@@ -156,6 +163,8 @@ void QGVSubGraph::updateLayout()
     _brush.setStyle(QGVCore::toBrushStyle(getAttribute("style")));
     _brush.setColor(QGVCore::toColor(getAttribute("fillcolor")));
     _pen.setColor(QGVCore::toColor(getAttribute("color")));
+
+
 
     //SubGraph label
     textlabel_t *xlabel = GD_label(_sgraph->graph());

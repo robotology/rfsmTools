@@ -10,6 +10,7 @@
 
 #include <QMainWindow>
 #include <QCommandLineParser>
+#include <QGVAbstractItem.h>
 #include <QGVScene.h>
 #include <QStringList>
 #include <QStringListModel>
@@ -17,11 +18,14 @@
 #include <QThread>
 #include <QMutex>
 #include <QTimer>
+#include <QActionGroup>
 #include <QFileSystemWatcher>
 #include <rfsm.h>
 #include <map>
-#include "SourceEditorWindow.h"
+#include <SourceEditorWindow.h>
+#include <QGraphicsLineItem>
 #include <QSettings>
+#include <StateGraphEditor.h>
 
 namespace Ui {
 class MainWindow;
@@ -52,11 +56,11 @@ public slots:
 public:
     void start();
     void stop();
-    void close();    
+    void close();
     virtual void onPostStep();
     virtual void onWarning(const std::string message);
     virtual void onError(const std::string message);
-    virtual void onInfo(const std::string message);        
+    virtual void onInfo(const std::string message);
 
 public:
     int runPeriod;
@@ -79,6 +83,7 @@ public:
     enum MachineMode {
         UNLOADED,
         IDLE,
+        BUILDER,
         RUN,
         PAUSE,
         ASK_PAUSE,
@@ -102,22 +107,32 @@ protected:
 
 private:
     void initScene();    
-    void drawStateMachine();    
-    bool loadrFSM(const std::string filename);    
+    void drawStateMachine(const rfsm::StateGraph &graph);
+    bool loadrFSM(const std::string filename);
     std::string getPureStateName(const std::string& name);
     void saveSetting();    
     void setNodeActiveMode(const std::string &name, bool mode);
+    void readLuaFuncCode(const rfsm::StateGraph::LuaFuncCode &func,
+                         std::vector<std::string> &functionCode, int idenLength = 0);
+    void writeState(const rfsm::StateGraph::State state, std::vector<std::string> &sourceCode);
+    void writeLuaFile(std::vector<std::string> &sourceCode);
+    std::string getIdentation(std::string name);
+    bool isInitialConnected();
+    void onQGVItemContextMenu(QGVAbstractItem* item);
 
 private slots:
     void nodeContextMenu(QGVNode* node);
     void edgeContextMenu(QGVEdge* edge);
     void nodeDoubleClick(QGVNode* node);
+    void subGraphContextMenu(QGVSubGraph*sgraph);
     void onLayoutOrthogonal();
     void onLayoutPolyline();
     void onLayoutLine();
     void onLayoutCurved();
     void onExportScene();
     void onLoadrFSM();
+    void onNewrFSM();
+    void onSaverFSM();
     void onDebugStartrFSM();
     void onDebugSteprFSM();
     void onDebugResetrFSM();
@@ -128,10 +143,15 @@ private slots:
     void onChangeRunPeriod();
     void onQuit();
     void onAbout();
+    void onSceneLeftClicked(QPointF pos);
+    void onSceneRightClicked(QPointF pos);
+    void onSceneMouseReleased(QPointF pos);
+    void onSceneMouseMove(QPointF pos);
     void onSourceCode();
     void onSourceCodeSaved();
     void onFileChanged(const QString & path);
     void closeEvent(QCloseEvent *event);
+    bool onCloserFSM();
 
     void onUpdateEventQueue(const std::vector<std::string> equeue);
     void onWarning(const std::string message);
@@ -153,9 +173,20 @@ private:
     MyStateMachine rfsm;    
     std::string layoutStyle;    
     QTreeWidgetItem *moduleParentItem;
-    QTreeWidgetItem *portParentItem;        
+    QTreeWidgetItem *portParentItem;
     QFileSystemWatcher* watcher;
     QSettings settings;
+    QString fileName;
+    QString authors;
+    QString description;
+    QString version;
+    QActionGroup *actionGroup;
+    QGraphicsLineItem *line;
+    rfsm::StateGraph graph;
+    StateGraphEditor graphEditor;
+    bool isNew;
+    bool canModify;
+
 };
 
 #endif // MAINWINDOW_H
