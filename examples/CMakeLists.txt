@@ -1,7 +1,8 @@
-# Copyright: 2016 iCub Facility, Istituto Italiano di Tecnologia
-# Author: Ali Paikan
-# CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+#
+# Copyright (C) 2017 iCub Facility
+# Authors: Ali Paikan <ali.paikan@iit.it>, Nicolo' Genesio <nicolo.genesio@iit.it>
+# CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+#
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 SET(PROJECTNAME rfsmTest)

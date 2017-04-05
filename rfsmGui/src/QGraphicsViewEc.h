@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2015 iCub Facility
- * Authors: Ali Paikan
+ * Copyright (C) 2017 iCub Facility
+ * Authors: Ali Paikan <ali.paikan@iit.it>, Nicolo' Genesio <nicolo.genesio@iit.it>
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
- *
  */
+
 #ifndef QGRAPHICSVIEWEC_H
 #define QGRAPHICSVIEWEC_H
 
