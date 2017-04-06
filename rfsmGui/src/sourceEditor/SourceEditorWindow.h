@@ -36,6 +36,7 @@ private slots:
     void onSave();
     void onClose();
     void closeEvent(QCloseEvent *event);
+    void showEvent(QShowEvent* event);
     void onTextChanged();
     void onFontChanged();
 

@@ -75,6 +75,11 @@ void SourceEditorWindow::closeEvent(QCloseEvent *event)
     QWidget::closeEvent(event);
 }
 
+void SourceEditorWindow::showEvent(QShowEvent* event){
+    showStatusBarMessage(fileName.c_str());
+    QWidget::showEvent(event);
+}
+
 void SourceEditorWindow::onClose() {
 
     SourceEditorWindow::close();
