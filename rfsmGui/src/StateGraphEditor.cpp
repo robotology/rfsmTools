@@ -226,7 +226,7 @@ void StateGraphEditor::getChilds(const std::string state, std::vector<std::strin
     for(size_t i=0; i<graph->states.size(); i++) {
         if(name.size()) {
              string st = graph->states[i].name;
-             if(st.find(name) != string::npos && getParent(st)==state)
+             if(st.find(name) != string::npos && getDirectParentName(st)==state)
                  childs.push_back(st);
         }
         else {
@@ -247,7 +247,7 @@ StateGraph::State StateGraphEditor::getStateByName(const string stateName)
     return *it;
 }
 
-string StateGraphEditor::getParent(const string &stateName)
+string StateGraphEditor::getDirectParentName(const string &stateName)
 {
     size_t pos=stateName.find_last_of(".");
     return stateName.substr(0,pos);

@@ -94,7 +94,7 @@ public:
     explicit MainWindow(QCommandLineParser* prsr, QWidget *parent = 0);
     ~MainWindow();
     QGVNode* getNode(const std::string& name);
-    QGVSubGraph * getParent(const std::string& name );
+    QGVSubGraph * getDirectParentSGraph(const std::string& name );
     QGVSubGraph* getSubGraph(const std::string& name);    
     void switchMachineMode(MachineMode mode);
     void showStatusBarMessage(const QString& message,

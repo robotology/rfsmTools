@@ -272,13 +272,13 @@ std::string MainWindow::getPureStateName(const std::string& name) {
     return pieces[pieces.size()-1].toStdString();
 }
 
-QGVSubGraph * MainWindow::getParent(const std::string& name) {
+QGVSubGraph * MainWindow::getDirectParentSGraph(const std::string& name) {
     QStringList pieces = QString(name.c_str()).split(".");
     std::string lastNodeName = pieces[pieces.size()-1].toStdString();
     if(pieces.size() <2) // no parent
         return NULL;
     std::string parentName = name.substr(0, name.find(lastNodeName)-1);
-    //std::cout<<"getParent of "<<lastNodeName <<" out of "<<name << " is "<<parentName<<std::endl;
+    //std::cout<<"getDirectParentSGraph of "<<lastNodeName <<" out of "<<name << " is "<<parentName<<std::endl;
     return sceneSubGraphMap[parentName];
 }
 
@@ -326,7 +326,7 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
         //std::cout<<graph.states[i].name<<std::endl;
         if(graph.states[i].type == "composit") {
             QGVSubGraph *sgraph;
-            QGVSubGraph *sgraphParent = getParent(graph.states[i].name);
+            QGVSubGraph *sgraphParent = getDirectParentSGraph(graph.states[i].name);
             if(sgraphParent != NULL)
                 sgraph = sgraphParent->addSubGraph(graph.states[i].name.c_str());
             else
@@ -364,7 +364,7 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
     for(size_t i=0; i<graph.states.size(); i++) {
         QGVNode *node;
         if(graph.states[i].type != "composit") {
-            QGVSubGraph* sgraph = getParent(graph.states[i].name);
+            QGVSubGraph* sgraph = getDirectParentSGraph(graph.states[i].name);
             if(sgraph != NULL)
                 node = sgraph->addNode(graph.states[i].name.c_str());
             else
@@ -537,10 +537,6 @@ void MainWindow::onSaverFSM(){
         QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Initial state is not connected.\nPlease connect it before saving").c_str()));
         return;
     }
-    switchMachineMode(IDLE);
-    ui->action_Save_project->setEnabled(false);
-    ui->action_Save_as->setEnabled(false);
-    ui->action_LoadrFSM->setEnabled(true);
     QFile file(this->fileName);
     vector<string> sourceCode;
     if(!isNew){
@@ -573,7 +569,6 @@ void MainWindow::onSaverFSM(){
         if(filename.trimmed().size() == 0 || filename.contains(" ")){
             QMessageBox::critical(NULL, QObject::tr("Error"), QObject::tr(string("Invalid file name " + filename.toStdString()).c_str()));
             saveAs = false;
-            switchMachineMode(BUILDER);
             return;
         }
         fileName = filename;
@@ -593,6 +588,10 @@ void MainWindow::onSaverFSM(){
     }
     watcher->removePath(this->fileName);
     file.close();
+    switchMachineMode(IDLE);
+    ui->action_Save_project->setEnabled(false);
+    ui->action_Save_as->setEnabled(false);
+    ui->action_LoadrFSM->setEnabled(true);
     initScene();
     rfsm.close();
     loadrFSM(this->fileName.toStdString());
@@ -1154,6 +1153,10 @@ void MainWindow::onSceneMouseReleased(QPointF pos) {
             Q_ASSERT(node);
             source = node->getAttribute("rawname").toStdString();
 
+
+            QGVSubGraph* sourceParent = getDirectParentSGraph(source);
+            QGVSubGraph* targetParent = getDirectParentSGraph(target);
+
             bool shouldConnect = (source != target);
             shouldConnect &= (target.find(".end") == string::npos);
 
@@ -1161,16 +1164,31 @@ void MainWindow::onSceneMouseReleased(QPointF pos) {
                 shouldConnect=false;
 
             if(target.find(".initial") != string::npos)
-                shouldConnect &= (getParent(target) != getParent(source));
+                shouldConnect &= (targetParent != sourceParent);
 
-            size_t pos = source.find(".initial");
+            size_t posInitial = source.find(".initial");
 
-            if(pos != string::npos){
-                string tmp = source.substr(0,pos);
-                shouldConnect &= (getParent(target) == getParent(source)) ||
-                        (getParent(target) && getParent(target)->getAttribute("rawname").contains(QString((tmp+".").c_str()))); //it means that target is child of source
+            if(posInitial != string::npos){
+                string tmp = source.substr(0,posInitial);
+                shouldConnect &= (targetParent == sourceParent) ||
+                        (targetParent && targetParent->getAttribute("rawname").contains(QString((tmp+".").c_str()))); //it means that target is child of source
             }
 
+            size_t posEnd = source.find(".end");
+
+            // end connectors(fake) can connect only outside
+
+            if(posEnd != string::npos)
+            {
+                while(true)
+                {
+                    shouldConnect &= targetParent == NULL || sourceParent != targetParent; //if it is null means I'm connecting to a root node, surely outside
+                    if(targetParent==NULL)
+                        break;
+                    targetParent = getDirectParentSGraph(targetParent->getAttribute("rawname").toStdString());
+                }
+
+            }
             if(shouldConnect) {
                 size_t idx = source.find(".end");
                 if(idx != string::npos)
@@ -1436,7 +1454,7 @@ void MainWindow::setNodeActiveMode(const std::string &name, bool mode) {
     std::string subName;
     for(int i=0; i<pieces.size(); i++) {
         subName = subName + pieces[i].toStdString();
-        QGVSubGraph* sgraph = getParent(subName);
+        QGVSubGraph* sgraph = getDirectParentSGraph(subName);
         if(sgraph != NULL) {
             sgraph->setActive(mode);
             sgraph->update();
@@ -1646,6 +1664,7 @@ void MainWindow::switchMachineMode(MachineMode mode) {
         ui->action_New_rFSM->setEnabled(true);
         ui->actionExport_scene->setEnabled(true);
         actionGroup->setEnabled(canModify);
+        ui->action_Save_as->setEnabled(true);
         ui->buildToolBar->setEnabled(true);
         ui->action_Arrow->setChecked(true);
         ui->actionClose_rFSM->setEnabled(true);

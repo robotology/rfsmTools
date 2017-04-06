@@ -140,7 +140,7 @@ public:
      * @param stateName, noame of the state
      * @return
      */
-    std::string getParent(const std::string& stateName);
+    std::string getDirectParentName(const std::string& stateName);
     /**
      * @brief canModify,
      * @param fileName, root fsm fileName
