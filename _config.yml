@@ -39,3 +39,4 @@ gems:
 # Build settings
 markdown:     kramdown
 permalink:    pretty
+theme: default
