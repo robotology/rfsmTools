@@ -1,0 +1,41 @@
+
+# Setup
+title:               rFSMTools
+tagline:             A set of tools to execute and debug rFSM LUA-based state machines
+
+# About/contact
+author: # you can edit these to be your personal details
+  name:              Ali Paikan
+  email:						 ali.paikan@iit.it
+author: # you can edit these to be your personal details
+  name:              Nicolò Genesio
+  email:             nicolo.genesio@iit.it
+
+
+# Google services
+google_verification:
+# Use either direct GA implementation or set up GTM account
+# - using both will skew your data (leave blank to not use at all)
+google_analytics:
+google_tag_manager:
+# Bing services
+bing_verification:
+
+# Social
+github_username: apaikan
+github_username: Nicogene
+linkedin_username: nicogene
+linkedin_username: alipaikan
+
+# Custom vars
+version:             1.0.1
+github:
+  repo:              https://github.com/robotology/rfsmTools
+
+# Gems - Dependencies for this theme
+gems:
+  # None currently
+
+# Build settings
+markdown:     kramdown
+permalink:    pretty
