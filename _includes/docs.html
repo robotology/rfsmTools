@@ -4,71 +4,159 @@
             <div class="docs-inner">
             <h2 class="title text-center">Get Started</h2>            
             <div class="block">
-                <h3 class="sub-title text-center">HTML</h3>
-                <p><a href="http://prismjs.com/" target="_blank">PrismJS</a> is used as the syntax highlighter here.</p>
-                <p>Below are the details of the custom PrismJS build used in this template. You can <a href="http://prismjs.com/download.html" target="_blank">build your own version</a> via their website should you need to.</p>
-                <ul class="list-unstyled">
-                    <li><strong>Compression level:</strong> Minified</li>
-                    <li><strong>Theme:</strong> Okaidia</li>
-                    <li><strong>Languages:</strong> Markup, CSS, C-like, JavaScript, PHP and Python</li>
+                <h3 class="sub-title text-center">Dependencies</h3>
+                <p>librFSM can be built with the built-in rfsm lua library (default is ON).</p>
+                <ul class="list">
+                    <li><strong><a href="https://www.lua.org/about.html">Lua</a></strong> library (5.x)</li>
+                    <li><strong><a href="https://www.qt.io/download/">Qt</a></strong> (5.x)</li>  
+                    <li><strong><a href="http://www.graphviz.org/">Graphviz</a></strong> development library for rfsmGui</li>
+                    <li><strong><a href="https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html">rFSM</a></strong> (optional)</li>
                 </ul>
-                <div class="code-block">
-                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
-                    <pre><code class="language-markup">
-    &ltp class="my-style"&gt
-      Hello World!
-    &lt/p&gt
-                     </code></pre>
-                </div><!--//code-block-->
             </div><!--//block-->
             
             <div class="block">
-                <h3 class="sub-title text-center">CSS</h3>
-                <p>Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus.</p>
+                <h3 class="sub-title text-center">Installation on Linux</h3>
+                <ul class="list">
+                    <li>Install one of the lua developemnt library (e.g., 5.1, 5.2, ...) and the graphviz development package</li>
+                    <li> If you do not want to use the built-in rfsm then follow the installation of <a href="https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html">rFSM</a></li>
+                </ul>
+
+                <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ sudo apt-get install lua5.X-dev libgraphviz-dev
+
+$ sudo apt-get install qtbase5-dev qtdeclarative5-dev qtdeclarative5-qtquick2-plugin \
+qtdeclarative5-window-plugin qtdeclarative5-controls-plugin qtdeclarative5-dialogs-plugin    
+                        </code>
+                    </pre>
+                </div><!--//code-block-->                
+
+                <ul class="list">
+                    <li>Compile and build</li>                    
+                </ul>       
                 
                 <div class="code-block">
                     <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
                     <pre>
-    <code class="language-css">
-    /*   
-     * Template Name: devAid - Responsive Website Template for developers
-     * Version: 1.0
-     * Author: Xiaoying Riley at 3rd Wave Media
-     * Website: http://themes.3rdwavemedia.com/
-     * Twitter: @3rdwave_themes
-    */
-    body {
-      font-family: 'Lato', arial, sans-serif;
-      color: #444444;
-      font-size: 16px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    </code></pre>
-                </div><!--//code-block-->
-            </div><!--//block-->
+                        <code class="language-css">
+$ cd rfsmTools
+$ mkdir build; cd build
+$ cmake ../; make
+                        </code>
+                    </pre>
+                </div><!--//code-block-->     
+                <br>
+                <p><strong>Notice:</strong>&nbsp; &nbsp;If you do not want to to use the built-in rfsm you can disable cmake EMBED_RFSM flag</p>
+                <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ cmake -DEMBED_RFSM=OFF ../; make
+                        </code>
+                    </pre>
+                </div><!--//code-block--> 
+                
+            </div><!--//installation on linux-->
+                
+                
+           <div class="block">
+                <h3 class="sub-title text-center">Installation on Windows</h3>
+                <ul class="list">
+                    <li>Install <a href="https://github.com/rjpcomputing/luaforwindows/releases/download/v5.1.5-51/LuaForWindows_v5.1.5-51.exe">lua for windows</a> or download and build one of the lua library (e.g., 5.1, 5.2, ...)</li>
+                    <li> Download and Install <a href="https://www.qt.io/download/">Qt5</a>. Follow the the installation instruction to set the environemnt variables (Qt5_DIR and PATH).</li>
+                    <li> Install <a href="http://www.graphviz.org/pub/graphviz/stable/windows/graphviz-2.38.msi">graphviz for windows</a> and set/update the corresponding enviornment variables (GRAPHVIZ_ROOT and PATH):</li>
+                </ul>
+
+                <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+ C:\> setx.exe Qt5_DIR path_to_the_qt_installed_directory\qt5\5.X\msvc20XX\lib\cmake\Qt5
+ C:\> setx.exe PATH "%PATH%; path_to_the_qt_installed_directory\qt5\5.X\msvc2010\bin"
+ C:\> setx.exe GRAPHVIZ_ROOT path_to_the_graphviz_installed_directory
+ C:\> setx.exe PATH "%PATH%; path_to_the_graphviz_installed directory\bin"   
+                        </code>
+                    </pre>
+                </div><!--//code-block-->                
+
+                <ul class="list">
+                    <li>The compilation is straightforward and uses the CMake build system. Get <a href="https://cmake.org/download/" >CMake for windows</a> if you have not yet installed. Then simply run the Cmake and, set the project (rfsmTools) root folder and the desired build folder. Configure and generate project solution for your favorite IDE (e.g. Visual Studio 11). Then open the solution from your IDE and build the project.</li>                    
+                </ul>       
+                
+                
+            </div><!--//installation on Windows-->                
+
             
             <div class="block">
-                <h3 class="sub-title text-center">JavaScript</h3>
-                <p>Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Lorem ipsum dolor sit amet, consectetuer adipiscing elit ligula eget dolor.</p>
+                <h3 class="sub-title text-center">Testing the library</h3>
                 <div class="code-block">
-                    <pre><code class="language-javascript">
-    if( awesome ){
-        console.log('This is Awesome');
-    }else{
-        $('body').addClass('give-me-awesome');
-    }
+                    <pre><code class="language-css">
+$ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
                     </code></pre>
                 </div><!--//code-block-->
-            </div><!--//block-->   
+            </div><!--//Testing the library-->
             <div class="block">
-                <h3 class="sub-title text-center">Full Documentation</h3>
-                <p>If your documentation is very long you can host the full docs page (including FAQ etc) on GitHub and provide a Call to Action button below to direct users there.</p>
-                <p class="text-center">
-                    <a class="btn btn-cta-primary" href="https://github.com/twbs/bootstrap" target="_blank">More on GitHub</a>
-                </p>
-            </div><!--//block-->
-            
+                <h3 class="sub-title text-center">Testing the rFSMGui</h3>
+                <p>Launch the <strong>rfsmGui</strong>. Open the example rFSM state machine from rfsmTools/examples/fsm/rfmodule_fsm.lua.</p>
+                <ul class="list">
+                    <li><strong>Running</strong>: To execute the state machine, just press the <strong>Start</strong> from the Run menu. you can interfere the execution of the state machine by Pausing it or sending arbitrary events from Gui.
+                    </li>
+                    <li>
+                        <strong>Debugging</strong>: In the debug mode, you can step the state machine, send arbitrary events and etc. Debugging state machine using GUI also offer the dry-run mode. When an state machine executed in dry-run mode, none of the entry, doo or exit callbacks of a state are called! To debug the state machine, just press the <strong>Step</strong> or <strong>Run</strong> from the 'Debug' menu. Stepping the state machine, consumes an event from the event queue and performs the corresponding transition. Running it, will continue stepping until there is no event left in the event queue.
+                    </li>
+                    <li>
+                        <strong>Building</strong>: To build a new state machine simply press <strong>New rFSM</strong>, select the filename and then start creating your rFSM using the build toolbar on the left. Once you finish just press <strong>Save</strong> and your Lua code will be generated.
+                    </li>
+                    <li>
+                        <strong>Editing</strong>:You can edit a state machine that has been loaded in two ways, directly from the embedded source editor and graphically through the rFSMGui. In the latter case it is possible to add/remove/rename states and transitions and pressing <strong>Save</strong> the code will be generated in one file preserving pre-definded <strong>entry</strong>, <strong>doo</strong>, <strong>exit</strong> functions and all the code defined before <strong>return rfsm.state</strong>.<br>
+                        For now the "graphical editor" is enabled ONLY for those state machines that are defined in only one file.
+                        Later we will remove this limitation.
+                    </li>
+                    
+                </ul>
+                
+            </div><!--//Testing the rfsmGui--> 
+            <div class="block">
+                <h3 class="sub-title text-center">Example of using rfsm from C++</h3>
+                                <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+<pre style='color:#d1d1d1;background:#000000;'><span style='color:#e66170; font-weight:bold; '>class</span> MyStateCallback <span style='color:#b060b0; '>:</span> <span style='color:#e66170; font-weight:bold; '>public</span> rfsm<span style='color:#b060b0; '>::</span>StateCallback <span style='color:#b060b0; '>{</span>
+<span style='color:#e66170; font-weight:bold; '>public</span><span style='color:#e34adc; '>:</span>
+    <span style='color:#e66170; font-weight:bold; '>virtual</span> <span style='color:#e66170; font-weight:bold; '>void</span> entry<span style='color:#d2cd86; '>(</span><span style='color:#d2cd86; '>)</span> <span style='color:#b060b0; '>{</span>
+        <span style='color:#00dddd; '>std</span><span style='color:#b060b0; '>::</span><span style='color:#e66170; font-weight:bold; '>cout</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>entry() of MyState (hello from C++)</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#00dddd; '>std</span><span style='color:#b060b0; '>::</span><span style='color:#e66170; font-weight:bold; '>endl</span><span style='color:#b060b0; '>;</span>
+    <span style='color:#b060b0; '>}</span>
+<span style='color:#b060b0; '>}</span> myStateCallback<span style='color:#b060b0; '>;</span>
+
+<span style='color:#e66170; font-weight:bold; '>int</span> <span style='color:#e66170; font-weight:bold; '>main</span><span style='color:#d2cd86; '>(</span><span style='color:#e66170; font-weight:bold; '>int</span> argc<span style='color:#d2cd86; '>,</span> <span style='color:#e66170; font-weight:bold; '>char</span><span style='color:#d2cd86; '>*</span><span style='color:#d2cd86; '>*</span> argv<span style='color:#d2cd86; '>)</span> <span style='color:#b060b0; '>{</span>
+    rfsm<span style='color:#b060b0; '>::</span>StateMachine rfsm<span style='color:#b060b0; '>;</span>   
+    rfsm<span style='color:#d2cd86; '>.</span>load<span style='color:#d2cd86; '>(</span><span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>my-statemachine.lua</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>)</span>
+
+    <span style='color:#9999a9; '>// setting some callbacks</span>
+    rfsm<span style='color:#d2cd86; '>.</span>setStateCallback<span style='color:#d2cd86; '>(</span><span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>MyState</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>,</span> myStateCallback<span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>    
+
+    rfsm<span style='color:#d2cd86; '>.</span>sendEvent<span style='color:#d2cd86; '>(</span><span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>event1</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>
+    rfsm<span style='color:#d2cd86; '>.</span>step<span style='color:#d2cd86; '>(</span><span style='color:#008c00; '>1</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>    
+    <span style='color:#00dddd; '>std</span><span style='color:#b060b0; '>::</span><span style='color:#e66170; font-weight:bold; '>cout</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#d2cd86; '>&lt;</span>rfsm<span style='color:#d2cd86; '>.</span>getCurrentState<span style='color:#d2cd86; '>(</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>
+    rfsm<span style='color:#d2cd86; '>.</span>sendEvents<span style='color:#d2cd86; '>(</span><span style='color:#008c00; '>2</span><span style='color:#d2cd86; '>,</span> <span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>event1</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>,</span> <span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>event2</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>
+    rfsm<span style='color:#d2cd86; '>.</span>run<span style='color:#d2cd86; '>(</span><span style='color:#d2cd86; '>)</span>
+    <span style='color:#9999a9; '>//...    </span>
+    <span style='color:#e66170; font-weight:bold; '>return</span> <span style='color:#008c00; '>0</span><span style='color:#b060b0; '>;</span>
+<span style='color:#b060b0; '>}</span>
+</pre>
+                </div><!--//code-block-->  
+                
+            </div><!--//Example using rfsm from C++-->
+                        <div class="block">
+                <h3 class="sub-title text-center">Contributors </h3>
+                            <ul class="list">
+                                <li><a href="https://github.com/apaikan">Ali Paikan</a></li>
+                                <li><a href="https://github.com/Nicogene">Nicolò Genesio</a></li>
+                                <li><a href="https://github.com/traversaro">Silvio Traversaro</a></li>
+                                
+                            </ul>
+            </div><!--//Contributors-->
             </div><!--//docs-inner-->         
         </div><!--//container-->
     </section><!--//docs->

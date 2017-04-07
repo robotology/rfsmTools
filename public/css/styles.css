@@ -22,10 +22,10 @@ h5,
 h6 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
-  color: #17baef;
+  color: #2e3e56;
 }
 a {
-  color: #17baef;
+  color: #FFFFFF;
   -webkit-transition: all 0.4s ease-in-out;
   -moz-transition: all 0.4s ease-in-out;
   -ms-transition: all 0.4s ease-in-out;
@@ -69,8 +69,8 @@ a.btn-cta-primary:hover,
 }
 a.btn-cta-secondary,
 .btn-cta-secondary {
-  background: #eebf3f;
-  border: 1px solid #eebf3f;
+  background: #edad56;
+  border: 1px solid #edad56;
   color: #fff;
   font-weight: 600;
   text-transform: uppercase;
@@ -93,7 +93,7 @@ pre code {
 /* ======= Header ======= */
 .header {
   padding: 10px 0;
-  background: #17baef;
+  background: #2e3e56;
   color: #fff;
   position: fixed;
   width: 100%;
@@ -106,7 +106,7 @@ pre code {
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
 }
 .header.navbar-fixed-top .logo a {
-  color: #17baef;
+  color: #2e3e56;
 }
 .header.navbar-fixed-top .main-nav .nav .nav-item a {
   color: #666666;
@@ -149,11 +149,11 @@ pre code {
   font-family: 'Montserrat', sans-serif;
 }
 .header .main-nav .nav .nav-item.active a {
-  color: #17baef;
+  color: #2e3e56;
   background: none;
 }
 .header .main-nav .nav .nav-item a {
-  color: #0a7396;
+  color: #edad56;
   -webkit-transition: none;
   -moz-transition: none;
   -ms-transition: none;
@@ -162,7 +162,7 @@ pre code {
   padding: 15px 10px;
 }
 .header .main-nav .nav .nav-item a:hover {
-  color: #074f66;
+  color: #eeeeee;
   background: none;
 }
 .header .main-nav .nav .nav-item a:focus {
@@ -174,24 +174,24 @@ pre code {
   background: none;
 }
 .header .main-nav .nav .nav-item.active {
-  color: #17baef;
+  color: #2e3e56;
 }
 .header .main-nav .nav .nav-item.last {
   margin-right: 0;
 }
 /* ======= Promo Section ======= */
 .promo {
-  background: #17baef;
+  background: #2e3e56;
   color: #fff;
   padding-top: 150px;
 }
 .promo .title {
   font-size: 98px;
-  color: #074f66;
+  color: #eeeeee;
   margin-top: 0;
 }
 .promo .title .highlight {
-  color: #eebf3f;
+  color: #edad56;
 }
 .promo .intro {
   font-size: 28px;
@@ -213,10 +213,10 @@ pre code {
   margin-right: 15px;
 }
 .promo .meta a {
-  color: #0a7396;
+  color: #edad56;
 }
 .promo .meta a:hover {
-  color: #074f66;
+  color: #eeeeee;
 }
 .promo .social-media {
   background: #0c86ae;
@@ -270,11 +270,11 @@ pre code {
 /* ======= Features Section ======= */
 .features {
   padding: 80px 0;
-  background: #17baef;
+  background: #2e3e56;
   color: #fff;
 }
 .features .title {
-  color: #074f66;
+  color: #eeeeee;
   margin-top: 0;
   margin-bottom: 30px;
 }
@@ -286,7 +286,7 @@ pre code {
 }
 .features .feature-list li {
   margin-bottom: 10px;
-  color: #074f66;
+  color: #edad56;
 }
 .features .feature-list li .fa {
   margin-right: 5px;
@@ -296,6 +296,9 @@ pre code {
 .docs {
   padding: 80px 0;
   background: #f5f5f5;
+}
+.docs a {
+  color: #074f66;
 }
 .docs .title {
   color: #074f66;
@@ -333,6 +336,9 @@ pre code {
   background-clip: padding-box;
 }
 /* ======= License Section ======= */
+.license a {
+  color: #074f66;
+}
 .license {
   padding: 80px 0;
   background: #f5f5f5;
@@ -413,7 +419,7 @@ pre code {
 /* ======= Contact Section ======= */
 .contact {
   padding: 80px 0;
-  background: #17baef;
+  background: #2e3e56;
   color: #fff;
 }
 .contact .contact-inner {
@@ -421,7 +427,7 @@ pre code {
   margin: 0 auto;
 }
 .contact .title {
-  color: #074f66;
+  color: #eeeeee;
   margin-top: 0;
   margin-bottom: 30px;
 }
@@ -506,7 +512,7 @@ pre code {
   margin-top: 0;
 }
 .contact .social-icons {
-  list-style: none;
+  list-style:;
   padding: 10px 0;
   margin-bottom: 0;
   display: inline-block;
