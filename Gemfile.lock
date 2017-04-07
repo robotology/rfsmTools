@@ -155,6 +155,7 @@ GEM
       jekyll (>= 3.0)
     json (1.8.6)
     kramdown (1.13.2)
+    libv8 (3.16.14.19)
     liquid (3.0.6)
     listen (3.0.6)
       rb-fsevent (>= 0.9.3)
@@ -175,6 +176,7 @@ GEM
     rb-fsevent (0.9.8)
     rb-inotify (0.9.8)
       ffi (>= 0.5.0)
+    ref (2.0.0)
     rouge (1.11.1)
     safe_yaml (1.0.4)
     sass (3.4.23)
@@ -183,6 +185,9 @@ GEM
       faraday (~> 0.8, < 1.0)
     terminal-table (1.7.3)
       unicode-display_width (~> 1.1.1)
+    therubyracer (0.12.3)
+      libv8 (~> 3.16.14.15)
+      ref
     thread_safe (0.3.6)
     typhoeus (0.8.0)
       ethon (>= 0.8.0)
@@ -194,7 +199,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  execjs
   github-pages
+  therubyracer
 
 BUNDLED WITH
    1.14.6
