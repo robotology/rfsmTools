@@ -1,16 +1,16 @@
 
 # Setup
-title:               rFSMTools
-tagline:             A set of tools to execute and debug rFSM LUA-based state machines
+title:               DevAid
+email:               example@gmail.com
+tagline:             Free Jekyll theme made for developers
+url:                 "" # insert your site's URL
+baseurl:             ""
 
 # About/contact
 author: # you can edit these to be your personal details
-  name:              Ali Paikan
-  email:						 ali.paikan@iit.it
-author: # you can edit these to be your personal details
-  name:              Nicolò Genesio
-  email:             nicolo.genesio@iit.it
-
+  name:              Xiaoying Riley
+  url:               https://twitter.com/3rdwave_themes
+  email:
 
 # Google services
 google_verification:
@@ -22,15 +22,17 @@ google_tag_manager:
 bing_verification:
 
 # Social
-github_username: apaikan
-github_username: Nicogene
-linkedin_username: nicogene
-linkedin_username: alipaikan
+github_username: thundergolfer
+twitter_username: 3rdwave_themes
+instagram_username: kevin/
+facebook: 3rdwavethemes/
+linkedin_username: xiaoying
+dribbble_username: Xiaoying
 
 # Custom vars
 version:             1.0.1
 github:
-  repo:              https://github.com/robotology/rfsmTools
+  repo:              https://github.com/kevit/devaid-jekyll-theme
 
 # Gems - Dependencies for this theme
 gems:
@@ -39,5 +41,3 @@ gems:
 # Build settings
 markdown:     kramdown
 permalink:    pretty
-theme: default
-
