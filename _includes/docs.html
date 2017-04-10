@@ -131,16 +131,30 @@ $ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
             </div><!--//Testing the rfsmGui--> 
             <div class="block">
                 <h3 class="sub-title text-center">Example of using rfsm from C++</h3>
+                  <pre>&lt;link type="text/css" rel="Stylesheet" href="/styles/shThemeMidnight.css"/></pre>  
                   <pre class='brush: cpp'>
-                  // my first program in C++
-                  #include <iostream>
-                  using namespace std;
+                    class MyStateCallback : public rfsm::StateCallback {
+                    public:
+                        virtual void entry() {
+                            std::cout<<"entry() of MyState (hello from C++)"<<std::endl;
+                        }
+                    } myStateCallback;
 
-                  int main ()
-                  {
-                    cout << "Hello World!";
-                    return 0;
-                  }
+                    int main(int argc, char** argv) {
+                        rfsm::StateMachine rfsm;   
+                        rfsm.load("my-statemachine.lua")
+
+                        // setting some callbacks
+                        rfsm.setStateCallback("MyState", myStateCallback);    
+
+                        rfsm.sendEvent("event1");
+                        rfsm.step(1);    
+                        std::cout<<rfsm.getCurrentState();
+                        rfsm.sendEvents(2, "event1", "event2");
+                        rfsm.run()
+                        //...    
+                        return 0;
+                    }
                   </pre>
 
                   <script src="{{ site.baseurl }}/public/js/shCore.js"></script>
