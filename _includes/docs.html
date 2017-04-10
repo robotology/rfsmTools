@@ -131,33 +131,23 @@ $ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
             </div><!--//Testing the rfsmGui--> 
             <div class="block">
                 <h3 class="sub-title text-center">Example of using rfsm from C++</h3>
-                                <div class="code-block">
-                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
-<pre style='color:#d1d1d1;background:#000000;'><span style='color:#e66170; font-weight:bold; '>class</span> MyStateCallback <span style='color:#b060b0; '>:</span> <span style='color:#e66170; font-weight:bold; '>public</span> rfsm<span style='color:#b060b0; '>::</span>StateCallback <span style='color:#b060b0; '>{</span>
-<span style='color:#e66170; font-weight:bold; '>public</span><span style='color:#e34adc; '>:</span>
-    <span style='color:#e66170; font-weight:bold; '>virtual</span> <span style='color:#e66170; font-weight:bold; '>void</span> entry<span style='color:#d2cd86; '>(</span><span style='color:#d2cd86; '>)</span> <span style='color:#b060b0; '>{</span>
-        <span style='color:#00dddd; '>std</span><span style='color:#b060b0; '>::</span><span style='color:#e66170; font-weight:bold; '>cout</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>entry() of MyState (hello from C++)</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#00dddd; '>std</span><span style='color:#b060b0; '>::</span><span style='color:#e66170; font-weight:bold; '>endl</span><span style='color:#b060b0; '>;</span>
-    <span style='color:#b060b0; '>}</span>
-<span style='color:#b060b0; '>}</span> myStateCallback<span style='color:#b060b0; '>;</span>
+                  <pre class='brush: cpp'>
+                  // my first program in C++
+                  #include <iostream>
+                  using namespace std;
 
-<span style='color:#e66170; font-weight:bold; '>int</span> <span style='color:#e66170; font-weight:bold; '>main</span><span style='color:#d2cd86; '>(</span><span style='color:#e66170; font-weight:bold; '>int</span> argc<span style='color:#d2cd86; '>,</span> <span style='color:#e66170; font-weight:bold; '>char</span><span style='color:#d2cd86; '>*</span><span style='color:#d2cd86; '>*</span> argv<span style='color:#d2cd86; '>)</span> <span style='color:#b060b0; '>{</span>
-    rfsm<span style='color:#b060b0; '>::</span>StateMachine rfsm<span style='color:#b060b0; '>;</span>   
-    rfsm<span style='color:#d2cd86; '>.</span>load<span style='color:#d2cd86; '>(</span><span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>my-statemachine.lua</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>)</span>
+                  int main ()
+                  {
+                    cout << "Hello World!";
+                    return 0;
+                  }
+                  </pre>
 
-    <span style='color:#9999a9; '>// setting some callbacks</span>
-    rfsm<span style='color:#d2cd86; '>.</span>setStateCallback<span style='color:#d2cd86; '>(</span><span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>MyState</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>,</span> myStateCallback<span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>    
-
-    rfsm<span style='color:#d2cd86; '>.</span>sendEvent<span style='color:#d2cd86; '>(</span><span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>event1</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>
-    rfsm<span style='color:#d2cd86; '>.</span>step<span style='color:#d2cd86; '>(</span><span style='color:#008c00; '>1</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>    
-    <span style='color:#00dddd; '>std</span><span style='color:#b060b0; '>::</span><span style='color:#e66170; font-weight:bold; '>cout</span><span style='color:#d2cd86; '>&lt;</span><span style='color:#d2cd86; '>&lt;</span>rfsm<span style='color:#d2cd86; '>.</span>getCurrentState<span style='color:#d2cd86; '>(</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>
-    rfsm<span style='color:#d2cd86; '>.</span>sendEvents<span style='color:#d2cd86; '>(</span><span style='color:#008c00; '>2</span><span style='color:#d2cd86; '>,</span> <span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>event1</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>,</span> <span style='color:#02d045; '>"</span><span style='color:#00c4c4; '>event2</span><span style='color:#02d045; '>"</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>
-    rfsm<span style='color:#d2cd86; '>.</span>run<span style='color:#d2cd86; '>(</span><span style='color:#d2cd86; '>)</span>
-    <span style='color:#9999a9; '>//...    </span>
-    <span style='color:#e66170; font-weight:bold; '>return</span> <span style='color:#008c00; '>0</span><span style='color:#b060b0; '>;</span>
-<span style='color:#b060b0; '>}</span>
-</pre>
-                </div><!--//code-block-->  
-                
+                  <script src="{{ site.baseurl }}/public/js/shCore.js"></script>
+                  <script src="{{ site.baseurl }}/public/js/shBrushCpp.js"></script>
+                  <script>
+                    SyntaxHighlighter.all()
+                  </script>                                                
             </div><!--//Example using rfsm from C++-->
                         <div class="block">
                 <h3 class="sub-title text-center">Contributors </h3>
