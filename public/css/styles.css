@@ -576,8 +576,8 @@ pre code {
 .footer .fa-heart {
   color: #fb866a;
 }
-/* Extra small devices (phones, less than 768px) */
-@media (max-width: 767px) {
+/* Extra small devices (phones, less than 1080px FHD) */
+@media (max-width: 1080px) {
   .header .main-nav button {
     margin-right: 0;
   }
@@ -624,6 +624,14 @@ pre code {
   }
   .contact .social-icons a .fa:before {
     font-size: 18px;
+  }
+  .promo .img {
+    visibility: hidden;
+    clear: both;
+    float: left;
+    margin: 10px auto 5px 20px;
+    width: 28%;
+    display: none;
   }
 }
 /* Small devices (tablets, 768px and up) */
