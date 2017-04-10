@@ -15,7 +15,8 @@
             </div><!--//block-->
             
             <div class="block">
-                <h3 class="sub-title text-center">Installation on Linux</h3>
+                <h3 class="sub-title text-center"><i class="fa fa-linux"></i>&nbsp;&nbsp;
+Installation on Linux</h3>
                 <ul class="list">
                     <li>Install one of the lua developemnt library (e.g., 5.1, 5.2, ...) and the graphviz development package</li>
                     <li> If you do not want to use the built-in rfsm then follow the installation of <a href="https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html">rFSM</a></li>
@@ -62,7 +63,8 @@ $ cmake -DEMBED_RFSM=OFF ../; make
                 
                 
            <div class="block">
-                <h3 class="sub-title text-center">Installation on Windows</h3>
+                <h3 class="sub-title text-center"><i class="fa fa-windows"></i>&nbsp;&nbsp;
+Installation on Windows</h3>
                 <ul class="list">
                     <li>Install <a href="https://github.com/rjpcomputing/luaforwindows/releases/download/v5.1.5-51/LuaForWindows_v5.1.5-51.exe">lua for windows</a> or download and build one of the lua library (e.g., 5.1, 5.2, ...)</li>
                     <li> Download and Install <a href="https://www.qt.io/download/">Qt5</a>. Follow the the installation instruction to set the environemnt variables (Qt5_DIR and PATH).</li>
@@ -108,11 +110,20 @@ $ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
                     </li>
                     <li>
                         <strong>Building</strong>: To build a new state machine simply press <strong>New rFSM</strong>, select the filename and then start creating your rFSM using the build toolbar on the left. Once you finish just press <strong>Save</strong> and your Lua code will be generated.
-                    </li>
+                        <br>
+                        <center>
+                            <img align= "center" width="80%" class="img" src="{{ site.baseurl }}/public/images/rfsmgui-build.png" alt="" />
+                        </center>
+                        <br>
+                    </li>                    
                     <li>
-                        <strong>Editing</strong>:You can edit a state machine that has been loaded in two ways, directly from the embedded source editor and graphically through the rFSMGui. In the latter case it is possible to add/remove/rename states and transitions and pressing <strong>Save</strong> the code will be generated in one file preserving pre-definded <strong>entry</strong>, <strong>doo</strong>, <strong>exit</strong> functions and all the code defined before <strong>return rfsm.state</strong>.<br>
+                        <strong>Editing</strong>: You can edit a pre-existing state machine in two ways, directly from the embedded source editor and graphically through the rFSMGui. In the latter case it is possible to add/remove/rename states and transitions and pressing <strong>Save</strong> the code will be generated in one file preserving pre-definded <strong>entry</strong>, <strong>doo</strong>, <strong>exit</strong> functions and all the code defined before "<strong>return rfsm.state{</strong>" statement.<br>
                         For now the "graphical editor" is enabled ONLY for those state machines that are defined in only one file.
                         Later we will remove this limitation.
+                        <br>
+                        <center>
+                            <img align= "center" width="80%" class="img" src="{{ site.baseurl }}/public/images/rfsmgui-src.png" alt="" />
+                        </center>                        
                     </li>
                     
                 </ul>

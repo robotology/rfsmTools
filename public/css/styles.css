@@ -267,6 +267,15 @@ pre code {
   color: #074f66;
   font-size: 18px;
 }
+
+.about a {
+  color: #074f66;
+}
+
+.about a:hover {
+  color: #edad56;
+	text-decoration: none;
+}
 /* ======= Features Section ======= */
 .features {
   padding: 80px 0;

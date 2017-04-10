@@ -3,9 +3,6 @@
 This repository contains a C++ library (*librFSM*) to load and execute rFSM LUA-based state machines and a graphical tools (*rfsmGui*) to run/simulate the state machine.
 
 
-![scenario2](/doc/rfsmGui.png)
-
-
 Dependencies 
 ------------
 * [Lua](https://www.lua.org/about.html) library (5.x)
