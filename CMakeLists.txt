@@ -13,7 +13,7 @@ enable_testing()
 
 #add some options
 option (EMBED_RFSM  "Embed rfsm lua file into the librFSM (optional)" TRUE)
-option (ENABLE_SIMRFSM  "build rfsm simulator" TRUE)
+option (ENABLE_RFSMGUI  "build rfsm simulator" TRUE)
 option (BUILD_TESTING   "build tests" FALSE)
 option (USE_YARP "Use YARP (optional)" FALSE)
 
@@ -28,6 +28,8 @@ endif()
 option(ENABLE_RPATH "Enable RPATH for this library" ON)
 mark_as_advanced(ENABLE_RPATH)
 include(AddInstallRPATHSupport)
+include(RFSMTOOLSDoc)
+
 add_install_rpath_support(BIN_DIRS "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
                           LIB_DIRS "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
                           DEPENDS ENABLE_RPATH
