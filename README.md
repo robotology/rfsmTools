@@ -6,13 +6,13 @@ This repository contains a C++ library (*librFSM*) to load and execute rFSM LUA-
 
 Features
 --------
-:+1: Compatible with Lua 5.1 and 5.2  
-:+1: Gui built with Qt  
-:+1: Multiplatform compatibilty(Linux, Windows, macOS)  
-:+1: User friendly, easy to install, easy to use  
-:+1: Few dependencies  
-:+1: Includes debugger for rFSM-based state machines  
-:+1: Includes builder for editing an existing state machine or build one from scratch  
+:tada: Compatible with Lua 5.1 and 5.2  
+:tada: Gui built with Qt  
+:tada: Multiplatform compatibilty(Linux, Windows, macOS)  
+:tada: User friendly, easy to install, easy to use  
+:tada: Few dependencies  
+:tada: Includes debugger for rFSM-based state machines  
+:tada: Includes builder for editing an existing state machine or build one from scratch  
 
 Dependencies 
 ------------
@@ -62,7 +62,54 @@ Installation on Windows
 
 * The compilation is straightforward and uses the CMake build system. Get [CMake for windows](https://cmake.org/download/) if you have not yet installed. Then simply run the Cmake and, set the project (rfsmTools) root folder and the desired build folder. Configure and generate project solution for your favorite IDE (e.g. Visual Studio 11). Then open the solution from your IDE and build the project.   
 
+Installation on macOS
+---------------------
+* Update brew  
+```
+$ brew update
+```
 
+* Install Lua
+```
+$ brew install lua
+```
+
+* Install Qt5
+```
+$ brew install qt
+$ brew link --force qt
+```
+
+* Add the following lines to your .bash_profile
+
+```
+$ export Qt5_DIR=/usr/local/opt/qt5/lib/cmake
+$ export PATH=/usr/local/opt/qt5/bin:$PATH
+```
+
+* Install Graphviz
+```
+$ brew install graphviz
+```
+now you can choose to compile using GNU Makefiles or Xcode:
+
+* GNU Makefiles
+```
+$ cd rfsmTools
+$ mkdir build; cd build
+$ cmake ../; make
+```
+
+* Xcode
+```
+$ ccmake .. -G Xcode
+```
+This will generate .xcodeproj file which can be opened with Xcode. Build it by clicking **Product -> Build** or **cmd+B** shortcut. One can also compile the *Release* biaries by clicking **Product -> Archive**.
+
+Alternatively, it is possible to directly compile the project on the command line by
+```
+xcodebuild [-configuration Debug|Release|Other Configs] [-target ALL_BUILD|install|Other Targets]
+```
 Testing the Library
 --------------------
 ```
