@@ -17,10 +17,6 @@ private:
     rfsm::StateGraph* graph;
 public:
     /**
-     * @brief StateGraphEditor default constructor
-     */
-    StateGraphEditor();
-    /**
      * @brief StateGraphEditor constructor
      * @param graph, rfsm::StateGraph to be built or edited
      */
@@ -29,11 +25,6 @@ public:
      * @brief ~StateGraphEditor
      */
     ~StateGraphEditor();
-    /**
-     * @brief setGraph, set the rfsm::StateGraph
-     * @param graph
-     */
-    void setGraph(rfsm::StateGraph &graph);
     /**
      * @brief addState add a state specifying name and type(optional)
      * @param name of the state, it has to be unique in the entire state machine

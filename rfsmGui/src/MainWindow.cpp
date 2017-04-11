@@ -134,13 +134,40 @@ void MyStateMachine::onInfo(const string message) {
 /* MainWindow                                   */
 /************************************************/
 MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
-    parser(prsr), QMainWindow(parent),
-    ui(new Ui::MainWindow), scene(NULL), rfsm(this), machineMode(UNLOADED),
-    line(NULL), isNew(false), canModify(false), saveAs(false)
+    QMainWindow(parent), ui(new Ui::MainWindow),
+    scene(NULL), machineMode(UNLOADED), rfsm(this),
+    line(NULL), isNew(false), canModify(false), parser(prsr), saveAs(false),graphEditor(graph)
 {
     ui->setupUi(this);
 
     // initialize the scene
+    scene = new QGVScene("rFSM", this);
+    ui->graphicsView->setBackgroundBrush(QBrush(QColor("#2e3e56"), Qt::SolidPattern));
+    ui->graphicsView->setScene(scene);
+    connect(scene, SIGNAL(nodeContextMenu(QGVNode*)), SLOT(nodeContextMenu(QGVNode*)));
+    connect(scene, SIGNAL(nodeDoubleClick(QGVNode*)), SLOT(nodeDoubleClick(QGVNode*)));
+    connect(scene, SIGNAL(edgeContextMenu(QGVEdge*)), SLOT(edgeContextMenu(QGVEdge*)));
+    connect(scene, SIGNAL(subGraphContextMenu(QGVSubGraph*)), SLOT(subGraphContextMenu(QGVSubGraph*)));
+    connect(scene, SIGNAL(sceneLeftClicked(QPointF)), SLOT(onSceneLeftClicked(QPointF)));
+    connect(scene, SIGNAL(sceneRightClicked(QPointF)), SLOT(onSceneRightClicked(QPointF)));
+    connect(scene, SIGNAL(sceneMouseMove(QPointF)), SLOT(onSceneMouseMove(QPointF)));
+    connect(scene, SIGNAL(sceneMouseReleased(QPointF)), SLOT(onSceneMouseReleased(QPointF)));
+
+    scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
+    scene->setGraphAttribute("remincross", "true");
+    scene->setGraphAttribute("rankdir", "TD");
+    scene->setGraphAttribute("bgcolor", "#2e3e56");
+    //scene->setGraphAttribute("concentrate", "true"); //Error !
+    scene->setGraphAttribute("nodesep", "0.7");
+    scene->setGraphAttribute("ranksep", "0.4");
+    //scene->setGraphAttribute("sep", "0.4");
+    //scene->setNodeAttribute("shape", "box");
+    scene->setNodeAttribute("style", "filled");
+    scene->setNodeAttribute("fillcolor", "gray");
+    scene->setNodeAttribute("height", "1.0");
+    scene->setEdgeAttribute("minlen", "2.0");
+    //scene->setEdgeAttribute("dir", "both");
+
     initScene();
 
     watcher = new QFileSystemWatcher(this);
@@ -226,44 +253,10 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::initScene() {
-    if(scene) {
-        scene->clear();
-        delete scene;
-    }
-    graphEditor.setGraph(graph);
-    scene = new QGVScene("rFSM", this);
-    ui->graphicsView->setBackgroundBrush(QBrush(QColor("#2e3e56"), Qt::SolidPattern));
-    ui->graphicsView->setScene(scene);
-    connect(scene, SIGNAL(nodeContextMenu(QGVNode*)), SLOT(nodeContextMenu(QGVNode*)));
-    connect(scene, SIGNAL(nodeDoubleClick(QGVNode*)), SLOT(nodeDoubleClick(QGVNode*)));
-    connect(scene, SIGNAL(edgeContextMenu(QGVEdge*)), SLOT(edgeContextMenu(QGVEdge*)));
-    connect(scene, SIGNAL(subGraphContextMenu(QGVSubGraph*)), SLOT(subGraphContextMenu(QGVSubGraph*)));
-
-
-    connect(scene, SIGNAL(sceneLeftClicked(QPointF)), SLOT(onSceneLeftClicked(QPointF)));
-    connect(scene, SIGNAL(sceneRightClicked(QPointF)), SLOT(onSceneRightClicked(QPointF)));
-    connect(scene, SIGNAL(sceneMouseMove(QPointF)), SLOT(onSceneMouseMove(QPointF)));
-    connect(scene, SIGNAL(sceneMouseReleased(QPointF)), SLOT(onSceneMouseReleased(QPointF)));
-
+    scene->clear();
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
     ui->graphicsView->viewport()->setCursor(Qt::ArrowCursor);
-
-    scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
-    scene->setGraphAttribute("remincross", "true");
-    scene->setGraphAttribute("rankdir", "TD");
-    scene->setGraphAttribute("bgcolor", "#2e3e56");
-    //scene->setGraphAttribute("concentrate", "true"); //Error !
-    scene->setGraphAttribute("nodesep", "0.7");
-    scene->setGraphAttribute("ranksep", "0.4");
-    //scene->setGraphAttribute("sep", "0.4");
-    //scene->setNodeAttribute("shape", "box");
-    scene->setNodeAttribute("style", "filled");
-    scene->setNodeAttribute("fillcolor", "gray");
-    scene->setNodeAttribute("height", "1.0");
-    scene->setEdgeAttribute("minlen", "2.0");
-    //scene->setEdgeAttribute("dir", "both");
-
 }
 
 
@@ -482,7 +475,6 @@ bool MainWindow::loadrFSM(const std::string fname) {
     rfsm.getEventQueue(equeue);
     onUpdateEventQueue(equeue);
     graph = rfsm.getStateGraph();
-    graphEditor.setGraph(graph);
     canModify = graphEditor.canModify(rfsm.getFileName());
     drawStateMachine(graph);
     switchMachineMode(IDLE);

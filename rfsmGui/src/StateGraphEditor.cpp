@@ -14,11 +14,6 @@ using namespace rfsm;
 using namespace std;
 
 
-StateGraphEditor::StateGraphEditor():graph(NULL)
-{
-
-}
-
 StateGraphEditor::StateGraphEditor(rfsm::StateGraph& graph):graph(&graph)
 {
 
@@ -29,10 +24,6 @@ StateGraphEditor::~StateGraphEditor()
 
 }
 
-void StateGraphEditor::setGraph(rfsm::StateGraph &graph){
-    this->graph=&graph;
-
-}
 
 void StateGraphEditor::addState(const string name, const string type)
 {

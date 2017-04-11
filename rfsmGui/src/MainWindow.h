@@ -172,8 +172,6 @@ private:
     QCommandLineParser* parser;
     MyStateMachine rfsm;    
     std::string layoutStyle;    
-    QTreeWidgetItem *moduleParentItem;
-    QTreeWidgetItem *portParentItem;
     QFileSystemWatcher* watcher;
     QSettings settings;
     QString fileName;
