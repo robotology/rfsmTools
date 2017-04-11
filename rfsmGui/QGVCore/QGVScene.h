@@ -54,6 +54,7 @@ public:
     void loadLayout(const QString &text);
     void applyLayout();
     void clear();
+    void resetGVScene();
 
 
 signals:
@@ -87,13 +88,16 @@ private:
     friend class QGVEdge;
     friend class QGVSubGraph;
 
-		QGVGvcPrivate *_context;
-		QGVGraphPrivate *_graph;
+    QGVGvcPrivate *_context;
+    QGVGraphPrivate *_graph;
     //QFont _font;
 
     QList<QGVNode*> _nodes;
     QList<QGVEdge*> _edges;
     QList<QGVSubGraph*> _subGraphs;
+
+    QString name;
+    QObject *parent;
 };
 
 #endif // QGVSCENE_H

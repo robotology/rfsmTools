@@ -153,21 +153,6 @@ MainWindow::MainWindow(QCommandLineParser *prsr, QWidget *parent) :
     connect(scene, SIGNAL(sceneMouseMove(QPointF)), SLOT(onSceneMouseMove(QPointF)));
     connect(scene, SIGNAL(sceneMouseReleased(QPointF)), SLOT(onSceneMouseReleased(QPointF)));
 
-    scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
-    scene->setGraphAttribute("remincross", "true");
-    scene->setGraphAttribute("rankdir", "TD");
-    scene->setGraphAttribute("bgcolor", "#2e3e56");
-    //scene->setGraphAttribute("concentrate", "true"); //Error !
-    scene->setGraphAttribute("nodesep", "0.7");
-    scene->setGraphAttribute("ranksep", "0.4");
-    //scene->setGraphAttribute("sep", "0.4");
-    //scene->setNodeAttribute("shape", "box");
-    scene->setNodeAttribute("style", "filled");
-    scene->setNodeAttribute("fillcolor", "gray");
-    scene->setNodeAttribute("height", "1.0");
-    scene->setEdgeAttribute("minlen", "2.0");
-    //scene->setEdgeAttribute("dir", "both");
-
     initScene();
 
     watcher = new QFileSystemWatcher(this);
@@ -253,7 +238,22 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::initScene() {
-    scene->clear();
+
+    scene->resetGVScene();
+    scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
+    scene->setGraphAttribute("remincross", "true");
+    scene->setGraphAttribute("rankdir", "TD");
+    scene->setGraphAttribute("bgcolor", "#2e3e56");
+    //scene->setGraphAttribute("concentrate", "true"); //Error !
+    scene->setGraphAttribute("nodesep", "0.7");
+    scene->setGraphAttribute("ranksep", "0.4");
+    //scene->setGraphAttribute("sep", "0.4");
+    //scene->setNodeAttribute("shape", "box");
+    scene->setNodeAttribute("style", "filled");
+    scene->setNodeAttribute("fillcolor", "gray");
+    scene->setNodeAttribute("height", "1.0");
+    scene->setEdgeAttribute("minlen", "2.0");
+    //scene->setEdgeAttribute("dir", "both");
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
     ui->graphicsView->viewport()->setCursor(Qt::ArrowCursor);
@@ -297,22 +297,6 @@ void MainWindow::drawStateMachine(const rfsm::StateGraph& graph) {
     initScene();
     sceneNodeMap.clear();
     sceneSubGraphMap.clear();
-
-    scene->setGraphAttribute("splines", layoutStyle.c_str()); //spline, polyline, line. ortho
-    scene->setGraphAttribute("remincross", "true");
-    scene->setGraphAttribute("rankdir", "TD");
-    scene->setGraphAttribute("fixedsize","false");
-    scene->setGraphAttribute("bgcolor", "#2e3e56");
-    //scene->setGraphAttribute("concentrate", "true"); //Error !
-    scene->setGraphAttribute("nodesep", "0.7");
-    scene->setGraphAttribute("ranksep", "0.4");
-    //scene->setGraphAttribute("sep", "0.4");
-    //scene->setNodeAttribute("shape", "box");
-    scene->setNodeAttribute("style", "filled");
-    scene->setNodeAttribute("fillcolor", "gray");
-    scene->setNodeAttribute("height", "1.0");
-    scene->setEdgeAttribute("minlen", "2.0");
-    //scene->setEdgeAttribute("dir", "both");
 
     // adding composit states
     for(size_t i=0; i<graph.states.size(); i++) {
