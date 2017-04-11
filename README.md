@@ -1,10 +1,18 @@
 # rFSM Tools
 
-This repository contains a C++ library (*librFSM*) to load and execute rFSM LUA-based state machines and a graphical tools (*rfsmGui*) to run/simulate the state machine.
-
+This repository contains a C++ library (*librFSM*) to load and execute rFSM LUA-based state machines and a graphical tools (*rfsmGui*) to create, debug and execute the state machine.
 
 ![scenario2](/doc/rfsmGui.png)
 
+Features
+--------
+:+1: Compatible with Lua 5.1 and 5.2
+:+1: Gui built with Qt
+:+1: Multiplatform compatibilty(Linux, Windows, macOS)
+:+1: User friendly, easy to install, easy to use
+:+1: Few dependencies
+:+1: Includes debugger for rFSM-based state machines
+:+1: Includes builder for editing an existing state machine or build one from scratch
 
 Dependencies 
 ------------
@@ -69,7 +77,8 @@ Launch the `rfsmGui`. Open the example rFSM state machine from `rfsmTools/exampl
 * **Running**: To execute the state machine, just press the `Start` from the `Run` menu. you can interfere the execution of the state machine by `Pausing` it or sending arbitrary events from Gui. 
 
 * **Debuging**: In the debug mode, you can step the state machine, send arbitrary events and etc. Debugging state machine using GUI also offer the `dry-run` mode. When an state machine executed in dry-run mode, none of the `entry`, `doo` or `exit` callbacks of a state are called! To debug the state machine, just press the `Step` or `Run` from the 'Debug' menu. Stepping the state machine, consumes an event from the event queue and performs the corresponding transition. Running it, will continue stepping until there is no event left in the event queue. 
-
+* **Building:** To build a new state machine simply press `New rFSM`, select the filename and then start creating your rFSM using the build toolbar on the left. Once you finish just press `Save` and your Lua code will be generated. 
+* **Editing**: You can edit a pre-existing state machine in two ways, directly from the embedded source editor and graphically through the rFSMGui. In the latter case it is possible to add/remove/rename states and transitions and pressing `Save` the code will be generated in one file preserving pre-definded entry, doo, exit functions and all the code defined before `return rfsm.state{` statement. For now the "graphical editor" is enabled **ONLY** for those state machines that are defined in only one file. Later we will remove this limitation. 
 
 Example of using rfsm from C++
 ------------------------------

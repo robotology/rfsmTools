@@ -30,6 +30,7 @@ cmake_install.cmake
 # directories
 build*
 graph/build*
+_site*
 
 # Merge files
 *.orig
