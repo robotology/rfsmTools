@@ -108,7 +108,7 @@ This will generate .xcodeproj file which can be opened with Xcode. Build it by c
 
 Alternatively, it is possible to directly compile the project on the command line by
 ```
-xcodebuild [-configuration Debug|Release|Other Configs] [-target ALL_BUILD|install|Other Targets]
+$ xcodebuild [-configuration Debug|Release|Other Configs] [-target ALL_BUILD|install|Other Targets]
 ```
 Testing the Library
 --------------------
