@@ -6,13 +6,13 @@ This repository contains a C++ library (*librFSM*) to load and execute rFSM LUA-
 
 Features
 --------
-:+1: Compatible with Lua 5.1 and 5.2
-:+1: Gui built with Qt
-:+1: Multiplatform compatibilty(Linux, Windows, macOS)
-:+1: User friendly, easy to install, easy to use
-:+1: Few dependencies
-:+1: Includes debugger for rFSM-based state machines
-:+1: Includes builder for editing an existing state machine or build one from scratch
+:+1: Compatible with Lua 5.1 and 5.2  
+:+1: Gui built with Qt  
+:+1: Multiplatform compatibilty(Linux, Windows, macOS)  
+:+1: User friendly, easy to install, easy to use  
+:+1: Few dependencies  
+:+1: Includes debugger for rFSM-based state machines  
+:+1: Includes builder for editing an existing state machine or build one from scratch  
 
 Dependencies 
 ------------
