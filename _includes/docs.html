@@ -32,7 +32,7 @@ $ sudo apt-get install qtbase5-dev qtdeclarative5-dev qtdeclarative5-qtquick2-pl
 qtdeclarative5-window-plugin qtdeclarative5-controls-plugin qtdeclarative5-dialogs-plugin    
                         </code>
                     </pre>
-                </div><!--//code-block-->                
+                </div><!--//code-block--> <br>                
 
                 <ul class="list">
                     <li>Compile and build</li>                    
@@ -47,7 +47,7 @@ $ mkdir build; cd build
 $ cmake ../; make
                         </code>
                     </pre>
-                </div><!--//code-block-->     
+                </div><!--//code-block--> <br>     
                 <br>
                 <p><strong>Notice:</strong>&nbsp; &nbsp;If you do not want to to use the built-in rfsm you can disable cmake EMBED_RFSM flag</p>
                 <div class="code-block">
@@ -57,7 +57,7 @@ $ cmake ../; make
 $ cmake -DEMBED_RFSM=OFF ../; make
                         </code>
                     </pre>
-                </div><!--//code-block--> 
+                </div><!--//code-block--> <br> 
                 
             </div><!--//installation on linux-->
                 
@@ -81,14 +81,109 @@ Installation on Windows</h3>
  C:\> setx.exe PATH "%PATH%; path_to_the_graphviz_installed directory\bin"   
                         </code>
                     </pre>
-                </div><!--//code-block-->                
+                </div><!--//code-block--> <br>                
 
                 <ul class="list">
                     <li>The compilation is straightforward and uses the CMake build system. Get <a href="https://cmake.org/download/" >CMake for windows</a> if you have not yet installed. Then simply run the Cmake and, set the project (rfsmTools) root folder and the desired build folder. Configure and generate project solution for your favorite IDE (e.g. Visual Studio 11). Then open the solution from your IDE and build the project.</li>                    
                 </ul>       
                 
                 
-            </div><!--//installation on Windows-->                
+            </div><!--//installation on Windows-->
+                
+           <div class="block">
+                <h3 class="sub-title text-center"><i class="fa fa-apple"></i>&nbsp;&nbsp;
+Installation on macOS</h3>
+                <ul class="list">
+                    <li>Update <a href="https://brew.sh/">brew</a> </li>
+               </ul>
+                <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ brew update  
+                        </code>
+                    </pre>
+                </div><!--//code-block--> <br>
+               <ul class="list">
+                    <li> Install Lua</li>
+               </ul>
+                <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ brew install lua  
+                        </code>
+                    </pre>
+                </div><!--//code-block--> <br>
+                <ul class="list">
+                    <li>Install Qt5</li>
+               </ul>
+                <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ brew install qt
+$ brew link --force qt
+                        </code>
+                    </pre>
+                </div><!--//code-block--> <br> 
+               <ul class="list">
+                   <li>Add the following lines to your .bash_profile </li>
+               </ul>
+
+                <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ export Qt5_DIR=/usr/local/opt/qt5/lib/cmake
+$ export PATH=/usr/local/opt/qt5/bin:$PATH  
+                        </code>
+                    </pre>
+                </div><!--//code-block--> <br>                
+
+                <ul class="list">
+                    <li>Install Graphviz</li>                    
+                </ul>
+               <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ brew install graphviz  
+                        </code>
+                    </pre>
+                </div><!--//code-block--> <br>
+Now you can choose to compile using GNU Makefiles or Xcode:
+               <ul class="list">
+                   <li>GNU Makefiles</li>
+               </ul>
+               <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ cd rfsmTools
+$ mkdir build; cd build
+$ cmake ../; make  
+                        </code>
+                    </pre>
+                </div><!--//code-block--> <br>
+              <ul class="list">
+                   <li>Xcode</li>
+               </ul>
+               <div class="code-block">
+                    <!--//Use Prismjs - http://prismjs.com/index.html#basic-usage -->
+                    <pre>
+                        <code class="language-css">
+$ ccmake .. -G Xcode  
+                        </code>
+                    </pre>
+                </div><!--//code-block--> <br>
+
+               
+This will generate .xcodeproj file which can be opened with Xcode. Build it by clicking Product -> Build or cmd+B shortcut. One can also compile the Release biaries by clicking Product -> Archive.
+<ul class="list">               </ul>
+                
+                
+            </div><!--//installation on Windows--> 
 
             
             <div class="block">
@@ -97,7 +192,7 @@ Installation on Windows</h3>
                     <pre><code class="language-css">
 $ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
                     </code></pre>
-                </div><!--//code-block-->
+                </div><!--//code-block--> <br>
             </div><!--//Testing the library-->
             <div class="block">
                 <h3 class="sub-title text-center"><i class="fa fa-cogs"></i>&nbsp;&nbsp;Testing the rFSMGui</h3>
