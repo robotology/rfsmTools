@@ -9,7 +9,7 @@ set(PROJECTNAME rfsmGui)
 project(${PROJECTNAME})
 
 
-if(ENABLE_SIMRFSM)
+if(ENABLE_RFSMGUI)
     include(GNUInstallDirs)
 
     find_package(Graphviz REQUIRED)
@@ -29,5 +29,5 @@ if(ENABLE_SIMRFSM)
     add_subdirectory(QGVCore)
     add_subdirectory(src)
 
-endif(ENABLE_SIMRFSM)
+endif(ENABLE_RFSMGUI)
 

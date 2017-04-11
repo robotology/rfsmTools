@@ -1,0 +1,45 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/*
+ * Copyright (C) 2017 iCub Facility
+ * Authors: Ali Paikan
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ *
+ */
+
+
+/**
+\mainpage Welcome to rfsmTools API documentation
+\image html rfsmGui.png
+
+FSMTools is a set of C++ library (librFSM) to load and execute rFSM LUA-based state machines and a graphical modelling tools (rfsmGui) to create, debug and execute the state machine.
+
+<br>
+
+\section compile Compile and Build librFSM on Linux
+The installation is easy, straightforward and uses \c Cmake building system.
+
+\verbatim
+$ sudo apt-get install lua5.X-dev
+$ cd rfsmTools
+$ mkdir build; cd build
+$ cmake -DENABLE_RFSMGUI=OFF ../; 
+$ make
+\endverbatim
+
+\section code_example Sample Code
+\include examples/main.cpp
+
+<br>
+\section example Running Examples
+\verbatim 
+    $ cd build/bin
+    $ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
+\endverbatim
+
+
+<br>
+\author Ali Paikan
+
+ *
+ */
