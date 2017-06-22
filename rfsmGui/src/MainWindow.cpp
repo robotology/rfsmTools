@@ -1313,6 +1313,7 @@ void MainWindow::onWarning(const string message) {
     qmessage.append(message.c_str());
     item = new QTreeWidgetItem(ui->nodesTreeWidgetLog, qmessage);
     ui->nodesTreeWidgetLog->scrollToBottom();
+    ui->nodesTreeWidgetLog->resizeColumnToContents(1);
     QBrush b( QColor("#FFFACD") );
     item->setBackground( 0, b);
     item->setBackground( 1, b);
@@ -1331,6 +1332,7 @@ void MainWindow::onInfo(const string message) {
         item->setBackground( 0, b);
         item->setBackground( 1, b);
     }
+    ui->nodesTreeWidgetLog->resizeColumnToContents(1);
     ui->nodesTreeWidgetLog->scrollToBottom();
 }
 
@@ -1341,6 +1343,7 @@ void MainWindow::onError(const string message, const string currentState) {
     qmessage.append(qt.toString());
     qmessage.append(message.c_str());
     item = new QTreeWidgetItem(ui->nodesTreeWidgetLog, qmessage);
+    ui->nodesTreeWidgetLog->resizeColumnToContents(1);
     ui->nodesTreeWidgetLog->scrollToBottom();
     QBrush b( QColor("#FA8072") );
     item->setBackground( 0, b);
