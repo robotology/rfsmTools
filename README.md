@@ -27,7 +27,7 @@ Dependencies
 Installation on Linux
 ---------------------
 * Install one of the lua developemnt library (e.g., 5.1, 5.2, ...) and the graphviz development package 
-* If you do not want to use the built-in rfsm then follwo the installation of 
+* If you do not want to use the built-in rfsm then follow the installation of 
 rFSM on https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html. 
 
 ```
