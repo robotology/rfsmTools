@@ -110,6 +110,12 @@ Alternatively, it is possible to directly compile the project on the command lin
 ```
 $ xcodebuild [-configuration Debug|Release|Other Configs] [-target ALL_BUILD|install|Other Targets]
 ```
+
+Using YARP
+----------
+Toggle on the cmake flag `USE_YARP` to enable yarp features.
+
+
 Testing the Library
 --------------------
 ```
