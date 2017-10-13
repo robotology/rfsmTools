@@ -16,7 +16,7 @@ macro(ENABLE_RTF_TESTS)
 
     # add the required cmake packages
     find_package(RTF REQUIRED)
-    find_package(RTF 1.1 COMPONENTS DLL)
+    find_package(RTF 1.3.1 COMPONENTS DLL)
 
     include_directories(${CMAKE_SOURCE_DIR}
                         ${RTF_INCLUDE_DIRS}
