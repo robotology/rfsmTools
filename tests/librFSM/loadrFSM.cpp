@@ -22,10 +22,10 @@ public:
     LoadrFSM() : TestCase("LoadrFSM") {}
 
     virtual bool setup(int argc, char**argv) {
-        RTF_ASSERT_ERROR_IF(argc>=2, "Missing lua rfsm file as argument");
+        RTF_ASSERT_ERROR_IF_FALSE(argc>=2, "Missing lua rfsm file as argument");
         filename = argv[1];
         RTF_TEST_REPORT(Asserter::format("Loading lua rfsm file %s", filename.c_str()));
-        RTF_ASSERT_ERROR_IF(fsm.load(filename), Asserter::format("Cannot load %s", filename.c_str()));
+        RTF_ASSERT_ERROR_IF_FALSE(fsm.load(filename), Asserter::format("Cannot load %s", filename.c_str()));
         return true;
     }
 
