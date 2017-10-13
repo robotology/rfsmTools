@@ -186,6 +186,7 @@ std::vector<std::string> StateGraphEditor::getEvents(const string source, const 
             return tr.events;
         }
     }
+    return std::vector<std::string>();
 }
 
 int StateGraphEditor::getPriority(const string source, const string target){
