@@ -660,6 +660,7 @@ void MainWindow::onRunStoprFSM() {
         switchMachineMode(ASK_STOP);
         rfsm.stop();
     }
+    showStatusBarMessage("Stopped!", Qt::darkRed);
 }
 
 void MainWindow::onFsmStopped() {
