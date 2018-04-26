@@ -2,8 +2,8 @@
 # Setup
 title:               rFSMTools
 tagline:             A set of tools to execute, debug and build rFSM LUA-based state machines 
-url:                 "https://nicogene.github.io/rfsmToolsSite/" # insert your site's URL
-baseurl:             ""
+url:                 "https://robotology.github.io" # insert your site's URL
+baseurl:             "/rfsmTools"
 
 # About/contact
 
@@ -39,7 +39,7 @@ github:
   repo:              https://github.com/robotology/rfsmTools
 
 # Gems - Dependencies for this theme
-gems:
+plugins:
   # None currently
 
 # Build settings
