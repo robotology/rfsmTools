@@ -17,7 +17,7 @@ if(ENABLE_RFSMGUI)
 
     if(USE_YARP)
         # Find YARP (optional)
-        find_package(YARP)
+        find_package(YARP REQUIRED)
     endif()
 
     #########################################################################

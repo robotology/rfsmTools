@@ -13,8 +13,7 @@ endif()
 
 include_directories(../QGVCore
                     ../../librFSM/include
-                    ./sourceEditor
-                     ${YARP_INCLUDE_DIRS})
+                    ./sourceEditor)
 
 set(rfsmgui_qt_SRCS main.cpp
                     MainWindow.cpp
