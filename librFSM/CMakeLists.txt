@@ -81,13 +81,14 @@ install(TARGETS rFSM
 
 include(CMakePackageConfigHelpers)
 install(EXPORT rFSM
+        NAMESPACE rFSM::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rFSM)
 
-configure_package_config_file(${CMAKE_SOURCE_DIR}/cmake/modules/rFSMConfig.cmake.in
-                              ${CMAKE_BINARY_DIR}/rFSMConfig.cmake
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/rFSMConfig.cmake.in
+                              ${CMAKE_CURRENT_BINARY_DIR}/rFSMConfig.cmake
                               INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rFSM)
 
-install(FILES ${CMAKE_BINARY_DIR}/rFSMConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rFSM)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rFSMConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rFSM)
 
 # Add bindings
 add_subdirectory(bindings)
