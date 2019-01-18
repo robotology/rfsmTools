@@ -15,7 +15,7 @@ find_package(rFSM REQUIRED)
 
 add_executable(${PROJECTNAME} main.cpp )
 
-target_link_libraries(${PROJECTNAME} rFSM::rFSM)
+target_link_libraries(${PROJECTNAME} rFSMTools::rFSM)
 
 #install(TARGETS ${PROJECTNAME}
 #        EXPORT ${PROJECTNAME}

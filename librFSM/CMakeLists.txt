@@ -69,6 +69,8 @@ endif()
 
 target_link_libraries(rFSM ${LUA_LIBRARY})
 
+add_library(rFSMTools::rFSM ALIAS rFSM)
+
 # choose which header files should be installed
 set_property(TARGET rFSM PROPERTY PUBLIC_HEADER include/rfsm.h)
 
@@ -81,7 +83,7 @@ install(TARGETS rFSM
 
 include(CMakePackageConfigHelpers)
 install(EXPORT rFSM
-        NAMESPACE rFSM::
+        NAMESPACE rFSMTools::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rFSM)
 
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/rFSMConfig.cmake.in

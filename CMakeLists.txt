@@ -37,6 +37,6 @@ add_install_rpath_support(BIN_DIRS "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BIND
 
 
 add_subdirectory(librFSM)
-#add_subdirectory(examples)
+add_subdirectory(examples)
 add_subdirectory(rfsmGui)
 add_subdirectory(tests)
