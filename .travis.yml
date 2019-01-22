@@ -50,7 +50,7 @@ env:
 before_script:
 
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then export PATH=/usr/local/opt/qt5/bin:$PATH; fi
-  - lua -v
+  - lua5.1 -v
   - swig -version
   - python3 --version
   - qmake --version
