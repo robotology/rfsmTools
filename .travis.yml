@@ -52,15 +52,23 @@ before_script:
   - swig -version
   - python3 --version
   - cmake --version
+  # install robot-testing framework
+  - git clone --depth=1 --branch devel https://github.com/robotology/robot-testing
+  - cd robot-testing
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=${TRAVIS_BUILD_TYPE} -DENABLE_LUA_PLUGIN:BOOL=ON -DENABLE_WEB_LISTENER:BOOL=ON ..
+  - make
+  - sudo make install
+  - cd ../..
 
 script:
   # configure rfsmTools
   - mkdir build
   - cd build
   - cmake -DLIBRFSM_USES_PYTHON=ON ..
-  # FIXME INSTALL RTF AND ENABLE TESTS
   - make
-  # - ctest --output-on-failure --build . -C ${TRAVIS_BUILD_TYPE}
+  - ctest --output-on-failure --build . -C ${TRAVIS_BUILD_TYPE}
   - sudo make install
 
 notifications:
