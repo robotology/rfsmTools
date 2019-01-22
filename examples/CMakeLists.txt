@@ -11,7 +11,9 @@ PROJECT(${PROJECTNAME})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ../librFSM/include)
 
-find_package(rFSM REQUIRED)
+if(NOT TARGET rFSMTools::rFSM)
+  find_package(rFSMTools REQUIRED)
+endif()
 
 add_executable(${PROJECTNAME} main.cpp )
 
