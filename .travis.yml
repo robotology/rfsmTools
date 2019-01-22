@@ -29,7 +29,7 @@ addons:
     update: true
     packages:
     - cmake
-    - lua
+    - lua51
     - qt
     - graphviz
     - swig
