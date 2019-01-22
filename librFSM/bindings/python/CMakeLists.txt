@@ -36,7 +36,8 @@ set_target_properties(_${target_name} PROPERTIES OUTPUT_NAME "_rfsm")
 set_target_properties(_${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_INSTDIR})
 swig_link_libraries(${target_name} rFSM)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rfsm.py DESTINATION ${PYTHON_INSTDIR} )
+install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_INSTDIR}/rfsm.py
+        DESTINATION ${PYTHON_INSTDIR})
 install(TARGETS _${target_name} DESTINATION ${PYTHON_INSTDIR} )
 
 if(WIN32)
