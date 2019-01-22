@@ -7,6 +7,7 @@
 
 if (BUILD_TESTING)
 
+    find_package(RTF REQUIRED)
     include(RTFTestHelpers)
 
     # enable RTF testing

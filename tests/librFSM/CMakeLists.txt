@@ -6,7 +6,7 @@
 
 
 # LoadrFSM
-ADD_RTF_CPPTEST(NAME LoadrFSM
+ADD_RTF_CPPTEST(NAME LoadrFSMTest
                 SRCS loadrFSM.cpp
                 PARAM "${CMAKE_SOURCE_DIR}/tests/fsm/simple_fsm.lua")
 
