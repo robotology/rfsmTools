@@ -57,7 +57,7 @@ script:
   # configure rfsmTools
   - mkdir build
   - cd build
-  - cmake -DLIBRFSM_USES_PYTHON=ON
+  - cmake -DLIBRFSM_USES_PYTHON=ON ..
   # FIXME INSTALL RTF AND ENABLE TESTS
   - make
   # - ctest --output-on-failure --build . -C ${TRAVIS_BUILD_TYPE}
