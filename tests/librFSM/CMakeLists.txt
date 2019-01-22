@@ -10,4 +10,3 @@ ADD_RTF_CPPTEST(NAME LoadrFSM
                 SRCS loadrFSM.cpp
                 PARAM "${CMAKE_SOURCE_DIR}/tests/fsm/simple_fsm.lua")
 
-                

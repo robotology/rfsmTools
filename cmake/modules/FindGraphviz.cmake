@@ -13,7 +13,7 @@ if(EXISTS "$ENV{GRAPHVIZ_ROOT}")
     set(GRAPHVIZ_POSSIBLE_INCDIRS
         "$ENV{GRAPHVIZ_ROOT}/include"
         "$ENV{GRAPHVIZ_ROOT}/include/graphviz")
-		
+
     set(GRAPHVIZ_POSSIBLE_LIBRARY_PATHS
         "$ENV{GRAPHVIZ_ROOT}/lib/release/dll"
         "$ENV{GRAPHVIZ_ROOT}/lib/release/lib")
@@ -56,7 +56,7 @@ endif( NOT WIN32 )
 
 FIND_LIBRARY(GRAPHVIZ_GVC_LIBRARY NAMES gvc libgvc
   PATHS
-	${GRAPHVIZ_POSSIBLE_LIBRARY_PATHS}
+    ${GRAPHVIZ_POSSIBLE_LIBRARY_PATHS}
     /usr/lib
     /usr/local/lib
   HINTS
