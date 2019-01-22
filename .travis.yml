@@ -1,0 +1,66 @@
+sudo: required
+dist: xenial
+
+language: cpp
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    update: true
+    packages:
+    - cmake
+    - lua5.1-dev
+    - libgraphviz-dev
+    - qtbase5-dev
+    - qtdeclarative5-dev
+    - qtdeclarative5-qtquick2-plugin
+    - qtdeclarative5-window-plugin
+    - qtdeclarative5-controls-plugin
+    - qtdeclarative5-dialogs-plugin
+    - swig
+    - python3-dev
+
+  homebrew:
+    update: true
+    packages:
+    - cmake
+    - lua
+    - qt
+    - graphviz
+    - swig
+    - python
+
+os:
+  - linux
+  - osx
+
+env:
+  global:
+    - CTEST_OUTPUT_ON_FAILURE=1
+  matrix:
+    - TRAVIS_BUILD_TYPE=Debug
+    - TRAVIS_BUILD_TYPE=Release
+
+
+before_script:
+  - lua -v
+  - swig -version
+  - python3 --version
+  - cmake --version
+
+script:
+  # configure rfsmTools
+  - mkdir build
+  - cd build
+  - cmake -DLIBRFSM_USES_PYTHON=ON
+  # FIXME INSTALL RTF AND ENABLE TESTS
+  - make
+  # - ctest --output-on-failure --build . -C ${TRAVIS_BUILD_TYPE}
+  - sudo make install
+
+notifications:
+  email:
+    - nicolo.genesio@iit.it
