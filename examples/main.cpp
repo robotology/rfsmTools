@@ -42,7 +42,7 @@ void printEventQueue(std::vector<std::string>& equeue) {
 
 int main(int argc, char** argv) {
     if(argc < 2) {
-        std::cout<<"Usage:"<<argv[0]<<"myfsm.lua"<<std::endl;
+        std::cout<<"Usage:"<<argv[0]<<" myfsm.lua"<<std::endl;
         return 0;
     }
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     //rfsm.addLuaPackagePath("/path/to/rfsm/?.lua");
 
     if(!rfsm.load(argv[1])) {
-        std::cerr<<"Cannot load"<<argv[1]<<std::endl;
+        std::cerr<<"Cannot load "<<argv[1]<<std::endl;
         return 0;
     }
 
