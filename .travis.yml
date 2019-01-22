@@ -48,9 +48,12 @@ env:
 
 
 before_script:
+
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew link --force qt; fi
   - lua -v
   - swig -version
   - python3 --version
+  - qmake --version
   - cmake --version
   # install robot-testing framework
   - git clone --depth=1 --branch devel https://github.com/robotology/robot-testing
