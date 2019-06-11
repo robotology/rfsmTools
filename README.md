@@ -1,3 +1,9 @@
+
+
+[![Build Status (Linux) (master branch)](https://img.shields.io/travis/com/robotology/rfsmTools/master.svg?logo=travis&label=[master]%20build%20(Linux))](https://travis-ci.com/robotology/rfsmTools)
+[![Build Status (macOs) (master branch)](https://img.shields.io/travis/com/robotology/rfsmTools/master.svg?logo=travis&label=[master]%20build%20(macOs))](https://travis-ci.com/robotology/rfsmTools)
+
+
 # rFSM Tools
 
 This repository contains a C++ library (*librFSM*) to load and execute rFSM LUA-based state machines and a graphical tools (*rfsmGui*) to create, debug and execute the state machine.
