@@ -7,6 +7,8 @@
 
 # LoadrFSM
 include_directories(../../librFSM/include)
+set(TESTRUNNER_PATH robottestingframework-testrunner)
 ADD_RobotTestingFramework_CPPTEST(NAME LoadrFSMTest
                                   SRCS loadrFSM.cpp
                                   PARAM "${CMAKE_SOURCE_DIR}/tests/fsm/simple_fsm.lua")
+target_link_libraries(LoadrFSMTest rFSM)
