@@ -56,8 +56,8 @@ before_script:
   - qmake --version
   - cmake --version
   # install robot-testing framework
-  - git clone --depth=1 --branch devel https://github.com/robotology/robot-testing
-  - cd robot-testing
+  - git clone --depth=1 --branch master https://github.com/robotology/robot-testing-framework
+  - cd robot-testing-framework
   - mkdir build
   - cd build
   - cmake -DCMAKE_BUILD_TYPE=${TRAVIS_BUILD_TYPE} -DENABLE_LUA_PLUGIN:BOOL=ON -DENABLE_WEB_LISTENER:BOOL=ON ..
