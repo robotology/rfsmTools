@@ -7,11 +7,11 @@
 
 if (BUILD_TESTING)
 
-    find_package(RTF REQUIRED)
-    include(RTFTestHelpers)
+    find_package(RobotTestingFramework 2.0.0 REQUIRED)
+    include(RobotTestingFrameworkTestHelpers)
 
     # enable RTF testing
-    ENABLE_RTF_TESTS()
+    ENABLE_ROBOTTESTINGFRAMEWORK_TESTS()
 
     # adding librFSM tests
     add_subdirectory(librFSM)
