@@ -67,6 +67,11 @@ else()
     add_library(rFSM SHARED ${headers} ${sources} ${resources})
 endif()
 
+target_include_directories(rFSM
+                            PUBLIC      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>   # include folder, inside build
+                                        $<INSTALL_INTERFACE:include>                              # include folder, after installation
+                            )
+
 target_link_libraries(rFSM ${LUA_LIBRARY})
 
 add_library(rFSMTools::rFSM ALIAS rFSM)
