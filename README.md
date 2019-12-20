@@ -34,7 +34,7 @@ Installation on Linux
 ---------------------
 * Install one of the lua developemnt library (e.g., 5.1, 5.2, ...) and the graphviz development package 
 * If you do not want to use the built-in rfsm then follow the installation of 
-rFSM on https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html. 
+rFSM on https://github.com/kmarkus/rFSM.
 
 ```
 $ sudo apt-get install lua5.X-dev libgraphviz-dev \
