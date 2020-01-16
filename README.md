@@ -13,6 +13,7 @@ This repository is maintained by:
 |:---:|:---:|
 | [<img src="https://github.com/Nicogene.png" width="40">](https://github.com/niNicogenecogene) | [@Nicogene](https://github.com/Nicogene) |
 
+## Description
 This repository contains a C++ library (*librFSM*) to load and execute rFSM LUA-based state machines and a graphical tools (*rfsmGui*) to create, debug and execute the state machine.
 
 ![scenario2](/doc/rfsmGui.png)
