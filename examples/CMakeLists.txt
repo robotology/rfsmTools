@@ -4,10 +4,6 @@
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-SET(PROJECTNAME rfsmTest)
-PROJECT(${PROJECTNAME})
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ../librFSM/include)
 
@@ -15,11 +11,11 @@ if(NOT TARGET rFSMTools::rFSM)
   find_package(rFSMTools REQUIRED)
 endif()
 
-add_executable(${PROJECTNAME} main.cpp )
+add_executable(rfsmTest main.cpp )
 
-target_link_libraries(${PROJECTNAME} rFSMTools::rFSM)
+target_link_libraries(rfsmTest rFSMTools::rFSM)
 
-#install(TARGETS ${PROJECTNAME}
-#        EXPORT ${PROJECTNAME}
-#        COMPONENT runtime
-#        RUNTIME DESTINATION bin)
+install(TARGETS rfsmTest
+        EXPORT rfsmTest
+        COMPONENT runtime
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

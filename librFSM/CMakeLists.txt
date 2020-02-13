@@ -3,7 +3,7 @@
 # Authors: Ali Paikan <ali.paikan@iit.it>, Nicolo' Genesio <nicolo.genesio@iit.it>
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 #
-project(librFSM)
+include(CMakePackageConfigHelpers)
 
 find_package(Lua)
 if(NOT LUA_FOUND)
@@ -82,20 +82,17 @@ set_property(TARGET rFSM PROPERTY PUBLIC_HEADER include/rfsm.h)
 install(TARGETS rFSM
         EXPORT rFSM
         COMPONENT runtime
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        PUBLIC_HEADER DESTINATION include)
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION RUNTIME DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rFSM)
 
-include(CMakePackageConfigHelpers)
-install(EXPORT rFSM
-        NAMESPACE rFSMTools::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rFSM)
-
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/rFSMConfig.cmake.in
-                              ${CMAKE_CURRENT_BINARY_DIR}/rFSMConfig.cmake
-                              INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rFSM)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rFSMConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rFSM)
+include(InstallBasicPackageFiles)
+install_basic_package_files(rFSM
+                            VERSION ${${PROJECT_NAME}_VERSION}
+                            COMPATIBILITY AnyNewerVersion
+                            VARS_PREFIX rFSMTools
+                            NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 # Add bindings
 add_subdirectory(bindings)
