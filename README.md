@@ -33,7 +33,7 @@ Dependencies
 * [Lua](https://www.lua.org/about.html) library (5.x)
 * [Qt 5](https://www.qt.io/download/)
 * [Graphviz](http://www.graphviz.org/) development library for *rfsmGui*
-* [rFSM](https://people.mech.kuleuven.be/~bruyninc/rFSM/doc/README.html) (optional)
+* [rFSM](https://github.com/kmarkus/rFSM) (optional)
 
 *librFSM* can be built with the built-in rfsm lua library (default is ON).
 
@@ -65,7 +65,7 @@ Installation on Windows
 ---------------------
 * Install [lua for windows](https://github.com/rjpcomputing/luaforwindows/releases/download/v5.1.5-51/LuaForWindows_v5.1.5-51.exe) or download and build one of the lua library (e.g., 5.1, 5.2, ...) 
 * Download and Install Qt5 (https://www.qt.io/download/). Follow the the installation instruction to set the environemnt variables (`Qt5_DIR` and `PATH`). 
-* Install [graphviz for windows](http://www.graphviz.org/pub/graphviz/stable/windows/graphviz-2.38.msi) and set/update the corresponding enviornment variables (`GRAPHVIZ_ROOT` and `PATH`): 
+* Install [graphviz for windows](https://graphviz.gitlab.io/_pages/Download/windows/graphviz-2.38.msi) and set/update the corresponding enviornment variables (`GRAPHVIZ_ROOT` and `PATH`): 
 ```
  C:\> setx.exe Qt5_DIR <path to the qt installed directory>\qt5\5.X\msvc20XX\lib\cmake\Qt5
  C:\> setx.exe PATH "%PATH%;<path to the qt installed directory>\qt5\5.X\msvc2010\bin"
