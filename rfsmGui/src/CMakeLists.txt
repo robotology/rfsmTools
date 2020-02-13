@@ -51,7 +51,7 @@ source_group("Generated Files" FILES ${rfsmgui_qt_QRC_GEN_SRCS}
                                   ${rfsmgui_qt_UI_GEN_SRCS})
 
 
-add_executable(${PROJECTNAME} WIN32 ${rfsmgui_qt_SRCS}
+add_executable(rfsmGui          WIN32 ${rfsmgui_qt_SRCS}
                                       ${rfsmgui_qt_HDRS}
                                       ${rfsmgui_qt_QRC_FILES}
                                       ${rfsmgui_qt_QRC_GEN_SRCS}
@@ -61,16 +61,16 @@ add_executable(${PROJECTNAME} WIN32 ${rfsmgui_qt_SRCS}
 
 
 #find_package(Qt5PrintSupport REQUIRED)
-target_link_libraries(${PROJECTNAME} qgvcore Qt5::Widgets Qt5::Gui rFSM ${YARP_LIBRARIES})
+target_link_libraries(rfsmGui qgvcore Qt5::Widgets Qt5::Gui rFSM ${YARP_LIBRARIES})
 
 
 #if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
 if(WIN32)
-    target_link_libraries(${PROJECTNAME} qgvcore Qt5::WinMain rFSM ${YARP_LIBRARIES})
+    target_link_libraries(rfsmGui qgvcore Qt5::WinMain rFSM ${YARP_LIBRARIES})
 endif()
 
-install(TARGETS ${PROJECTNAME}
-        EXPORT ${PROJECTNAME}
+install(TARGETS rfsmGui
+        EXPORT rfsmGui
         COMPONENT runtime
-        RUNTIME DESTINATION bin)
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
        

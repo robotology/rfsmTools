@@ -4,9 +4,12 @@
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
-SET(PROJECTNAME rFSMTools)
-PROJECT(${PROJECTNAME})
+cmake_minimum_required(VERSION 3.0.0)
+
+project(rFSMTools
+        LANGUAGES C CXX
+        VERSION 1.0.0)
+
 
 # enable ctest
 enable_testing()
@@ -40,3 +43,5 @@ add_subdirectory(librFSM)
 add_subdirectory(examples)
 add_subdirectory(rfsmGui)
 add_subdirectory(tests)
+
+include(AddUninstallTarget)

@@ -4,16 +4,11 @@
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 #
 
-cmake_minimum_required(VERSION 2.8.9)
-set(PROJECTNAME rfsmGui)
-project(${PROJECTNAME})
-
-
 if(ENABLE_RFSMGUI)
     include(GNUInstallDirs)
 
     find_package(Graphviz REQUIRED)
-    find_package(Qt5Widgets REQUIRED)
+    find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
     if(USE_YARP)
         # Find YARP (optional)

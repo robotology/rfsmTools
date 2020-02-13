@@ -1,0 +1,107 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+    - 'master'
+    - 'feat/**'
+    - 'fix/**'
+  pull_request:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  # Execute a "nightly" build at 2 AM UTC 
+  - cron:  '0 2 * * *'
+    
+jobs:
+  build:
+    name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build_type: [Release, Debug]
+        os: [ubuntu-latest, macOS-latest]
+
+    steps:
+    - uses: actions/checkout@master
+
+
+    - name: Display environment variables
+      shell: bash
+      run: env
+
+    # Remove apt repos that are known to break from time to time
+    # See https://github.com/actions/virtual-environments/issues/323
+    - name: Remove broken apt repos [Ubuntu]
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
+
+    # ============
+    # DEPENDENCIES
+    # ============
+
+    - name: Dependencies [Ubuntu]
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install git build-essential pkg-config zip unzip cmake qtbase5-dev \
+                         qtdeclarative5-dev qtmultimedia5-dev \
+                         swig python3 python3-dev libgraphviz-dev lua5.1-dev lua5.1
+
+    - name: Dependencies [macOS]
+      if: matrix.os == 'macOS-latest'
+      run: |
+        brew update
+        brew upgrade
+        brew install cmake lua51 qt graphviz swig python
+
+    - name: Source-based Dependencies [Ubuntu/macOS]
+      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+      shell: bash
+      run: |
+        # robot-testing-framework
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/robot-testing-framework.git --depth 1 --branch master
+        cd robot-testing-framework && mkdir -p build && cd build
+        cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_LUA_PLUGIN:BOOL=ON -DENABLE_WEB_LISTENER:BOOL=ON ..
+        cmake --build . --config ${{ matrix.build_type }} --target install
+      env:
+        # This is necessary only on macOS/homebrew, but on Linux it should be ignored
+        Qt5_DIR: /usr/local/opt/qt5/lib/cmake/Qt5
+    # ===================
+    # CMAKE-BASED PROJECT
+    # ===================
+
+    - name: Configure [Ubuntu/macOS]
+      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+      shell: bash
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DLIBRFSM_USES_PYTHON:BOOL=ON -DBUILD_TESTING:BOOL=ON ..
+      env:
+        # This is necessary only on macOS/homebrew, but on Linux it should be ignored
+        Qt5_DIR: /usr/local/opt/qt5/lib/cmake/Qt5
+
+    - name: Build
+      shell: bash
+      run: |
+        cd build
+        # Fix for using YARP idl generators (that link ACE) in Windows 
+        # See https://github.com/robotology/idyntree/issues/569 for more details
+        export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin
+        cmake --build . --config ${{ matrix.build_type }}
+
+    - name: Install
+      shell: bash
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} --target install
+    - name: Test
+      shell: bash
+      run: |
+        cd build
+        export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${GITHUB_WORKSPACE}/install/lib/robottestingframework
+        ctest --output-on-failure --build . -C ${{ matrix.build_type }}
