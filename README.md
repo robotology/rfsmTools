@@ -1,6 +1,6 @@
 
-[![Build Status (Linux) (master branch)](https://img.shields.io/travis/com/robotology/rfsmTools/master.svg?logo=travis&label=[master]%20build%20(Linux))](https://travis-ci.com/robotology/rfsmTools)
-[![Build Status (macOs) (master branch)](https://img.shields.io/travis/com/robotology/rfsmTools/master.svg?logo=travis&label=[master]%20build%20(macOs))](https://travis-ci.com/robotology/rfsmTools)
+
+![ci](https://github.com/robotology/rfsmTools/workflows/Continuous%20Integration/badge.svg)
 
 
 # rFSM Tools
@@ -44,21 +44,20 @@ Installation on Linux
 * If you do not want to use the built-in rfsm then follow the installation of 
 rFSM on https://github.com/kmarkus/rFSM.
 
-```
+``` bash
 $ sudo apt-get install lua5.X-dev libgraphviz-dev \
-       qtbase5-dev qtdeclarative5-dev qtdeclarative5-qtquick2-plugin qtdeclarative5-window-plugin \
-       qtdeclarative5-controls-plugin qtdeclarative5-dialogs-plugin
+                       qtbase5-dev qtdeclarative5-dev qtmultimedia5-dev 
 ```
 
 * Compile and build
-```
+```bash
 $ cd rfsmTools
 $ mkdir build; cd build
 $ cmake ../; make
 ```
 Notice: if you do not want to to use the built-in rfsm you can disable cmake `EMBED_RFSM` flag:
 
-```
+```bash
 $ cmake -DEMBED_RFSM=OFF ../; make
 ```
 
@@ -79,49 +78,49 @@ Installation on Windows
 Installation on macOS
 ---------------------
 * Update brew  
-```
+```bash
 $ brew update
 ```
 
 * Install Lua
-```
+```bash
 $ brew install lua
 ```
 
 * Install Qt5
-```
+```bash
 $ brew install qt
 $ brew link --force qt
 ```
 
 * Add the following lines to your .bash_profile
 
-```
+```bash
 $ export Qt5_DIR=/usr/local/opt/qt5/lib/cmake
 $ export PATH=/usr/local/opt/qt5/bin:$PATH
 ```
 
 * Install Graphviz
-```
+```bash
 $ brew install graphviz
 ```
 now you can choose to compile using GNU Makefiles or Xcode:
 
 * GNU Makefiles
-```
+```bash
 $ cd rfsmTools
 $ mkdir build; cd build
 $ cmake ../; make
 ```
 
 * Xcode
-```
+```bash
 $ ccmake .. -G Xcode
 ```
 This will generate .xcodeproj file which can be opened with Xcode. Build it by clicking **Product -> Build** or **cmd+B** shortcut. One can also compile the *Release* biaries by clicking **Product -> Archive**.
 
 Alternatively, it is possible to directly compile the project on the command line by
-```
+```bash
 $ xcodebuild [-configuration Debug|Release|Other Configs] [-target ALL_BUILD|install|Other Targets]
 ```
 
@@ -132,7 +131,7 @@ Toggle on the cmake flag `USE_YARP` to enable yarp features.
 
 Testing the Library
 --------------------
-```
+```bash
 $ ./examples/rfsmTest ../examples/fsm/rfmodule_fsm.lua
 ```
 
@@ -177,7 +176,8 @@ int main(int argc, char** argv) {
 
 Contributors
 -------------
+* [*Nicolò Genesio*](https://github.com/Nicogene)
 * [*Ali Paikan*](https://github.com/apaikan)
 * [*Silvio Traversaro*](https://github.com/traversaro)
-* [*Nicolò Genesio*](https://github.com/Nicogene)
+
 
