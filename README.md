@@ -148,6 +148,10 @@ Launch the `rfsmGui`. Open the example rFSM state machine from `rfsmTools/exampl
 
 Example of using rfsm from C++
 ------------------------------
+- First of all add in your CMakeLists.txt project:
+  -`find_package(rFSM)`
+  -`target_link_libraries(${PROJECT_NAME} rFSM)`
+
 ```c++
 class MyStateCallback : public rfsm::StateCallback {
 public:
