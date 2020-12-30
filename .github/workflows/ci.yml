@@ -51,9 +51,9 @@ jobs:
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
       run: |
-        # Workaround for https://github.com/actions/virtual-environments/issues/1811#issuecomment-718475660
-        brew unlink python@3.8
         brew update
+        # Workaround for https://github.com/robotology/robotology-superbuild/issues/565
+        brew upgrade  python@3.9 || brew link --overwrite python@3.9
         brew upgrade
         brew install cmake lua51 qt graphviz swig python
 
